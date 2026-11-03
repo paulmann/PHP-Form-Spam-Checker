@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+#
+# Install / update the shared PHP Form Spam Checker on a server.
+#
+# Usage:
+#   deploy/install-shared.sh [SOURCE_DIR] [DEST_DIR]
+#
+#   SOURCE_DIR  repository checkout (default: parent of this script)
+#   DEST_DIR    shared module path (default: /var/www/lib/PHP-Form-Spam-Checker)
+#
+# The script never touches per-site configuration (config/sites/) or runtime
+# state (var/): both are preserved across updates.
+
+set -euo pipefail
+
+SOURCE_DIR="${1:-$(cd "$(dirname "$0")/.." && pwd)}"
+DEST_DIR="${2:-/var/www/lib/PHP-Form-Spam-Checker}"
+OWNER="root:www-data"
+PHP_BIN="${PHP_BIN:-/opt/php85/bin/php}"
+
+if [[ ! -f "$SOURCE_DIR/autoload.php" ]]; then
+    echo "ERROR: $SOURCE_DIR does not look like the checker checkout (no autoload.php)." >&2
+    exit 1
+fi
+
+if [[ "$(id -u)" -ne 0 ]]; then
+    echo "ERROR: run as root (ownership and permissions are set)." >&2
+    exit 1
+fi
+
+install -d -m 755 -o root -g www-data "$DEST_DIR"
+install -d -m 755 -o root -g www-data "$DEST_DIR/config"
+install -d -m 755 -o root -g www-data "$DEST_DIR/config/sites"
+install -d -m 775 -o root -g www-data "$DEST_DIR/var"
+install -d -m 775 -o root -g www-data "$DEST_DIR/var/sites"
+install -d -m 775 -o root -g www-data "$DEST_DIR/var/log"
+
+# Code and documentation. config/sites and var are excluded on purpose: rsync
+# leaves existing directories alone and `--delete` will not touch them.
+rsync -a --delete \
+    --exclude '.git' \
+    --exclude 'vendor' \
+    --exclude 'tests' \
+    --exclude 'var' \
+    --exclude 'config/sites' \
+    --exclude 'composer.lock' \
+    --exclude '.phpunit.cache' \
+    "$SOURCE_DIR/" "$DEST_DIR/"
+
+if [[ ! -f "$DEST_DIR/config/sites/default.php" ]]; then
+    install -m 644 -o root -g www-data "$SOURCE_DIR/config/sites/default.php" "$DEST_DIR/config/sites/default.php"
+fi
+
+chown -R "$OWNER" "$DEST_DIR"
+find "$DEST_DIR" -type d -exec chmod 755 {} +
+find "$DEST_DIR" -type f -exec chmod 644 {} +
+chmod 775 "$DEST_DIR/var" "$DEST_DIR/var/sites" "$DEST_DIR/var/log"
+chmod 644 "$DEST_DIR/bin/spam-check"
+chmod 755 "$DEST_DIR/deploy" 2>/dev/null || true
+
+# Syntax gate for every deployed PHP file.
+mapfile -t FILES < <(find "$DEST_DIR/src" "$DEST_DIR/integrations" "$DEST_DIR/config" -type f -name '*.php' -print)
+FILES+=("$DEST_DIR/bin/spam-check" "$DEST_DIR/public/check.php" "$DEST_DIR/autoload.php")
+
+for file in "${FILES[@]}"; do
+    if ! "$PHP_BIN" -l "$file" >/dev/null 2>&1; then
+        echo "ERROR: syntax check failed: $file" >&2
+        exit 1
+    fi
+done
+
+echo "OK: module deployed to $DEST_DIR"
+echo "    php:      $("$PHP_BIN" -r 'echo PHP_VERSION;')"
+echo "    next:     add config/sites/<host>.php (start with mode=shadow)"
+echo "    include:  require '$DEST_DIR/integrations/guard.php';"

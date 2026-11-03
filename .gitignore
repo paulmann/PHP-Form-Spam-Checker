@@ -1,0 +1,13 @@
+/vendor/
+/.phpunit.cache/
+/.phpunit.result.cache
+/composer.lock
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+/var/
+/config/spam-checker.php
+/config/sites/*.php
+!/config/sites/default.php
+!/config/sites/example.php

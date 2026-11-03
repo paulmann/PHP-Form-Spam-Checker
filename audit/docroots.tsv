@@ -1,0 +1,221 @@
+docroot	owner	exists	vhost	domains	php	wp	cms	entries	auth
+/var/www/abuseipdb/data/www/abuseipdb.ru	abuseipdb	True	/etc/nginx/vhosts/abuseipdb/abuseipdb.ru.conf	abuseipdb.ru www.abuseipdb.ru	8.5			1	
+/var/www/battery/data/www/batterypassport.ru	battery	True	/etc/nginx/vhosts/battery/batterypassport.ru.conf	batterypassport.ru www.batterypassport.ru				90	
+/var/www/battery/data/www/batteryservice.ru	battery	True						0	
+/var/www/batterydb/data/www/batterydb.com	batterydb	True	/etc/nginx/vhosts/batterydb/batterydb.com.conf	batterydb.com www.batterydb.com	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		23	
+/var/www/batterydb/data/www/batterydb.ru	batterydb	True	/etc/nginx/vhosts/batterydb/batterydb.ru.conf	*.batterydb.ru batterydb.ru www.batterydb.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		26	
+/var/www/batterydb/data/www/batteryexpert.ru	batterydb	True	/etc/nginx/vhosts/batterydb/batteryexpert.ru.conf	batteryexpert.ru www.batteryexpert.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		30	
+/var/www/batterydb/data/www/batteryupgrade.ru	batterydb	True	/etc/nginx/vhosts/batterydb/batteryupgrade.ru.conf	*.batteryupgrade.ru batteryupgrade.ru				1	
+/var/www/batterydb/data/www/city-charger.ru	batterydb	True						1	
+/var/www/batterydb/data/www/edu.batteryexpert.ru	batterydb	True						0	
+/var/www/batterydb/data/www/notebook-battery.ru	batterydb	True	/etc/nginx/vhosts/batterydb/notebook-battery.ru.conf	*.notebook-battery.ru notebook-battery.ru				1	
+/var/www/batterydb/data/www/serviceakb.ru	batterydb	True	/etc/nginx/vhosts/batterydb/serviceakb.ru.conf	serviceakb.ru www.serviceakb.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		29	
+/var/www/batteryservice/data/www/a.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/a.batteryservice.ru.conf	a.batteryservice.ru stella.batteryservice.ru	8.5			114	Access limited by ispmanager
+/var/www/batteryservice/data/www/audit.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/audit.batteryservice.ru.conf	audit.batteryservice.ru www.audit.batteryservice.ru			bitrix	5	
+/var/www/batteryservice/data/www/autoconfig.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/autoconfig.batteryservice.ru.conf	autoconfig.batteryservice.ru www.autoconfig.batteryservice.ru				2	
+/var/www/batteryservice/data/www/battery-service.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/battery-service.ru.conf	*.battery-service.ru battery-service.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		25	
+/var/www/batteryservice/data/www/batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/batteryservice.ru.conf	batteryservice.ru www.batteryservice.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		68	
+/var/www/batteryservice/data/www/batterytester.ru	batteryservice	True						126	
+/var/www/batteryservice/data/www/bscharger.com	batteryservice	True	/etc/nginx/vhosts/batteryservice/bscharger.com.conf	bscharger.com www.bscharger.com	8.5			20	
+/var/www/batteryservice/data/www/bscharger.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/bscharger.ru.conf	bscharger.ru www.bscharger.ru	8.5			21	
+/var/www/batteryservice/data/www/bsgte.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/bsgte.ru.conf	bsgte.ru www.bsgte.ru				2	
+/var/www/batteryservice/data/www/cadex.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/cadex.batteryservice.ru.conf	cadex.batteryservice.ru www.cadex.batteryservice.ru		wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		28	
+/var/www/batteryservice/data/www/charger.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/charger.batteryservice.ru.conf	charger.batteryservice.ru www.charger.batteryservice.ru				24	
+/var/www/batteryservice/data/www/contracts.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/contracts.batteryservice.ru.conf	contracts.batteryservice.ru	8.5			1	
+/var/www/batteryservice/data/www/corp.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/corp.batteryservice.ru.conf	corp.batteryservice.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		23	
+/var/www/batteryservice/data/www/delivery.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/delivery.batteryservice.ru.conf	delivery.batteryservice.ru	8.5			11	
+/var/www/batteryservice/data/www/dhc.com.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/dhc.com.ru.conf	dhc.com.ru www.dhc.com.ru				1	
+/var/www/batteryservice/data/www/dira.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/dira.batteryservice.ru.conf	dira.batteryservice.ru www.dira.batteryservice.ru	8.5		bitrix	8	
+/var/www/batteryservice/data/www/kolben.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/kolben.batteryservice.ru.conf	kolben.batteryservice.ru www.kolben.batteryservice.ru			bitrix	12	
+/var/www/batteryservice/data/www/kuligin.net	batteryservice	True	/etc/nginx/vhosts/batteryservice/kuligin.net.conf	kuligin.net www.kuligin.net				2	
+/var/www/batteryservice/data/www/m2mlogic.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/m2mlogic.ru.conf	m2mlogic.ru www.m2mlogic.ru	8.5			0	
+/var/www/batteryservice/data/www/mail.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/mail.batteryservice.ru.conf	mail.batteryservice.ru www.mail.batteryservice.ru				1	
+/var/www/batteryservice/data/www/moto-odyssey.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/moto-odyssey.batteryservice.ru.conf	moto-odyssey.batteryservice.ru	8.5		bitrix	8	
+/var/www/batteryservice/data/www/odyssey.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/odyssey.batteryservice.ru.conf	odyssey.batteryservice.ru	8.5		bitrix	11	
+/var/www/batteryservice/data/www/partners.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/partners.batteryservice.ru.conf	partners.batteryservice.ru www.partners.batteryservice.ru				3	
+/var/www/batteryservice/data/www/push.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/push.batteryservice.ru.conf	push.batteryservice.ru	8.5			46	
+/var/www/batteryservice/data/www/qr.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/qr.batteryservice.ru.conf	qr.batteryservice.ru www.qr.batteryservice.ru	8.5			12	
+/var/www/batteryservice/data/www/qra.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/qra.batteryservice.ru.conf	qra.batteryservice.ru www.qra.batteryservice.ru	8.5			9	
+/var/www/batteryservice/data/www/report.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/report.batteryservice.ru.conf	report.batteryservice.ru www.report.batteryservice.ru	8.5			37	
+/var/www/batteryservice/data/www/u.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/u.batteryservice.ru.conf	l.batteryservice.ru login.batteryservice.ru u.batteryservice.ru users.batteryservice.ru	8.5			43	Access limited by ispmanager
+/var/www/batteryservice/data/www/wpfm-private-backups	batteryservice	True						3	
+/var/www/batteryservice/data/www/z.batteryservice.ru	batteryservice	True	/etc/nginx/vhosts/batteryservice/z.batteryservice.ru.conf	www.z.batteryservice.ru z.batteryservice.ru	8.5			59	
+/var/www/batterytester/data/www/batterytester.ru	batterytester	True	/etc/nginx/vhosts/batterytester/batterytester.ru.conf	batterytester.ru www.batterytester.ru	8.5			11	
+/var/www/batterytester/data/www/old.batterytester.ru	batterytester	True	/etc/nginx/vhosts/batterytester/old.batterytester.ru.conf	old.batterytester.ru www.old.batterytester.ru	8.5		bitrix	49	
+/var/www/bs12v/data/www	bs12v	True	/etc/nginx/vhosts/bs12v/bs12v.ru.conf	*.bs12v.ru bs12v.ru www.bs12v.ru	8.5			10	
+/var/www/bs12v/data/www/1C	bs12v	True						3	
+/var/www/bs12v/data/www/autoyap.ru	bs12v	True	/etc/nginx/vhosts/bs12v/autoyap.ru.conf	*.autoyap.ru autoyap.ru				2	
+/var/www/bs12v/data/www/bs12v.ru	bs12v	True					bitrix	127	
+/var/www/bs12v/data/www/bs12w.ru	bs12v	True	/etc/nginx/vhosts/bs12v/bs12w.ru.conf	bs12w.ru www.bs12w.ru				1	
+/var/www/bs12v/data/www/rdrive.bs12v.ru	bs12v	True						1	
+/var/www/bs12v/data/www/shop.batteryservice.ru	bs12v	True	/etc/nginx/vhosts/bs12v/shop.batteryservice.ru.conf	*.shop.batteryservice.ru shop.batteryservice.ru www.shop.batteryservice.ru	8.5			0	Access limited by ispmanager
+/var/www/bs12v/data/www/yuasa.bs12v.ru	bs12v	True					bitrix	54	
+/var/www/bscom/data/www/battery-service.com	bscom	True	/etc/nginx/vhosts/bscom/battery-service.com.conf	battery-service.com www.battery-service.com	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		49	
+/var/www/bsgtech/data/www/bsgtech.ru	bsgtech	True	/etc/nginx/vhosts/bsgtech/bsgtech.ru.conf	bsgtech.ru www.bsgtech.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		21	
+/var/www/bw1/data/www/bw1.ru	bw1	True	/etc/nginx/vhosts/bw1/bw1.ru.conf	bw1.ru www.bw1.ru	8.5			3	
+/var/www/cadex/data/www/backup	cadex	True						1	
+/var/www/cadex/data/www/cadex.com.ru	cadex	True	/etc/nginx/vhosts/cadex/cadex.com.ru.conf	cadex.com.ru www.cadex.com.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		29	
+/var/www/chat/data/www/chat.batteryservice.ru	chat	True	/etc/nginx/vhosts/chat/chat.batteryservice.ru.conf	chat.batteryservice.ru www.chat.batteryservice.ru				2	
+/var/www/chat/data/www/matrix.batteryservice.ru	chat	True	/etc/nginx/vhosts/chat/matrix.batteryservice.ru.conf	matrix.batteryservice.ru www.matrix.batteryservice.ru	8.5			2	
+/var/www/conbat/data/www/alfa.conbat.ru	conbat	True						0	
+/var/www/conbat/data/www/beta.conbat.ru	conbat	True	/etc/nginx/vhosts/conbat/beta.conbat.ru.conf	beta.conbat.ru www.beta.conbat.ru	8.5			286	
+/var/www/conbat/data/www/conbat.kz	conbat	True	/etc/nginx/vhosts/conbat/conbat.kz.conf	conbat.kz www.conbat.kz				1	
+/var/www/conbat/data/www/conbat.org	conbat	True	/etc/nginx/vhosts/conbat/conbat.org.conf	conbat.org www.conbat.org				2	
+/var/www/conbat/data/www/conbat.ru	conbat	True	/etc/nginx/vhosts/conbat/xn--80ab0ame1a.xn--p1ai.conf	www.xn--80ab0ame1a.xn--p1ai xn--80ab0ame1a.xn--p1ai				300	Access limited by ispmanager
+/var/www/conbat/data/www/config_conbat_php	conbat	True						3	
+/var/www/conbat/data/www/d.conbat.ru	conbat	True	/etc/nginx/vhosts/conbat/d.conbat.ru.conf	d.conbat.ru www.d.conbat.ru	8.5			2	
+/var/www/conbat/data/www/logs	conbat	True						1	
+/var/www/conbat/data/www/manual.conbat.ru	conbat	True	/etc/nginx/vhosts/conbat/manual.conbat.ru.conf	*.conbat.ru manual.conbat.ru				2	
+/var/www/conbat/data/www/partner.conbat.ru	conbat	True	/etc/nginx/vhosts/conbat/partner.conbat.ru.conf	partner.conbat.ru www.partner.conbat.ru	8.5			44	
+/var/www/conbat/data/www/r.conbat.ru	conbat	True	/etc/nginx/vhosts/conbat/r.conbat.ru.conf	r.conbat.ru www.r.conbat.ru	8.5			1	
+/var/www/conbat/data/www/rta.conbat.ru	conbat	True	/etc/nginx/vhosts/conbat/rta.conbat.ru.conf	rta.conbat.ru www.rta.conbat.ru				1	
+/var/www/conbat/data/www/v400.conbat.ru	conbat	True	/etc/nginx/vhosts/conbat/v400.conbat.ru.conf	v400.conbat.ru www.v400.conbat.ru	8.5			2	
+/var/www/drive/data/www/drive.batterywizard.ru	drive	True	/etc/nginx/vhosts/drive/drive.batterywizard.ru.conf	*.drive.batterywizard.ru drive.batterywizard.ru	8.5			23	
+/var/www/expert/data/www/batteryexpert.info	expert	True				wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		70	
+/var/www/expert_admin/data/www/a.batteryexpert.ru	expert_admin	True					public/ webroot	6	
+/var/www/iya/data/www/iya.ru	iya	True					public/ webroot	28	
+/var/www/iya/data/www/iya.ru/public	iya	True	/etc/nginx/vhosts/iya/iya.ru.conf	*.iya.ru iya.ru				8	
+/var/www/kolben/data/www/beta.kolben.ru	kolben	True	/etc/nginx/vhosts/kolben/beta.kolben.ru.conf	beta.kolben.ru www.beta.kolben.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		31	
+/var/www/kolben/data/www/c70.kolben.ru	kolben	True	/etc/nginx/vhosts/kolben/c70.kolben.ru.conf	c70.kolben.ru www.c70.kolben.ru				1	
+/var/www/kolben/data/www/kolben.ru	kolben	True	/etc/nginx/vhosts/kolben/kolben.ru.conf	kolben.ru www.kolben.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php	bitrix	36	
+/var/www/ledzom/data/www/beta.ledzom.ru	ledzom	True	/etc/nginx/vhosts/ledzom/beta.ledzom.ru.conf	beta.ledzom.ru www.beta.ledzom.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		46	
+/var/www/ledzom/data/www/ledzom.com	ledzom	True	/etc/nginx/vhosts/ledzom/ledzom.com.conf	ledzom.com www.ledzom.com	8.5			1	
+/var/www/ledzom/data/www/ledzom.ru	ledzom	True	/etc/nginx/vhosts/ledzom/ledzom.ru.conf	ledzom.ru www.ledzom.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		51	
+/var/www/ledzom/data/www/promo.ledzom.ru	ledzom	True	/etc/nginx/vhosts/ledzom/promo.ledzom.ru.conf	promo.ledzom.ru www.promo.ledzom.ru	8.5		bitrix	8	
+/var/www/ledzom/data/www/retro.ledzom.ru	ledzom	True	/etc/nginx/vhosts/ledzom/retro.ledzom.ru.conf	retro.ledzom.ru www.retro.ledzom.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		47	
+/var/www/logiccell/data/www/logic-cell.ru	logiccell	True	/etc/nginx/vhosts/logiccell/logic-cell.ru.conf	logic-cell.ru www.logic-cell.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		31	
+/var/www/md/data/www/3389port.ru	md	True	/etc/nginx/vhosts/md/3389port.ru.conf	3389port.ru www.3389port.ru				1	
+/var/www/md/data/www/7080222.ru	md	True	/etc/nginx/vhosts/md/7080222.ru.conf	7080222.ru www.7080222.ru	8.5			1	
+/var/www/md/data/www/arcoslight.com	md	True						2	
+/var/www/md/data/www/berlite.ru	md	True	/etc/nginx/vhosts/md/berlite.ru.conf	berlite.ru www.berlite.ru	8.5			2	
+/var/www/md/data/www/black.kbd.ru	md	True	/etc/nginx/vhosts/md/black.kbd.ru.conf	black.kbd.ru www.black.kbd.ru	8.5			25	
+/var/www/md/data/www/brightgreen.ru	md	True						2	
+/var/www/md/data/www/bvt.ru	md	True	/etc/nginx/vhosts/md/bvt.ru.conf	bvt.ru www.bvt.ru	8.5			27	
+/var/www/md/data/www/css.da0.ru	md	True	/etc/nginx/vhosts/md/css.da0.ru.conf	css.da0.ru www.css.da0.ru	8.5			1	
+/var/www/md/data/www/da0.ru	md	True	/etc/nginx/vhosts/md/da0.ru.conf	da0.ru www.da0.ru	8.5			11	
+/var/www/md/data/www/datatables.bvt.ru	md	True	/etc/nginx/vhosts/md/datatables.bvt.ru.conf	datatables.bvt.ru www.datatables.bvt.ru	8.5			1	
+/var/www/md/data/www/datatables.kbd.ru	md	True	/etc/nginx/vhosts/md/datatables.kbd.ru.conf	datatables.kbd.ru www.datatables.kbd.ru	8.5			14	
+/var/www/md/data/www/dewahsing.ru	md	True	/etc/nginx/vhosts/md/dewahsing.ru.conf	dewahsing.ru www.dewahsing.ru	8.5			12	
+/var/www/md/data/www/deynekin.com	md	True	/etc/nginx/vhosts/md/deynekin.com.conf	1st-launch-projects-code-from-llm-responses-in-mar-891eb014.deynekin.com 1st-rdpmon.deynekin.com 1st-remote-session-manager-pro.deynekin.com agent-prompt-kit.deynekin.com ai-consensus.deynekin.com bas-ip.deynekin.com bash-wp-cli-update.deynekin.com cert-unifier.deynekin.com clean-bom-senior.deynekin.com clean-roundcube-cache-postgresql-windows.deynekin.com clear-tempfolders.deynekin.com contact-form-7-llm-spam-checker.deynekin.com ctf-collect-to-file.deynekin.com cve-2026-111497.deynekin.com deynekin.com fail2ban-abuseipdb.deynekin.com fornex-control.deynekin.com get-windows-security-events-by-ip.deynekin.com github-agent.deynekin.com github-wiki-llm-writer.deynekin.com hmailserver-clamav-cleanup.deynekin.com hmailserver-external-antivirus.deynekin.com hmailserver-kaspersky-cleanup.deynekin.com hmailserver-spam-provisioner.deynekin.com homebrew-github-agent-cli.deynekin.com html-php.deynekin.com html.php.deynekin.com iis-php-fastcgi-autodeploy.deynekin.com import-cacertificates.deynekin.com md-scribe.deynekin.com md-viewer.deynekin.com md.scribe.deynekin.com md.viewer.deynekin.com mikrotik-doh-failover.deynekin.com paulmann.deynekin.com pg-encoding-migrator.deynekin.com powershell-export-hmailserverdata.deynekin.com print-spooler-queue-cleanup.deynekin.com ragraf.deynekin.com rdp-diagnostic-tool.deynekin.com rdpaudit.deynekin.com regru-control.deynekin.com revoap.deynekin.com sata-spindown-guard.deynekin.com scoop-github-agent-cli.deynekin.com spamassassin-windows-ps7.deynekin.com sr-search-replace.deynekin.com windows-11-25h2-update-script.deynekin.com windows-cleaner-and-optimizer.deynekin.com windows-logoff.deynekin.com windows-show-all-tray-icons.deynekin.com woocommerce-1c-data-cleaner.deynekin.com www.deynekin.com	8.5			83	
+/var/www/md/data/www/deynekin.ru	md	True	/etc/nginx/vhosts/md/deynekin.ru.conf	deynekin.ru www.deynekin.ru	8.5		node	102	
+/var/www/md/data/www/deynekin.ru/web	md	True	/etc/nginx/vhosts/md/web.deynekin.ru.conf	web.deynekin.ru				6	
+/var/www/md/data/www/disable-ad-blocker.deynekin.com	md	True	/etc/nginx/vhosts/md/disable-ad-blocker.deynekin.com.conf	disable-ad-blocker.deynekin.com www.disable-ad-blocker.deynekin.com	8.5			1	
+/var/www/md/data/www/download.sysadministrator.ru	md	True	/etc/nginx/vhosts/md/download.sysadministrator.ru.conf	download.sysadministrator.ru www.download.sysadministrator.ru	8.5			1	
+/var/www/md/data/www/enable-ad-blocker.deynekin.com	md	True	/etc/nginx/vhosts/md/enable-ad-blocker.deynekin.com.conf	enable-ad-blocker.deynekin.com www.enable-ad-blocker.deynekin.com	8.5			1	
+/var/www/md/data/www/fanlab.ru	md	True	/etc/nginx/vhosts/md/fanlab.ru.conf	fanlab.ru www.fanlab.ru	8.5			1	
+/var/www/md/data/www/forlifemarket.ru	md	True	/etc/nginx/vhosts/md/forlifemarket.ru.conf	forlifemarket.ru www.forlifemarket.ru				2	
+/var/www/md/data/www/gz14.ru	md	True	/etc/nginx/vhosts/md/gz14.ru.conf	gz14.ru www.gz14.ru				29	
+/var/www/md/data/www/gzatsk.ru	md	True	/etc/nginx/vhosts/md/gzatsk.ru.conf	gzatsk.ru www.gzatsk.ru				1	
+/var/www/md/data/www/hachimaki.ru	md	True	/etc/nginx/vhosts/md/hachimaki.ru.conf	hachimaki.ru www.hachimaki.ru	8.5			2	
+/var/www/md/data/www/herometal.ru	md	True	/etc/nginx/vhosts/md/herometal.ru.conf	herometal.ru www.herometal.ru	8.5			1	
+/var/www/md/data/www/hexcal.ru	md	True	/etc/nginx/vhosts/md/hexcal.ru.conf	hexcal.ru www.hexcal.ru	8.5			2	
+/var/www/md/data/www/hi-lite.ru	md	True	/etc/nginx/vhosts/md/hi-lite.ru.conf	hi-lite.ru www.hi-lite.ru	8.5			2	
+/var/www/md/data/www/homewizard.ru	md	True	/etc/nginx/vhosts/md/homewizard.ru.conf	homewizard.ru www.homewizard.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		27	
+/var/www/md/data/www/hydrail.ru	md	True	/etc/nginx/vhosts/md/hydrail.ru.conf	hydrail.ru www.hydrail.ru	8.5			14	
+/var/www/md/data/www/js.da0.ru	md	True	/etc/nginx/vhosts/md/js.da0.ru.conf	js.da0.ru www.js.da0.ru	8.5			4	
+/var/www/md/data/www/kaspiybank.ru	md	True	/etc/nginx/vhosts/md/kaspiybank.ru.conf	kaspiybank.ru www.kaspiybank.ru	8.5			2	
+/var/www/md/data/www/kbd.ru	md	True	/etc/nginx/vhosts/md/kbd.ru.conf	kbd.ru www.kbd.ru	8.5			106	
+/var/www/md/data/www/l2c.ru	md	True	/etc/nginx/vhosts/md/l2c.ru.conf	l2c.ru www.l2c.ru				3	
+/var/www/md/data/www/level2.ru	md	True	/etc/nginx/vhosts/md/level2.ru.conf	level2.ru www.level2.ru				2	
+/var/www/md/data/www/lionlabs.com	md	True	/etc/nginx/vhosts/md/lionlabs.com.conf	lionlabs.com www.lionlabs.com	8.5			7	
+/var/www/md/data/www/ma-in.ru	md	True	/etc/nginx/vhosts/md/ma-in.ru.conf	ma-in.ru www.ma-in.ru	8.5			1	
+/var/www/md/data/www/md-scribe-app	md	True					public/ webroot	28	
+/var/www/md/data/www/onsitetrading.ru	md	True	/etc/nginx/vhosts/md/onsitetrading.ru.conf	onsitetrading.ru www.onsitetrading.ru	8.5			2	
+/var/www/md/data/www/opencorum.ru	md	True	/etc/nginx/vhosts/md/opencorum.ru.conf	opencorum.ru www.opencorum.ru				1	
+/var/www/md/data/www/opencorum.space	md	True	/etc/nginx/vhosts/md/opencorum.space.conf	opencorum.space www.opencorum.space				26	
+/var/www/md/data/www/openquorum.space	md	True	/etc/nginx/vhosts/md/openquorum.space.conf	openquorum.space www.openquorum.space				1	
+/var/www/md/data/www/oteshen.ru	md	True	/etc/nginx/vhosts/md/oteshen.ru.conf	oteshen.ru www.oteshen.ru	8.5			1	
+/var/www/md/data/www/paulman.ru	md	True	/etc/nginx/vhosts/md/paulman.ru.conf	paulman.ru www.paulman.ru	8.5			273	
+/var/www/md/data/www/paulmann-lc.ru	md	True	/etc/nginx/vhosts/md/paulmann-lc.ru.conf	paulmann-lc.ru www.paulmann-lc.ru	8.5			1	
+/var/www/md/data/www/paulmann-light.ru	md	True	/etc/nginx/vhosts/md/paulmann-light.ru.conf	paulmann-light.ru www.paulmann-light.ru	8.5			273	
+/var/www/md/data/www/paulmann-light.ru.placeholder-20261017	md	True						1	
+/var/www/md/data/www/paulmann.su	md	True	/etc/nginx/vhosts/md/paulmann.su.conf	*.paulmann.su paulmann.su				0	
+/var/www/md/data/www/ps-land.ru	md	True	/etc/nginx/vhosts/md/ps-land.ru.conf	ps-land.ru www.ps-land.ru				0	
+/var/www/md/data/www/quorvantis.com	md	True	/etc/nginx/vhosts/md/quorvantis.com.conf	quorvantis.com www.quorvantis.com				1	
+/var/www/md/data/www/quorvantis.ru	md	True	/etc/nginx/vhosts/md/quorvantis.ru.conf	quorvantis.ru www.quorvantis.ru				1	
+/var/www/md/data/www/quorvantis.space	md	True	/etc/nginx/vhosts/md/quorvantis.space.conf	quorvantis.space www.quorvantis.space				1	
+/var/www/md/data/www/ragraf.ru	md	True					public/ webroot	20	
+/var/www/md/data/www/ragraf.ru/public	md	True	/etc/nginx/vhosts/md/ragraf.ru.conf	ragraf.ru www.ragraf.ru	8.5			10	
+/var/www/md/data/www/rdp3389.ru	md	True	/etc/nginx/vhosts/md/rdp3389.ru.conf	rdp3389.ru www.rdp3389.ru				1	
+/var/www/md/data/www/rdpaudit.ru	md	True	/etc/nginx/vhosts/md/rdpaudit.ru.conf	activate.rdpaudit.ru rdpaudit.ru				8	
+/var/www/md/data/www/revoap.com	md	True	/etc/nginx/vhosts/md/revoap.com.conf	revoap.com www.revoap.com				48	
+/var/www/md/data/www/revoap.ru	md	True	/etc/nginx/vhosts/md/revoap.ru.conf	revoap.ru www.revoap.ru				4	
+/var/www/md/data/www/revoapp.com	md	True						1	
+/var/www/md/data/www/revoapp.ru	md	True	/etc/nginx/vhosts/md/revoapp.ru.conf	revoapp.ru www.revoapp.ru				10	
+/var/www/md/data/www/speedtest.bvt.ru	md	True	/etc/nginx/vhosts/md/speedtest.bvt.ru.conf	speedtest.bvt.ru	8.5			31	
+/var/www/md/data/www/status-ad-blocker.deynekin.com	md	True	/etc/nginx/vhosts/md/status-ad-blocker.deynekin.com.conf	status-ad-blocker.deynekin.com www.status-ad-blocker.deynekin.com	8.5			2	
+/var/www/md/data/www/steinhauer.ru	md	True	/etc/nginx/vhosts/md/steinhauer.ru.conf	steinhauer.ru www.steinhauer.ru	8.5			2	
+/var/www/md/data/www/sunlumin.ru	md	True	/etc/nginx/vhosts/md/sunlumin.ru.conf	sunlumin.ru www.sunlumin.ru	8.5			2	
+/var/www/md/data/www/sysadministrator.ru	md	True	/etc/nginx/vhosts/md/sysadministrator.ru.conf	sysadministrator.ru www.sysadministrator.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		36	
+/var/www/md/data/www/tanli.su	md	True	/etc/nginx/vhosts/md/tanli.su.conf	tanli.su www.tanli.su	8.5			1	
+/var/www/md/data/www/tiletrim.ru	md	True	/etc/nginx/vhosts/md/tiletrim.ru.conf	tiletrim.ru www.tiletrim.ru	8.5			1	
+/var/www/md/data/www/tmptest-20261019.ru	md	True						0	
+/var/www/md/data/www/unfold.deynekin.com	md	True	/etc/nginx/vhosts/md/unfold.deynekin.com.conf	unfold.deynekin.com www.unfold.deynekin.com	8.5		public/ webroot	32	
+/var/www/md/data/www/universal-p.ru	md	True	/etc/nginx/vhosts/md/universal-p.ru.conf	universal-p.ru www.universal-p.ru	8.5			47	
+/var/www/md/data/www/xn----7sbksclydmcepca2r.xn--p1ai	md	True						2	
+/var/www/md/data/www/xn--80akjlkflo7bh1c.xn--p1ai	md	True	/etc/nginx/vhosts/md/xn--80akjlkflo7bh1c.xn--p1ai.conf	www.xn--80akjlkflo7bh1c.xn--p1ai xn--80akjlkflo7bh1c.xn--p1ai				2	
+/var/www/md/data/www/траттория-горки.рф	md	True						2	
+/var/www/midtronics/data/www/midtronics.ru	midtronics	True	/etc/nginx/vhosts/midtronics/midtronics.ru.conf	midtronics.ru www.midtronics.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		35	
+/var/www/mosmebkomplekt/data/www/mosmebkomplekt.ru	mosmebkomplekt	True	/etc/nginx/vhosts/mosmebkomplekt/mosmebkomplekt.ru.conf	mosmebkomplekt.ru www.mosmebkomplekt.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		23	
+/var/www/odyssey/data/www/odyssey-extreme.ru	odyssey	True	/etc/nginx/vhosts/odyssey/odyssey-extreme.ru.conf	odyssey-extreme.ru www.odyssey-extreme.ru				1	
+/var/www/odyssey/data/www/odysseyextreme.ru	odyssey	True	/etc/nginx/vhosts/odyssey/odysseyextreme.ru.conf	odysseyextreme.ru www.odysseyextreme.ru				1	
+/var/www/optimate/data/www/optimate1.ru	optimate	True	/etc/nginx/vhosts/optimate/optimate1.ru.conf	optimate1.ru www.optimate1.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		42	
+/var/www/optimate/data/www/r.optimate1.ru	optimate	True	/etc/nginx/vhosts/optimate/r.optimate1.ru.conf	r.optimate1.ru www.r.optimate1.ru	8.5			5	
+/var/www/pas/data/www/assets	pas	True						12	
+/var/www/pas/data/www/conbat.batteryservice.ru	pas	True	/etc/nginx/vhosts/pas/conbat.batteryservice.ru.conf	conbat.batteryservice.ru www.conbat.batteryservice.ru	8.5			3	Access limited by ispmanager
+/var/www/passport/data/www/batterypassport.ru	passport	True						90	
+/var/www/pk/data/www/armuretendre.com	pk	True	/etc/nginx/vhosts/pk/armuretendre.com.conf	armuretendre.com www.armuretendre.com		wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		25	
+/var/www/pk/data/www/boltpower.ru	pk	True	/etc/nginx/vhosts/pk/boltpower.ru.conf	*.boltpower.ru boltpower.ru				1	
+/var/www/pk/data/www/cellizer.ru	pk	True	/etc/nginx/vhosts/pk/cellizer.ru.conf	*.cellizer.ru cellizer.ru				1	
+/var/www/pk/data/www/franklingrid.ru	pk	True	/etc/nginx/vhosts/pk/franklingrid.ru.conf	*.franklingrid.ru franklingrid.ru				1	
+/var/www/pk/data/www/gossen-metrawatt.ru	pk	True	/etc/nginx/vhosts/pk/gossen-metrawatt.ru.conf	*.gossen-metrawatt.ru gossen-metrawatt.ru				1	
+/var/www/puska4/data/www/carku.puska4.ru	puska4	True	/etc/nginx/vhosts/puska4/carku.puska4.ru.conf	carku.puska4.ru www.carku.puska4.ru				8	
+/var/www/puska4/data/www/puska4.com	puska4	True	/etc/nginx/vhosts/puska4/puska4.com.conf	*.puska4.com puska4.com				1	
+/var/www/puska4/data/www/puska4.ru	puska4	True	/etc/nginx/vhosts/puska4/puska4.ru.conf	puska4.ru www.puska4.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		28	
+/var/www/puska4/data/www/puskah.ru	puska4	True	/etc/nginx/vhosts/puska4/puskah.ru.conf	puskah.ru www.puskah.ru				1	
+/var/www/puska4/data/www/shaitan-truba.ru	puska4	True	/etc/nginx/vhosts/puska4/shaitan-truba.ru.conf	*.shaitan-truba.ru shaitan-truba.ru www.shaitan-truba.ru				1	
+/var/www/puska4/data/www/spain-gm.ru	puska4	True	/etc/nginx/vhosts/puska4/spain-gm.ru.conf	*.spain-gm.ru spain-gm.ru www.spain-gm.ru				1	
+/var/www/puska4/data/www/xn----gtbbefmrgbrdb.xn--p1ai	puska4	True	/etc/nginx/vhosts/puska4/xn----gtbbefmrgbrdb.xn--p1ai.conf	*.xn----gtbbefmrgbrdb.xn--p1ai www.xn----gtbbefmrgbrdb.xn--p1ai xn----gtbbefmrgbrdb.xn--p1ai				1	
+/var/www/puska4/data/www/дом-молодежи.рф	puska4	True						1	
+/var/www/sharefolder/data/www/share.batteryservice.ru	sharefolder	True	/etc/nginx/vhosts/sharefolder/share.batteryservice.ru.conf	share.batteryservice.ru www.share.batteryservice.ru	8.5			1	
+/var/www/stella/data/www/opttorg20.ru	stella	True	/etc/nginx/vhosts/stella/opttorg20.ru.conf	opttorg20.ru www.opttorg20.ru				0	
+/var/www/stella/data/www/price.stellaonline.ru	stella	True	/etc/nginx/vhosts/stella/price.stellaonline.ru.conf	price.stellaonline.ru	8.5			2	
+/var/www/stella/data/www/stella-mebel.com	stella	True	/etc/nginx/vhosts/stella/stella-mebel.com.conf	*.stella-mebel.com stella-mebel.com www.stella-mebel.com	8.5			42	Access limited by ispmanager
+/var/www/stella/data/www/stella-premium.ru	stella	True	/etc/nginx/vhosts/stella/stella-premium.ru.conf	stella-premium.ru www.stella-premium.ru	8.5			5	
+/var/www/stella/data/www/stella-russia.ru	stella	True	/etc/nginx/vhosts/stella/stella-russia.ru.conf	*.stella-russia.ru stella-russia.ru www.stella-russia.ru				25	
+/var/www/stella/data/www/stellaonline.ru	stella	True	/etc/nginx/vhosts/stella/stellaonline.ru.conf	*.stellaonline.ru stellaonline.ru www.stellaonline.ru	8.5			111	
+/var/www/stella/data/www/stellapremio.com	stella	True	/etc/nginx/vhosts/stella/stellapremio.com.conf	stellapremio.com www.stellapremio.com				2	
+/var/www/stella/data/www/stellapremio.ru	stella	True	/etc/nginx/vhosts/stella/stellapremio.ru.conf	stellapremio.ru www.stellapremio.ru	8.5			48	
+/var/www/stella/data/www/zen.stella-mebel.com	stella	True	/etc/nginx/vhosts/stella/zen.stella-mebel.com.conf	news.stella-mebel.com zen.stella-mebel.com				2	
+/var/www/support/data/www/4040484.ru	support	True	/etc/nginx/vhosts/support/4040484.ru.conf	4040484.ru www.4040484.ru	8.5			8	
+/var/www/support/data/www/backup	support	True						2	
+/var/www/td/data/www/sagai.ru	td	True	/etc/nginx/vhosts/td/sagai.ru.conf	sagai.ru www.sagai.ru	8.5			16	
+/var/www/uplus/data/www/uplus.ru	uplus	True	/etc/nginx/vhosts/uplus/uplus.ru.conf	uplus.ru www.uplus.ru	8.5	wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		23	
+/var/www/wizard/data/www/1	wizard	True						2	
+/var/www/wizard/data/www/alfa.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/alfa.batterywizard.ru.conf	alfa.batterywizard.ru www.alfa.batterywizard.ru	8.5			65	Access limited by ispmanager
+/var/www/wizard/data/www/api.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/api.batterywizard.ru.conf	api.batterywizard.ru www.api.batterywizard.ru	8.5			22	
+/var/www/wizard/data/www/b.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/b.batterywizard.ru.conf	b.batterywizard.ru www.b.batterywizard.ru	8.5			12	
+/var/www/wizard/data/www/batterywizard.online	wizard	True	/etc/nginx/vhosts/wizard/batterywizard.online.conf	batterywizard.online www.batterywizard.online				2	
+/var/www/wizard/data/www/batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/batterywizard.ru.conf	*.batterywizard.ru batterywizard.ru www.batterywizard.ru	8.5			24	
+/var/www/wizard/data/www/batterywizard.ru.wp-20261028	wizard	True				wp-config.php,wp-load.php,wp-settings.php,wp-content,wp-includes,wp-login.php		45	
+/var/www/wizard/data/www/batterywizard.ru/php	wizard	True	/etc/nginx/vhosts/wizard/php.batterywizard.ru.conf	php.batterywizard.ru	8.5			1	Access limited by ispmanager
+/var/www/wizard/data/www/bctm.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/bctm.batterywizard.ru.conf	bctm.batterywizard.ru www.bctm.batterywizard.ru	8.5			25	Access limited by ispmanager
+/var/www/wizard/data/www/beta.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/beta.batterywizard.ru.conf	beta.batterywizard.ru				65	
+/var/www/wizard/data/www/bp.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/bp.batterywizard.ru.conf	bp.batterywizard.ru www.bp.batterywizard.ru	8.5			26	
+/var/www/wizard/data/www/bw.battery-service.com	wizard	True						23	
+/var/www/wizard/data/www/bwzo.ru	wizard	True	/etc/nginx/vhosts/wizard/bwzo.ru.conf	bwzo.ru www.bwzo.ru	8.5			1	
+/var/www/wizard/data/www/check.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/check.batterywizard.ru.conf	check.batterywizard.ru www.check.batterywizard.ru	8.5			5	
+/var/www/wizard/data/www/cloud.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/cloud.batterywizard.ru.conf	cloud.batterywizard.ru www.cloud.batterywizard.ru	8.5			6	
+/var/www/wizard/data/www/energon.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/energon.batterywizard.ru.conf	energon.batterywizard.ru www.energon.batterywizard.ru	8.5			62	
+/var/www/wizard/data/www/informproject.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/informproject.batterywizard.ru.conf	informproject.batterywizard.ru www.informproject.batterywizard.ru				65	
+/var/www/wizard/data/www/iphone.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/iphone.batterywizard.ru.conf	iphone.batterywizard.ru www.iphone.batterywizard.ru	8.5			2	
+/var/www/wizard/data/www/lk.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/lk.batterywizard.ru.conf	lk.batterywizard.ru www.lk.batterywizard.ru	8.5			57	Access limited by ispmanager
+/var/www/wizard/data/www/login.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/login.batterywizard.ru.conf	login.batterywizard.ru www.login.batterywizard.ru	8.5			2	Access limited by ispmanager
+/var/www/wizard/data/www/mts.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/mts.batterywizard.ru.conf	mts.batterywizard.ru www.mts.batterywizard.ru	8.5			68	Access limited by ispmanager
+/var/www/wizard/data/www/new.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/new.batterywizard.ru.conf	new.batterywizard.ru www.new.batterywizard.ru	8.5			146	
+/var/www/wizard/data/www/online.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/online.batterywizard.ru.conf	online.batterywizard.ru www.online.batterywizard.ru	8.5			135	
+/var/www/wizard/data/www/r.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/r.batterywizard.ru.conf	r.batterywizard.ru www.r.batterywizard.ru	8.5			1	
+/var/www/wizard/data/www/rt1000.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/rt1000.batterywizard.ru.conf	rt1000.batterywizard.ru www.rt1000.batterywizard.ru	8.5			24	Access limited by ispmanager
+/var/www/wizard/data/www/sahalin.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/sahalin.batterywizard.ru.conf	sahalin.batterywizard.ru sakhalin.batterywizard.ru	8.5			47	Access limited by ispmanager
+/var/www/wizard/data/www/test.batterywizard.ru	wizard	True	/etc/nginx/vhosts/wizard/test.batterywizard.ru.conf	test.batterywizard.ru	8.5			29	
+/var/www/wizard/data/www/wpfm-private-backups	wizard	True						3	
