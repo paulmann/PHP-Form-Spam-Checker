@@ -66,7 +66,7 @@ final class LanguageCyrillicTest extends TestCase
         $outcome = (new LanguageCheck($this->config()))->check($this->request([
             'name' => 'Иван',
             'company' => 'ACME Corp',
-            'email' => 'ivan@example.ru',
+            'email' => 'ivan@example.com',
             'message' => 'Please call me back',
         ]));
 
