@@ -47,8 +47,6 @@ final class HeaderInjectionRule extends AbstractRule
     protected function check(WafRequest $request): ?WafFinding
     {
         foreach ($request->headers as $name => $value) {
-            $name = (string) $name;
-
             if ($this->isAllowlisted($name . ': ' . $value)) {
                 continue;
             }

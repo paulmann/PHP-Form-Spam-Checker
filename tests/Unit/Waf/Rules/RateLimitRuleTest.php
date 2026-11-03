@@ -24,8 +24,10 @@ final class RateLimitRuleTest extends WafTestCase
         $rule = new RateLimitRule($this->enabledConfig(max: 2, window: 60), new MemoryStorage(1_700_000_000));
         $request = $this->request(ip: '203.0.113.9');
 
-        self::assertNull($rule->inspect($request));
-        self::assertNull($rule->inspect($request));
+        $first = $rule->inspect($request);
+        self::assertNull($first);
+        $second = $rule->inspect($request);
+        self::assertNull($second);
 
         $finding = $rule->inspect($request);
 
@@ -83,7 +85,8 @@ final class RateLimitRuleTest extends WafTestCase
         );
         $request = $this->request(ip: '203.0.113.9');
 
-        self::assertNull($rule->inspect($request));
+        $first = $rule->inspect($request);
+        self::assertNull($first);
 
         $finding = $rule->inspect($request);
         self::assertNotNull($finding);

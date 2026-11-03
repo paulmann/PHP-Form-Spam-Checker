@@ -6,7 +6,6 @@ namespace FormSpamChecker\Waf\Rules;
 
 use FormSpamChecker\Check\SpamCheckInterface;
 use FormSpamChecker\Config;
-use FormSpamChecker\Data\CheckOutcome;
 use FormSpamChecker\Data\CheckStatus;
 use FormSpamChecker\Data\RequestData;
 use FormSpamChecker\Waf\AbstractRule;

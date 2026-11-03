@@ -270,7 +270,7 @@ abstract class AbstractRule implements RuleInterface
 
                 return [
                     'pattern' => $pattern,
-                    'match' => mb_substr((string) ($matches[0] ?? ''), 0, 120),
+                    'match' => mb_substr($matches[0] ?? '', 0, 120),
                 ];
             }
         }

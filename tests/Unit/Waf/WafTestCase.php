@@ -52,7 +52,7 @@ abstract class WafTestCase extends TestCase
             uri: $uri,
             ip: $ip,
             body: $body,
-            contentType: $headers['content-type'] ?? '',
+            contentType: $headers['content-type'],
             contentLength: strlen($body),
             headers: $headers,
             cookies: $cookies,
@@ -62,6 +62,9 @@ abstract class WafTestCase extends TestCase
         );
     }
 
+    /**
+     * @phpstan-assert WafFinding $finding
+     */
     protected function assertHardFinding(?WafFinding $finding, string $rule): void
     {
         self::assertNotNull($finding, sprintf('expected rule "%s" to find something', $rule));

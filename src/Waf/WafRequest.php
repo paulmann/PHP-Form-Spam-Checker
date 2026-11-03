@@ -58,10 +58,10 @@ final readonly class WafRequest
      * auto-prepend firewall needs. Tests and embedded callers pass the body
      * directly and keep the read deterministic.
      *
-     * @param array<string, mixed>|null $server
-     * @param array<string, mixed>|null $get
-     * @param array<string, mixed>|null $post
-     * @param array<string, mixed>|null $cookie
+     * @param array<mixed>|null $server
+     * @param array<mixed>|null $get
+     * @param array<mixed>|null $post
+     * @param array<mixed>|null $cookie
      */
     public static function fromGlobals(
         ?array $server = null,
@@ -86,14 +86,14 @@ final readonly class WafRequest
             $contentLength = (int) $headers['content-length'];
         }
 
-        $query = $get;
-        if ($query === null) {
-            $query = [];
+        $query = $get ?? [];
+        if ($get === null) {
             $rawQuery = $server['QUERY_STRING'] ?? '';
             if (is_string($rawQuery) && $rawQuery !== '') {
                 parse_str($rawQuery, $query);
             }
         }
+        /** @var array<string, mixed> $query */
 
         $cookies = [];
         foreach (($cookie ?? $_COOKIE) as $name => $value) {
@@ -102,15 +102,21 @@ final readonly class WafRequest
             }
         }
 
+        /** @var array<string, mixed> $fields */
         $fields = $post ?? $_POST;
 
-        $uri = (string) ($server['REQUEST_URI'] ?? '/');
+        $uri = self::scalarString($server['REQUEST_URI'] ?? null);
         if ($uri === '') {
             $uri = '/';
         }
 
+        $method = strtoupper(self::scalarString($server['REQUEST_METHOD'] ?? null));
+        if ($method === '') {
+            $method = 'GET';
+        }
+
         return new self(
-            method: strtoupper((string) ($server['REQUEST_METHOD'] ?? 'GET')),
+            method: $method,
             uri: $uri,
             ip: self::clientIp($server),
             body: $body,
@@ -258,7 +264,7 @@ final readonly class WafRequest
     }
 
     /**
-     * @param array<string, mixed> $server
+     * @param array<mixed> $server
      * @return array<string, string>
      */
     private static function headers(array $server): array
@@ -284,34 +290,42 @@ final readonly class WafRequest
     }
 
     /**
-     * @param array<string, mixed> $server
+     * @param array<mixed> $server
      */
     private static function clientIp(array $server): string
     {
         $ip = '';
 
         foreach (['HTTP_CF_CONNECTING_IP', 'HTTP_X_REAL_IP', 'REMOTE_ADDR'] as $key) {
-            if (isset($server[$key]) && is_string($server[$key]) && trim($server[$key]) !== '') {
-                $ip = trim($server[$key]);
+            $candidate = trim(self::scalarString($server[$key] ?? null));
+
+            if ($candidate !== '') {
+                $ip = $candidate;
                 break;
             }
         }
 
         // X-Forwarded-For is only honoured behind a local reverse proxy:
         // otherwise any client could choose its own address.
-        if (isset($server['HTTP_X_FORWARDED_FOR']) && is_string($server['HTTP_X_FORWARDED_FOR'])) {
-            $remote = (string) ($server['REMOTE_ADDR'] ?? '');
+        $forwarded = self::scalarString($server['HTTP_X_FORWARDED_FOR'] ?? null);
+        $remote = self::scalarString($server['REMOTE_ADDR'] ?? null);
 
-            if ($remote === '::1' || str_starts_with($remote, '127.') || str_starts_with($remote, '::ffff:127.')) {
-                $first = trim(explode(',', $server['HTTP_X_FORWARDED_FOR'])[0]);
+        $isLoopback = $remote === '::1' || str_starts_with($remote, '127.') || str_starts_with($remote, '::ffff:127.');
 
-                if (filter_var($first, FILTER_VALIDATE_IP) !== false) {
-                    $ip = $first;
-                }
+        if ($forwarded !== '' && $isLoopback) {
+            $first = trim(explode(',', $forwarded)[0]);
+
+            if (filter_var($first, FILTER_VALIDATE_IP) !== false) {
+                $ip = $first;
             }
         }
 
         return $ip;
+    }
+
+    private static function scalarString(mixed $value): string
+    {
+        return is_scalar($value) ? (string) $value : '';
     }
 
     private static function readBody(int $maxBodyBytes): string

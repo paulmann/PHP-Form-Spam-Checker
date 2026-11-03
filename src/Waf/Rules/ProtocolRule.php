@@ -69,7 +69,7 @@ final class ProtocolRule extends AbstractRule
             );
         }
 
-        $maxBodyBytes = max(0, (int) $this->option(
+        $maxBodyBytes = max(0, $this->intOption(
             'max_body_bytes',
             $this->config->int('waf.max_body_bytes', WafRequest::DEFAULT_MAX_BODY_BYTES),
         ));

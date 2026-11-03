@@ -7,7 +7,6 @@ namespace FormSpamChecker\Integration;
 use FormSpamChecker\Check\SpamCheckInterface;
 use FormSpamChecker\Config;
 use FormSpamChecker\Log\ErrorLogLogger;
-use FormSpamChecker\Log\LoggerInterface;
 use FormSpamChecker\Storage\FileStorage;
 use FormSpamChecker\Storage\MemoryStorage;
 use FormSpamChecker\Storage\StorageInterface;
@@ -128,15 +127,25 @@ final class WafGuard
             return self::disabled($site);
         }
 
-        $values = is_array($raw['config'] ?? null) ? $raw['config'] : [];
+        $values = $raw['config'] ?? [];
+        if (!is_array($values)) {
+            $values = [];
+        }
+        /** @var array<string, mixed> $values */
         $config = new Config($values);
 
-        $mode = strtolower((string) ($raw['waf_mode'] ?? $config->string('waf.mode', self::MODE_MONITOR)));
+        $mode = strtolower(self::scalarString($raw['waf_mode'] ?? null));
+        if ($mode === '') {
+            $mode = strtolower($config->string('waf.mode', self::MODE_MONITOR));
+        }
         if (!in_array($mode, [self::MODE_OFF, self::MODE_MONITOR, self::MODE_BLOCK], true)) {
             $mode = self::MODE_OFF;
         }
 
-        $responseType = strtolower((string) ($raw['waf_response'] ?? $config->string('waf.response', 'auto')));
+        $responseType = strtolower(self::scalarString($raw['waf_response'] ?? null));
+        if ($responseType === '') {
+            $responseType = strtolower($config->string('waf.response', 'auto'));
+        }
         if (!in_array($responseType, ['auto', 'json', 'html', 'silent'], true)) {
             $responseType = 'auto';
         }
@@ -167,8 +176,10 @@ final class WafGuard
             return self::disabled($site);
         }
 
+        $siteName = self::scalarString($raw['site'] ?? null);
+
         return new self(
-            site: (string) ($raw['site'] ?? $site),
+            site: $siteName !== '' ? $siteName : $site,
             mode: $mode,
             match: self::stringList($raw['waf_match'] ?? []),
             skip: $skip,
@@ -261,10 +272,10 @@ final class WafGuard
      * blocked request terminates the script. In monitor mode this method only
      * logs and always returns false.
      *
-     * @param array<string, mixed>|null $server
-     * @param array<string, mixed>|null $get
-     * @param array<string, mixed>|null $post
-     * @param array<string, mixed>|null $cookie
+     * @param array<mixed>|null $server
+     * @param array<mixed>|null $get
+     * @param array<mixed>|null $post
+     * @param array<mixed>|null $cookie
      */
     public function run(
         ?array $server = null,
@@ -304,8 +315,6 @@ final class WafGuard
         }
 
         $this->reject($request, $verdict);
-
-        return true;
     }
 
     /**
@@ -458,7 +467,7 @@ final class WafGuard
 
     private static function detectSite(): string
     {
-        $host = (string) ($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '');
+        $host = self::scalarString($_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '');
 
         if ($host === '') {
             return 'default';
@@ -496,8 +505,14 @@ final class WafGuard
     {
         $site = strtolower(trim($site));
         $site = preg_replace('#^www\.#', '', $site) ?? $site;
+        $slug = preg_replace('/[^a-z0-9._-]+/', '_', $site);
 
-        return preg_replace('/[^a-z0-9._-]+/', '_', $site) ?: 'default';
+        return $slug !== null && $slug !== '' ? $slug : 'default';
+    }
+
+    private static function scalarString(mixed $value): string
+    {
+        return is_scalar($value) ? (string) $value : '';
     }
 
     /**

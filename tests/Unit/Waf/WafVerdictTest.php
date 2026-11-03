@@ -29,9 +29,14 @@ final class WafVerdictTest extends TestCase
         self::assertSame('blocked', $array['status']);
         self::assertSame(90, $array['score']);
         self::assertSame(['sql_injection: SQL-injection signature detected'], $array['reasons']);
-        self::assertSame('sql_injection', $array['findings'][0]['rule']);
-        self::assertSame('field.message', $array['findings'][0]['location']);
-        self::assertSame(['pattern' => '#union#'], $array['findings'][0]['evidence']);
+
+        $findings = $array['findings'];
+        self::assertIsArray($findings);
+        $first = $findings[0];
+        self::assertIsArray($first);
+        self::assertSame('sql_injection', $first['rule']);
+        self::assertSame('field.message', $first['location']);
+        self::assertSame(['pattern' => '#union#'], $first['evidence']);
     }
 
     public function testCleanFactoryHasNoFindings(): void
