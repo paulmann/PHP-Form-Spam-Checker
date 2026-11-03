@@ -11,3 +11,4 @@ Thumbs.db
 /config/sites/*.php
 !/config/sites/default.php
 !/config/sites/example.php
+/audit/
