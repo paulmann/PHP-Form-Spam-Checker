@@ -20,7 +20,10 @@ final class Fail2BanTest extends TempDirTestCase
         $lines = file($path, FILE_IGNORE_NEW_LINES);
         self::assertIsArray($lines);
         self::assertCount(1, $lines);
-        self::assertStringStartsWith('PHPFSC BAN ip=203.0.113.5 ', $lines[0]);
+        self::assertMatchesRegularExpression(
+            '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2} PHPFSC BAN ip=203\.0\.113\.5 /',
+            $lines[0],
+        );
         self::assertStringContainsString('site=batterywizard.ru', $lines[0]);
         self::assertStringContainsString('form=register', $lines[0]);
         self::assertStringContainsString('score=100', $lines[0]);

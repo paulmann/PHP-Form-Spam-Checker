@@ -25,7 +25,9 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 
 - Fail2Ban log lines are LF-only, fields are token-sanitized (no whitespace or
   newline injection) and appended with `LOCK_EX`; reporting errors never change
-  a verdict.
+  a verdict. Lines start with an ISO-8601 timestamp so the jail needs no
+  "match without timestamp" fallback (`datepattern = ^%Y-%m-%dT%H:%M:%S%z`).
+- `CurlClient` no longer calls the deprecated `curl_close()` (PHP 8.5).
 ## [2.0.0] — 2026-11-03
 
 The 2.0 line rebuilds the internals around an ordered pipeline and explicit

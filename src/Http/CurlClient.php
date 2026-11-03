@@ -67,7 +67,6 @@ final readonly class CurlClient implements HttpClientInterface
         $body = curl_exec($handle);
         $status = curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
         $error = curl_error($handle);
-        curl_close($handle);
 
         if ($body === false) {
             throw new HttpClientException('HTTP request failed: ' . ($error !== '' ? $error : 'unknown error'));

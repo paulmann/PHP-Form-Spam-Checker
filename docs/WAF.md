@@ -502,14 +502,15 @@ The guard writes one line per hard block/spam event when `fail2ban.enabled` is
 set:
 
 ```
-PHPFSC BAN ip=203.0.113.5 site=batterywizard.ru form=register score=100 reason=spam:keywords
+2026-11-03T22:35:00+03:00 PHPFSC BAN ip=203.0.113.5 site=batterywizard.ru form=register score=100 reason=spam:keywords
 ```
 
 Filter `/etc/fail2ban/filter.d/php-form-spam-checker.conf`:
 
 ```ini
 [Definition]
-failregex = ^PHPFSC BAN ip=<HOST> .*$
+datepattern = ^%%Y-%%m-%%dT%%H:%%M:%%S%%z
+failregex = PHPFSC BAN ip=<HOST> .*$
 ignoreregex =
 ```
 

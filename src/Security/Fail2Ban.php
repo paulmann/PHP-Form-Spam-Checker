@@ -13,7 +13,7 @@ use FormSpamChecker\Log\LoggerInterface;
  *
  * Format (stable, one line per event):
  *
- *     PHPFSC BAN ip=203.0.113.5 site=batterywizard.ru form=lead score=100 reason=spam
+ *     2026-11-03T22:35:00+03:00 PHPFSC BAN ip=203.0.113.5 site=batterywizard.ru form=lead score=100 reason=spam
  *
  * The matching filter is:
  *
@@ -58,7 +58,8 @@ final class Fail2Ban
         }
 
         $line = \sprintf(
-            "PHPFSC BAN ip=%s site=%s form=%s score=%d reason=%s\n",
+            "%s PHPFSC BAN ip=%s site=%s form=%s score=%d reason=%s\n",
+            date('c'),
             $ip,
             $this->token($this->site),
             $this->token($form),
