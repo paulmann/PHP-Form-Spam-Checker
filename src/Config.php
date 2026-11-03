@@ -229,6 +229,26 @@ final class Config
     }
 
     /**
+     * Directory for cached remote responses (AbuseIPDB, DNS lookups).
+     */
+    public function cachePath(): string
+    {
+        $path = $this->string('cache.path');
+
+        return $path !== '' ? rtrim($path, '/\\') : $this->storagePath() . DIRECTORY_SEPARATOR . 'cache';
+    }
+
+    /**
+     * Directory where the Bayesian model is persisted.
+     */
+    public function bayesStoragePath(): string
+    {
+        $path = $this->string('bayes.storage_path');
+
+        return $path !== '' ? rtrim($path, '/\\') : $this->storagePath() . DIRECTORY_SEPARATOR . 'bayes';
+    }
+
+    /**
      * Field names that must never be inspected as user content.
      *
      * @return list<string>
@@ -385,6 +405,93 @@ final class Config
             'endpoint' => [
                 'key' => '',
                 'max_body_bytes' => 262144,
+            ],
+            'pipeline' => [
+                'stop_on_spam' => true,
+            ],
+            'http' => [
+                'timeout' => 2.0,
+                'user_agent' => 'PHP-Form-Spam-Checker/2.0',
+            ],
+            'cache' => [
+                'driver' => 'file',
+                'path' => '',
+            ],
+            'abuseipdb' => [
+                'enabled' => false,
+                'api_key' => '',
+                'threshold' => 90,
+                'cache_ttl' => 21600,
+                'timeout' => 2.0,
+                'max_age_days' => 30,
+                'fail_open' => true,
+                'circuit_breaker' => [
+                    'failures' => 3,
+                    'cooldown' => 300,
+                ],
+            ],
+            'dnsbl' => [
+                'enabled' => false,
+                'zones' => ['zen.spamhaus.org', 'bl.spamcop.net'],
+                'cache_ttl' => 3600,
+                'timeout' => 2,
+                'hit_score' => 100,
+            ],
+            'spf' => [
+                'enabled' => false,
+                'fields' => ['email', 'personalEmail'],
+                'missing_score' => 10,
+                'lookup_limit' => 10,
+                'dns_ttl' => 3600,
+            ],
+            'dmarc' => [
+                'enabled' => false,
+                'fields' => ['email', 'personalEmail'],
+                'missing_score' => 10,
+                'weak_policy_score' => 5,
+                'dns_ttl' => 3600,
+            ],
+            'dkim' => [
+                'enabled' => false,
+                'required' => false,
+            ],
+            'bayes' => [
+                'enabled' => false,
+                'storage_path' => '',
+                'threshold' => 0.92,
+                'min_documents' => 20,
+                'score_scale' => 100,
+            ],
+            'behavioral' => [
+                'honeypot' => [
+                    'dynamic' => true,
+                    'field_prefix' => '_hp_',
+                    'secret' => '',
+                    'missing_score' => 10,
+                ],
+                'js_challenge' => [
+                    'enabled' => false,
+                    'field' => '_js',
+                    'missing_score' => 15,
+                    'min_ms' => 0,
+                ],
+            ],
+            'waf' => [
+                'enabled' => false,
+                'mode' => 'monitor',
+                'block_status' => 403,
+                'max_body_bytes' => 1048576,
+                'rules' => [
+                    'sql_injection' => true,
+                    'xss' => true,
+                    'path_traversal' => true,
+                    'command_injection' => true,
+                    'scanner' => true,
+                    'header_injection' => true,
+                    'protocol' => true,
+                    'ip_reputation' => false,
+                    'rate_limit' => false,
+                ],
             ],
             'forms' => [],
         ];

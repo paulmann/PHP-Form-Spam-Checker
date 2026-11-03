@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace FormSpamChecker\Integration;
 
 use FormSpamChecker\Config;
-use FormSpamChecker\Context;
+use FormSpamChecker\Data\RequestData;
+use FormSpamChecker\Data\Verdict;
 use FormSpamChecker\SpamChecker;
-use FormSpamChecker\Verdict;
 
 /**
  * Drop-in guard for existing PHP sites, loaded from the shared module
@@ -19,18 +19,11 @@ use FormSpamChecker\Verdict;
  *
  * and a per-site configuration file `config/sites/<host>.php`. The guard
  * ignores everything that is not a matching POST request, so including it in a
- * front controller is safe: static pages, GET requests and admin URLs simply
- * pass through.
+ * front controller is safe: static pages, GET requests and admin URLs pass
+ * through untouched.
  *
- * Modes:
- *  - off     — configuration is loaded but nothing runs;
- *  - shadow  — the verdict is computed and logged, the request always passes
- *              (use it for the first days of a new site);
- *  - enforce — spam is answered with a neutral error and the application never
- *              sees the request.
- *
- * The guard never throws into the application: configuration or storage
- * problems degrade to "off" and are written to the PHP error log.
+ * Modes: off (nothing runs), shadow (verdict computed and logged, request
+ * always passes), enforce (spam is answered and the application never sees it).
  */
 final class FormGuard
 {
@@ -39,11 +32,6 @@ final class FormGuard
     public const string MODE_ENFORCE = 'enforce';
 
     /**
-     * Loaded configurations, keyed by file path, with the mtime that was
-     * current when the file was read. On a PHP-FPM worker this avoids re-reading
-     * and re-parsing the config on every request while still picking up edits
-     * without a restart.
-     *
      * @var array<string, array{mtime: int, data: array<string, mixed>}>
      */
     private static array $cache = [];
@@ -64,12 +52,6 @@ final class FormGuard
     ) {
     }
 
-    /**
-     * Load the guard for a site.
-     *
-     * @param string|null $site      host name; auto-detected from HTTP_HOST when null
-     * @param string|null $configDir directory with <site>.php files
-     */
     public static function boot(?string $site = null, ?string $configDir = null): self
     {
         $configDir ??= dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'sites';
@@ -86,7 +68,6 @@ final class FormGuard
         }
 
         try {
-            /** @psalm-suppress UnresolvableInclude */
             $raw = self::loadConfigFile($file);
         } catch (\Throwable $exception) {
             error_log(sprintf('[spam-guard] cannot load config %s: %s', $file, $exception->getMessage()));
@@ -107,12 +88,8 @@ final class FormGuard
 
         $values = is_array($raw['config'] ?? null) ? $raw['config'] : [];
 
-        // Both forms are accepted for the auto-prepend switch: top-level
-        // `'auto' => true` or `'config' => ['auto' => true]`.
         $values['auto'] = (bool) ($raw['auto'] ?? $values['auto'] ?? false);
 
-        // Defaults for a shared installation: state and logs live in the module,
-        // one sub-directory per site, so sites never write into their docroots.
         $varDir = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'var';
         $slug = self::slug((string) ($raw['site'] ?? $site));
 
@@ -162,9 +139,8 @@ final class FormGuard
     }
 
     /**
-     * Should this request be checked at all?
-     *
      * @param array<string, mixed> $server
+     * @param array<string, mixed> $fields
      */
     public function shouldHandle(array $server, array $fields): bool
     {
@@ -180,8 +156,6 @@ final class FormGuard
             return false;
         }
 
-        // A body larger than the checker can meaningfully inspect is skipped:
-        // file uploads belong to the application, not to a text heuristic.
         $length = isset($server['CONTENT_LENGTH']) ? (int) $server['CONTENT_LENGTH'] : 0;
         if ($length > 8 * 1024 * 1024) {
             return false;
@@ -209,20 +183,17 @@ final class FormGuard
     }
 
     /**
-     * Evaluate the request without side effects on the response.
-     *
      * @param array<string, mixed> $server
      * @param array<string, mixed> $fields
      */
     public function evaluate(array $server, array $fields): Verdict
     {
-        return $this->checker->check($fields, Context::fromServer($server), $this->formId);
+        return $this->checker->checkRequest(
+            RequestData::fromGlobals($server, $fields, $this->formId),
+        );
     }
 
     /**
-     * Main entry point for the drop-in include. Returns true when the request
-     * was rejected; in enforce mode a rejection terminates the script.
-     *
      * @param array<string, mixed>|null $server
      * @param array<string, mixed>|null $fields
      */
@@ -238,7 +209,6 @@ final class FormGuard
         try {
             $verdict = $this->evaluate($server, $fields);
         } catch (\Throwable $exception) {
-            // A spam checker must never take a form down.
             error_log('[spam-guard] evaluation failed: ' . $exception->getMessage());
 
             return false;
@@ -254,8 +224,7 @@ final class FormGuard
     }
 
     /**
-     * Answer a spam submission and terminate. Public so that an application
-     * controller can reuse the guard's response format.
+     * Answer a spam submission and terminate.
      *
      * @param array<string, mixed> $server
      */
@@ -308,14 +277,16 @@ final class FormGuard
     }
 
     /**
-     * Convenience for controllers that build their own response: evaluate a
-     * request against the shared configuration without terminating.
-     *
      * @param array<string, mixed> $fields
      * @param array<string, mixed> $server
      */
-    public static function evaluateFor(string $site, array $fields, array $server, ?string $formId = null, ?string $configDir = null): Verdict
-    {
+    public static function evaluateFor(
+        string $site,
+        array $fields,
+        array $server,
+        ?string $formId = null,
+        ?string $configDir = null,
+    ): Verdict {
         $guard = self::boot($site, $configDir);
 
         if ($formId !== null) {
@@ -365,8 +336,6 @@ final class FormGuard
     }
 
     /**
-     * Read a config file with a per-process cache keyed by path and mtime.
-     *
      * @return array<string, mixed>
      */
     private static function loadConfigFile(string $file): mixed
@@ -423,8 +392,6 @@ final class FormGuard
 
     private function matches(string $pattern, string $uri): bool
     {
-        $result = @preg_match($pattern, $uri);
-
-        return $result === 1;
+        return @preg_match($pattern, $uri) === 1;
     }
 }

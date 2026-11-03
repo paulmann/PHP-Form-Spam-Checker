@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace FormSpamChecker\Cli;
 
 use FormSpamChecker\Config;
-use FormSpamChecker\Context;
+use FormSpamChecker\Data\RequestData;
 use FormSpamChecker\SpamChecker;
 use FormSpamChecker\Status;
 
@@ -13,8 +13,8 @@ use FormSpamChecker\Status;
  * CLI bridge for non-PHP back ends.
  *
  * Reads a submission as JSON (inline, base64 argument or STDIN) and prints the
- * verdict as a single JSON object. Nothing else is written to STDOUT, so a
- * caller can `json_decode()` the output unconditionally.
+ * verdict as a single JSON object on STDOUT. Nothing else is written to STDOUT,
+ * so a caller can `json_decode()` the output unconditionally.
  *
  * Usage:
  *   php bin/spam-check --config=/etc/spam.php --form=register --base64=BASE64
@@ -47,34 +47,14 @@ final class CheckCommand
             $configPath = (string) ($options['config'] ?? getenv('SPAM_CHECKER_CONFIG') ?: '');
             $config = $configPath !== '' ? Config::fromFile($configPath) : new Config();
 
-            $raw = $this->readPayload($options);
-            $payload = $this->decode($raw);
+            $payload = $this->decode($this->readPayload($options));
 
             $formId = isset($options['form']) && is_string($options['form'])
                 ? $options['form']
                 : (isset($payload['form']) && is_string($payload['form']) ? $payload['form'] : 'default');
 
-            $fields = $payload['fields'] ?? null;
-
-            if (!is_array($fields)) {
-                $fields = [];
-                foreach ($payload as $key => $value) {
-                    if ($key === 'form' || $key === 'context') {
-                        continue;
-                    }
-                    $fields[$key] = $value;
-                }
-            }
-
-            if (count($fields) > 200) {
-                throw new \InvalidArgumentException('Too many fields in the payload (max 200).');
-            }
-
-            $context = isset($payload['context']) && is_array($payload['context'])
-                ? Context::fromArray($payload['context'])
-                : new Context();
-
-            $verdict = (new SpamChecker($config))->check($fields, $context, $formId);
+            $request = $this->requestFromPayload($payload, $formId);
+            $verdict = (new SpamChecker($config))->checkRequest($request);
 
             $this->emit(['form' => $formId] + $verdict->toArray());
 
@@ -89,6 +69,65 @@ final class CheckCommand
 
             return self::EXIT_ERROR;
         }
+    }
+
+    /**
+     * @param array<string, mixed> $payload
+     */
+    public function requestFromPayload(array $payload, string $formId): RequestData
+    {
+        $fields = $payload['fields'] ?? null;
+
+        if (!is_array($fields)) {
+            $fields = [];
+            foreach ($payload as $key => $value) {
+                if (in_array($key, ['form', 'context'], true)) {
+                    continue;
+                }
+                $fields[$key] = $value;
+            }
+        }
+
+        if (count($fields) > 200) {
+            throw new \InvalidArgumentException('Too many fields in the payload (max 200).');
+        }
+
+        $context = isset($payload['context']) && is_array($payload['context']) ? $payload['context'] : [];
+
+        $headers = [];
+        if (isset($context['headers']) && is_array($context['headers'])) {
+            foreach ($context['headers'] as $name => $value) {
+                if (is_string($name) && is_string($value)) {
+                    $headers[strtolower($name)] = $value;
+                }
+            }
+        }
+
+        $userAgent = (string) ($context['userAgent'] ?? $context['user_agent'] ?? $context['ua'] ?? '');
+        if ($userAgent !== '') {
+            $headers['user-agent'] = $userAgent;
+        }
+
+        $referer = (string) ($context['referer'] ?? '');
+        if ($referer !== '') {
+            $headers['referer'] = $referer;
+        }
+
+        $now = $context['now'] ?? null;
+        if (is_string($now) && ctype_digit($now)) {
+            $now = (int) $now;
+        }
+
+        return new RequestData(
+            fields: $fields,
+            ip: (string) ($context['ip'] ?? ''),
+            headers: $headers,
+            method: (string) ($context['method'] ?? 'POST'),
+            uri: (string) ($context['page'] ?? $context['uri'] ?? ''),
+            body: (string) ($payload['body'] ?? ''),
+            now: is_int($now) ? $now : null,
+            formId: $formId,
+        );
     }
 
     /**
@@ -207,7 +246,7 @@ final class CheckCommand
         return <<<'TXT'
 Usage: php bin/spam-check [options] [BASE64_PAYLOAD]
 
-  --config=PATH    configuration file (PHP array or JSON)
+  --config=PATH    configuration file (PHP array, JSON or shared-guard site config)
   --form=ID        form identifier, default "default"
   --json=JSON      inline JSON payload
   --base64=DATA    base64-encoded JSON payload

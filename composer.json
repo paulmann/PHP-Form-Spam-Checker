@@ -1,17 +1,21 @@
 {
     "name": "paulmann/php-form-spam-checker",
-    "description": "Framework-agnostic PHP 8.5 spam checker for any PHP form: layered local heuristics (honeypot, signed time trap, rate limit, bot user-agent, keywords, links, SQLi/XSS, disposable e-mail), a CLI/HTTP bridge for non-PHP back ends and evidence for every verdict. Zero runtime dependencies.",
+    "description": "Framework-agnostic PHP 8.5 spam checker and WAF for any PHP form: layered local heuristics, behavioral analysis, IP reputation (AbuseIPDB), DNSBL/SPF/DMARC/DKIM checks, a Bayesian classifier, an ordered pipeline with a CLI/HTTP bridge and evidence for every verdict. Zero runtime dependencies.",
     "type": "library",
     "license": "MIT",
     "keywords": [
         "spam",
         "anti-spam",
+        "waf",
         "form",
         "form-validation",
         "spam-filter",
         "php",
         "honeypot",
-        "rate-limit"
+        "rate-limit",
+        "abuseipdb",
+        "dnsbl",
+        "bayesian"
     ],
     "authors": [
         {
@@ -25,7 +29,26 @@
         "ext-mbstring": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": "^12.3"
+        "friendsofphp/php-cs-fixer": "^3.90",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.1",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpunit/phpunit": "^12.3",
+        "psr/cache": "^3.0",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.1",
+        "psr/http-message": "^2.0",
+        "psr/log": "^3.0",
+        "psr/simple-cache": "^3.0",
+        "vimeo/psalm": "^6.0"
+    },
+    "suggest": {
+        "psr/http-client": "PSR-18 HTTP client interfaces (an adapter is included)",
+        "psr/cache": "PSR-6 cache interfaces (an adapter is included)",
+        "psr/simple-cache": "PSR-16 cache interfaces (an adapter is included)",
+        "psr/log": "PSR-3 logger interfaces (an adapter is included)",
+        "mlocati/spf-lib": "Full RFC 7208 SPF evaluation (the built-in evaluator covers the common mechanisms)",
+        "phpmailer/dkimvalidator": "Full DKIM validation (the built-in verifier covers RSA-SHA256 relaxed/simple)"
     },
     "autoload": {
         "psr-4": {
@@ -43,11 +66,24 @@
     "scripts": {
         "test": "phpunit",
         "test:strict": "phpunit --fail-on-warning --fail-on-risky",
-        "lint": "find src tests bin -type f -name '*.php' -exec php -l {} +"
+        "test:coverage": "phpunit --coverage-text --coverage-clover .phpunit.cache/clover.xml",
+        "cs:check": "php-cs-fixer fix --dry-run --diff --ansi",
+        "cs:fix": "php-cs-fixer fix",
+        "phpstan": "phpstan analyse --no-progress --memory-limit=1G",
+        "psalm": "psalm --no-progress --taint-analysis",
+        "lint": "find src tests bin -type f -name '*.php' -exec php -l {} +",
+        "qa": [
+            "@cs:check",
+            "@phpstan",
+            "@psalm",
+            "@test:strict"
+        ]
     },
     "config": {
         "sort-packages": true,
-        "allow-plugins": {}
+        "allow-plugins": {
+            "phpstan/extension-installer": true
+        }
     },
     "minimum-stability": "stable",
     "prefer-stable": true

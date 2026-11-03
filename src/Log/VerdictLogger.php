@@ -4,23 +4,25 @@ declare(strict_types=1);
 
 namespace FormSpamChecker\Log;
 
-use FormSpamChecker\Submission;
-use FormSpamChecker\Verdict;
+use FormSpamChecker\Data\RequestData;
+use FormSpamChecker\Data\Verdict;
 
 /**
  * Appends one JSON line per verdict to a file.
  *
- * Useful on hosts without a log aggregation stack: `tail -f` answers "what is
- * being blocked right now" and `jq` gives per-check statistics. PII (IP, User
- * Agent, field samples) is stored only when `pii` is enabled; by default the IP
- * is hashed and the fields are redacted.
+ * PII (IP, User-Agent, field samples) is stored only when `pii` is enabled; by
+ * default the IP is pseudonymised and the fields are redacted.
  */
-final class VerdictLogger
+final readonly class VerdictLogger
 {
+    /**
+     * @param list<string> $excludedFields fields never stored even in PII mode
+     */
     public function __construct(
-        private readonly string $path,
-        private readonly bool $pii = false,
-        private readonly bool $sampleFields = true,
+        private string $path,
+        private bool $pii = false,
+        private bool $sampleFields = true,
+        private array $excludedFields = [],
     ) {
     }
 
@@ -29,21 +31,21 @@ final class VerdictLogger
         return $this->path;
     }
 
-    public function log(Verdict $verdict, Submission $submission): void
+    public function log(Verdict $verdict, RequestData $request): void
     {
         $record = [
             'ts' => gmdate('Y-m-d\TH:i:s\Z'),
-            'form' => $submission->formId,
+            'form' => $request->formId,
             'status' => $verdict->status->value,
             'score' => $verdict->score,
             'reasons' => $verdict->reasons(),
-            'ip' => $this->ip($submission->context->ip),
-            'page' => mb_substr($submission->context->page, 0, 200),
+            'ip' => $this->ip($request->ip),
+            'page' => mb_substr($request->uri, 0, 200),
             'checks' => array_map(
-                static fn ($result): array => $result->toArray(),
-                $verdict->results,
+                static fn ($outcome): array => $outcome->toArray(),
+                $verdict->outcomes,
             ),
-            'fields' => $this->fields($submission),
+            'fields' => $this->fields($request),
         ];
 
         $this->append($record);
@@ -75,20 +77,18 @@ final class VerdictLogger
             return $ip;
         }
 
-        // Stable per-installation pseudonym: enough to correlate abuse across
-        // submissions, not enough to recover the address.
         return substr(hash('sha256', 'php-form-spam-checker|' . $ip), 0, 16);
     }
 
     /**
      * @return array<string, string>|string
      */
-    private function fields(Submission $submission): array|string
+    private function fields(RequestData $request): array|string
     {
         if (!$this->pii || !$this->sampleFields) {
             return 'redacted';
         }
 
-        return $submission->sample();
+        return $request->sample($this->excludedFields);
     }
 }

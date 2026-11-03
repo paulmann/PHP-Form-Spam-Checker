@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace FormSpamChecker\Http;
 
 use FormSpamChecker\Config;
-use FormSpamChecker\Context;
+use FormSpamChecker\Data\RequestData;
 use FormSpamChecker\SpamChecker;
 
 /**
@@ -87,12 +87,7 @@ final class CheckEndpoint
             }
 
             $response = $this->process($payload);
-            $statusCode = match ($response['status'] ?? 'error') {
-                'spam' => 200,
-                'suspicious' => 200,
-                'clean' => 200,
-                default => 500,
-            };
+            $statusCode = 200;
         } catch (\JsonException $exception) {
             $statusCode = 400;
             $response = ['status' => 'error', 'error' => 'invalid JSON: ' . $exception->getMessage()];
@@ -134,11 +129,39 @@ final class CheckEndpoint
             throw new \InvalidArgumentException('too many fields (max 200)');
         }
 
-        $context = isset($payload['context']) && is_array($payload['context'])
-            ? Context::fromArray($payload['context'])
-            : new Context();
+        $context = isset($payload['context']) && is_array($payload['context']) ? $payload['context'] : [];
 
-        $verdict = (new SpamChecker($this->config))->check($fields, $context, $formId);
+        $headers = [];
+        if (isset($context['headers']) && is_array($context['headers'])) {
+            foreach ($context['headers'] as $name => $value) {
+                if (is_string($name) && is_string($value)) {
+                    $headers[strtolower($name)] = $value;
+                }
+            }
+        }
+
+        $userAgent = (string) ($context['userAgent'] ?? $context['user_agent'] ?? '');
+        if ($userAgent !== '') {
+            $headers['user-agent'] = $userAgent;
+        }
+
+        $referer = (string) ($context['referer'] ?? '');
+        if ($referer !== '') {
+            $headers['referer'] = $referer;
+        }
+
+        $request = new RequestData(
+            fields: $fields,
+            ip: (string) ($context['ip'] ?? ''),
+            headers: $headers,
+            method: (string) ($context['method'] ?? 'POST'),
+            uri: (string) ($context['page'] ?? $context['uri'] ?? ''),
+            body: (string) ($payload['body'] ?? ''),
+            now: isset($context['now']) && is_int($context['now']) ? $context['now'] : null,
+            formId: $formId,
+        );
+
+        $verdict = (new SpamChecker($this->config))->checkRequest($request);
 
         return ['form' => $formId] + $verdict->toArray();
     }

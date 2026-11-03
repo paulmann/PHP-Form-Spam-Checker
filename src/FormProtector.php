@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace FormSpamChecker;
 
+use FormSpamChecker\Behavioral\Honeypot;
+use FormSpamChecker\Behavioral\JsChallenge;
+use FormSpamChecker\Data\RequestData;
+use FormSpamChecker\Data\Verdict;
 use FormSpamChecker\Token\FormToken;
 
 /**
@@ -13,13 +17,10 @@ use FormSpamChecker\Token\FormToken;
  *     $protector = new FormProtector($checker, $config);
  *     <form method="post">
  *         <?= $protector->fields('contact') ?>
- *         ...
  *     </form>
+ *     $verdict = $protector->verifyRequest('contact');
  *
- *     if ($protector->verifyRequest('contact')->isSpam()) { ... }
- *
- * The helper intentionally produces plain HTML with no CSS or JavaScript of its
- * own, so it fits any template and never conflicts with a site's assets.
+ * The helper produces plain HTML without CSS frameworks or external scripts.
  */
 final class FormProtector
 {
@@ -30,46 +31,21 @@ final class FormProtector
     }
 
     /**
-     * Hidden inputs: honeypot plus, when enabled, the signed time-trap token.
+     * Hidden inputs: honeypot (static or dynamic), signed time-trap token and,
+     * when enabled, the JS challenge.
      *
-     * @param array{honeypot?: bool, token?: bool, container_style?: string, token_field?: string} $options
+     * @param array{honeypot?: bool, token?: bool, js?: bool, container_style?: string, token_field?: string} $options
      */
     public function fields(string $formId = 'default', array $options = []): string
     {
         $config = $this->config->form($formId);
         $parts = [];
 
-        $renderHoneypot = $options['honeypot'] ?? true;
-        $honeypotFields = $config->array('honeypot.fields', []);
-
-        if ($renderHoneypot && $config->bool('honeypot.enabled', true) && $honeypotFields !== []) {
-            $style = $options['container_style']
-                ?? 'position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden';
-
-            $inputs = [];
-            foreach ($honeypotFields as $field) {
-                if (!is_string($field) || $field === '') {
-                    continue;
-                }
-
-                $inputs[] = sprintf(
-                    '<input type="text" name="%s" value="" tabindex="-1" autocomplete="off" aria-hidden="true">',
-                    $this->escape($field),
-                );
-            }
-
-            if ($inputs !== []) {
-                $parts[] = sprintf(
-                    '<div class="fs-hp" aria-hidden="true" style="%s">%s</div>',
-                    $this->escape($style),
-                    implode('', $inputs),
-                );
-            }
+        if (($options['honeypot'] ?? true) && $config->bool('honeypot.enabled', true)) {
+            $parts[] = $this->honeypotFields($config, $formId, $options);
         }
 
-        $renderToken = $options['token'] ?? true;
-
-        if ($renderToken && $config->bool('time_trap.enabled', false)) {
+        if (($options['token'] ?? true) && $config->bool('time_trap.enabled', false)) {
             $tokenField = $options['token_field'] ?? $config->string('time_trap.field', '_fs_ts');
             $token = (new FormToken($config->secret()))->issue($formId);
 
@@ -80,7 +56,13 @@ final class FormProtector
             );
         }
 
-        return implode("\n", $parts);
+        if (($options['js'] ?? true) && $config->bool('behavioral.js_challenge.enabled', false)
+            && class_exists(JsChallenge::class)
+        ) {
+            $parts[] = $this->jsChallengeFields($config, $formId);
+        }
+
+        return implode("\n", array_filter($parts));
     }
 
     /**
@@ -104,6 +86,65 @@ final class FormProtector
     public function config(): Config
     {
         return $this->config;
+    }
+
+    /**
+     * @param array{container_style?: string} $options
+     */
+    private function honeypotFields(Config $config, string $formId, array $options): string
+    {
+        $style = $options['container_style']
+            ?? 'position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden';
+
+        $dynamic = $config->bool('behavioral.honeypot.dynamic', true)
+            && $config->string('behavioral.honeypot.secret') !== ''
+            && class_exists(Honeypot::class);
+
+        if ($dynamic) {
+            $honeypot = new Honeypot($config);
+            $names = [$honeypot->fieldName($formId)];
+        } else {
+            $names = [];
+            foreach ($config->array('honeypot.fields', []) as $field) {
+                if (is_string($field) && $field !== '') {
+                    $names[] = $field;
+                }
+            }
+        }
+
+        if ($names === []) {
+            return '';
+        }
+
+        $inputs = [];
+        foreach ($names as $name) {
+            $inputs[] = sprintf(
+                '<input type="text" name="%s" value="" tabindex="-1" autocomplete="off" aria-hidden="true">',
+                $this->escape($name),
+            );
+        }
+
+        return sprintf(
+            '<div class="fs-hp" aria-hidden="true" style="%s">%s</div>',
+            $this->escape($style),
+            implode('', $inputs),
+        );
+    }
+
+    private function jsChallengeFields(Config $config, string $formId): string
+    {
+        $challenge = new JsChallenge($config);
+        $issued = $challenge->issue($formId);
+        $field = $config->string('behavioral.js_challenge.field', '_js');
+
+        return sprintf(
+            '<input type="hidden" name="%s" value="" data-fs-js="1">'
+            . '<input type="hidden" name="%s_token" value="%s">'
+            . $challenge->inlineScript($formId),
+            $this->escape($field),
+            $this->escape($field),
+            $this->escape((string) ($issued['token'] ?? '')),
+        );
     }
 
     private function escape(string $value): string
