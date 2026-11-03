@@ -187,7 +187,7 @@ PHP-массив (возвращается из файла) или JSON. Все 
 
 ```bash
 composer install
-composer test              # PHPUnit: 175 тестов, 449 утверждений
+composer test              # PHPUnit: 177 тестов, 453 утверждения
 composer lint              # php -l по src, tests, bin
 ```
 

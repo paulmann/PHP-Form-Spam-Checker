@@ -25,7 +25,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Shared-server integration: `integrations/guard.php` and
   `integrations/auto-prepend.php`, per-site configs with `off` / `shadow` /
   `enforce` modes.
-- 175 PHPUnit tests (449 assertions) covering every check, pipeline
+- 177 PHPUnit tests (453 assertions) covering every check, pipeline
   aggregation, storage, token, logging, CLI and the HTTP endpoint, plus a
   syntax gate for every PHP file.
 - CI on PHP 8.5.12 and 8.5 with strict warning/risky/deprecation gates.

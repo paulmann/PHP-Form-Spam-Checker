@@ -39,6 +39,16 @@ final class FormGuard
     public const string MODE_ENFORCE = 'enforce';
 
     /**
+     * Loaded configurations, keyed by file path, with the mtime that was
+     * current when the file was read. On a PHP-FPM worker this avoids re-reading
+     * and re-parsing the config on every request while still picking up edits
+     * without a restart.
+     *
+     * @var array<string, array{mtime: int, data: array<string, mixed>}>
+     */
+    private static array $cache = [];
+
+    /**
      * @param list<string> $match regexes; empty means "any POST request"
      * @param list<string> $skip  regexes that always pass through
      */
@@ -77,7 +87,7 @@ final class FormGuard
 
         try {
             /** @psalm-suppress UnresolvableInclude */
-            $raw = require $file;
+            $raw = self::loadConfigFile($file);
         } catch (\Throwable $exception) {
             error_log(sprintf('[spam-guard] cannot load config %s: %s', $file, $exception->getMessage()));
 
@@ -96,6 +106,10 @@ final class FormGuard
         }
 
         $values = is_array($raw['config'] ?? null) ? $raw['config'] : [];
+
+        // Both forms are accepted for the auto-prepend switch: top-level
+        // `'auto' => true` or `'config' => ['auto' => true]`.
+        $values['auto'] = (bool) ($raw['auto'] ?? $values['auto'] ?? false);
 
         // Defaults for a shared installation: state and logs live in the module,
         // one sub-directory per site, so sites never write into their docroots.
@@ -348,6 +362,35 @@ final class FormGuard
         }
 
         return strtolower(preg_replace('/:\d+$/', '', $host) ?? $host);
+    }
+
+    /**
+     * Read a config file with a per-process cache keyed by path and mtime.
+     *
+     * @return array<string, mixed>
+     */
+    private static function loadConfigFile(string $file): mixed
+    {
+        $mtime = @filemtime($file);
+
+        if ($mtime === false) {
+            throw new \RuntimeException('configuration file is not readable');
+        }
+
+        $cached = self::$cache[$file] ?? null;
+
+        if (is_array($cached) && $cached['mtime'] === $mtime) {
+            return $cached['data'];
+        }
+
+        /** @psalm-suppress UnresolvableInclude */
+        $data = require $file;
+
+        if (is_array($data)) {
+            self::$cache[$file] = ['mtime' => $mtime, 'data' => $data];
+        }
+
+        return $data;
     }
 
     private static function slug(string $site): string

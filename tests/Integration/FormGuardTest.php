@@ -76,6 +76,41 @@ final class FormGuardTest extends TempDirTestCase
         ];
     }
 
+    public function testAutoFlagIsExposedInConfig(): void
+    {
+        $dir = $this->tempDir();
+        file_put_contents($dir . '/auto.example.php', "<?php return [\n"
+            . "    'site' => 'auto.example',\n"
+            . "    'mode' => 'shadow',\n"
+            . "    'auto' => true,\n"
+            . "    'config' => ['storage' => ['driver' => 'memory'], 'log' => ['enabled' => false]],\n"
+            . "];\n");
+
+        $guard = FormGuard::boot('auto.example', $dir);
+
+        self::assertTrue($guard->config()->bool('auto'));
+        self::assertSame('shadow', $guard->mode());
+    }
+
+    public function testConfigCachePicksUpModifications(): void
+    {
+        $dir = $this->tempDir();
+        $file = $dir . '/site.example.php';
+        $mtime = 1_700_000_000;
+
+        $write = static function (string $mode) use ($file, &$mtime): void {
+            file_put_contents($file, "<?php return ['site' => 'site.example', 'mode' => '{$mode}'];\n");
+            $mtime += 10;
+            touch($file, $mtime);
+        };
+
+        $write('off');
+        self::assertSame('off', FormGuard::boot('site.example', $dir)->mode());
+
+        $write('enforce');
+        self::assertSame('enforce', FormGuard::boot('site.example', $dir)->mode());
+    }
+
     public function testOffModeNeverHandles(): void
     {
         $guard = FormGuard::boot('off', $this->configDir());

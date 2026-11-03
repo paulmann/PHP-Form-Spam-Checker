@@ -16,6 +16,9 @@ return [
     'mode' => 'shadow',
     'form' => 'contact',
     'response' => 'auto',
+    // Only used by integrations/auto-prepend.php (installed through PHP's
+    // auto_prepend_file for sites with many handlers).
+    'auto' => false,
 
     // Only these URIs are checked. Empty list = every POST request.
     'match' => [
