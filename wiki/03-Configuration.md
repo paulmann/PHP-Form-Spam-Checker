@@ -39,6 +39,7 @@ the HTTP endpoint and both guards therefore read the same file (`docs/CONFIG.md`
 | `rate_limit.max` / `window` | `8` / `900` s | requests per IP per window | same |
 | `length.max` / `hard_max` | `5000` / `20000` | suspicious above `max`, hard spam above `hard_max` | same |
 | `links.max` | `2` | links allowed in the whole message | same |
+| `language.require_cyrillic` | `false` (reference deployments: `true`) | a configured name-like field must contain a Cyrillic letter; a Latin-only value adds `missing_score` (40 by default, 60 in the deployment configs) | same |
 | `abuseipdb.threshold` | `90` | confidence score that becomes hard spam | same |
 | `bayes.min_documents` | `20` | below this the model abstains | same |
 | `waf.enabled` / `mode` | `false` / `monitor` | HTTP firewall switch and starting mode | same |

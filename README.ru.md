@@ -156,8 +156,8 @@ flowchart TD
 | PHP-файлы / строки в `src/` | 93 / 10 295 | `find src -name '*.php'` и `wc -l` |
 | Проверки конвейера | 20 | файлы `src/Check/` без `SpamCheckInterface.php` |
 | Правила WAF | 9 | файлы `src/Waf/Rules/` |
-| Тестовые методы | 548 | объявления `public function test` в `tests/` |
-| Тестовый набор | 552 теста / 1 999 проверок | `php vendor/bin/phpunit` 3 ноября 2026 года |
+| Тестовые методы | 555 | объявления `public function test` в `tests/` |
+| Тестовый набор | 559 тестов / 2 015 проверок | `php vendor/bin/phpunit` 3 ноября 2026 года (PHPUnit 13.4.5) |
 | Страницы документации (EN) | 6 | `docs/*.md` без `*.ru.md` |
 | Runtime-зависимости Composer | 0 | `require` в `composer.json` (только расширения PHP) |
 | Поддерживаемый PHP | 8.5+ | `require.php` в `composer.json`; матрица CI `8.5.12` и `8.5` |

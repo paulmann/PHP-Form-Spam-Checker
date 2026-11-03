@@ -156,8 +156,8 @@ names the command that produced it.
 | PHP source files / lines | 93 / 10,295 | `find src -name '*.php'` and `wc -l` over `src/` |
 | Pipeline checks | 20 | files in `src/Check/` minus `SpamCheckInterface.php` |
 | WAF rules | 9 | files in `src/Waf/Rules/` |
-| Test methods | 548 | `public function test` declarations under `tests/` |
-| Test suite | 552 tests / 1,999 assertions | `php vendor/bin/phpunit` on 2026-11-03 |
+| Test methods | 555 | `public function test` declarations under `tests/` |
+| Test suite | 559 tests / 2,015 assertions | `php vendor/bin/phpunit` on 2026-11-03 (PHPUnit 13.4.5) |
 | English documentation pages | 6 | `docs/*.md` excluding `*.ru.md` |
 | Runtime Composer dependencies | 0 | `require` in `composer.json` (PHP extensions only) |
 | Supported PHP | 8.5+ | `require.php` in `composer.json`; CI matrix `8.5.12` and `8.5` |
