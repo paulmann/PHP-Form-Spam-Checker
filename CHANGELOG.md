@@ -133,21 +133,15 @@ existing 1.x integrations keep working (see *Backward compatibility*).
 
 ### Notes
 
-- The 95 % coverage gate in CI replaces the "target 100 %" wording of the
-  architecture contract; environment adapters are excluded through
-  `tools/coverage-gate.php --exclude-env-adapters`. This is a documented
-  deviation, not a reduction of the 1.x suite.
+- Coverage: measured locally on PHP 8.5.12 with Xdebug — **89.5 % lines /
+  73.4 % methods** over `src/` with 7 environment adapters (file/curl/DNS/PSR
+  wrappers) excluded. CI enforces **88 % lines / 72 % methods** as a ratchet;
+  the architecture target stays 100 %, and the remaining gap is concentrated in
+  process-entry adapters and defensive branches that require a real web server.
+  This is a documented deviation, not a reduction of the 1.x suite.
 - The WAF identifies scanners by explicit path and User-Agent markers; it does
   not score User-Agent entropy (deliberately: entropy is not a reliable signal).
 
 [2.0.0]: https://github.com/Paulmann/PHP-Form-Spam-Checker/compare/v1.0.0...v2.0
 [Unreleased]: https://github.com/Paulmann/PHP-Form-Spam-Checker/compare/v2.0...main
 
-### Quality notes (2.0.0)
-
-- Measured locally on PHP 8.5.12 with Xdebug: **89.5 % line / 73.4 % method
-  coverage** over src/ (7 environment adapters excluded: file/curl/DNS/PSR
-  wrappers). CI enforces 88 % lines / 72 % methods as a ratchet and the
-  project target remains 100 %; the remaining gap is concentrated in
-  process-entry adapters and defensive branches that require a real web
-  server (documented in the test suite).

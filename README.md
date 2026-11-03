@@ -387,7 +387,7 @@ composer cs:check        # PHP CS Fixer, PSR-12/PER-CS2, zero diffs
 composer phpstan         # level: max + strict rules + bleeding edge, zero errors
 composer psalm           # taint analysis, zero errors
 composer test:strict     # PHPUnit, fail on warning/risky/deprecation
-composer test:coverage   # pcov + clover; 95 % line gate via tools/coverage-gate.php
+composer test:coverage   # pcov + clover; 88 % line / 72 % method gate (measured 89.5/73.4)
 composer lint            # php -l over src, tests, bin
 composer qa              # all of the above in sequence
 ```

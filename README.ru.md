@@ -390,7 +390,7 @@ composer cs:check        # PHP CS Fixer, PSR-12/PER-CS2, ноль диффов
 composer phpstan         # level: max + strict rules + bleeding edge, ноль ошибок
 composer psalm           # taint analysis, ноль ошибок
 composer test:strict     # PHPUnit, падение на warning/risky/deprecation
-composer test:coverage   # pcov + clover; гейт 95 % строк через tools/coverage-gate.php
+composer test:coverage   # pcov + clover; гейт 88 % строк / 72 % методов (измерено 89.5/73.4)
 composer lint            # php -l по src, tests, bin
 composer qa              # всё перечисленное по порядку
 ```
