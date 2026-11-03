@@ -212,7 +212,7 @@ Full reference: [docs/CONFIG.md](docs/CONFIG.md). Check semantics:
 
 ```bash
 composer install
-composer test              # PHPUnit: 177 tests, 453 assertions
+composer test              # PHPUnit: 180 tests, 465 assertions
 composer lint              # php -l over src, tests, bin
 ```
 

@@ -117,6 +117,42 @@ final class ConfigTest extends TempDirTestCase
         self::assertSame($dir, $config->storagePath());
     }
 
+    public function testFromFileUnwrapsSharedGuardSiteConfiguration(): void
+    {
+        $file = $this->tempDir() . DIRECTORY_SEPARATOR . 'site.php';
+        file_put_contents(
+            $file,
+            "<?php return [\n"
+            . "    'site' => 'example.ru',\n"
+            . "    'mode' => 'enforce',\n"
+            . "    'match' => ['#^/form\\.php#'],\n"
+            . "    'config' => [\n"
+            . "        'thresholds' => ['spam' => 45],\n"
+            . "        'log' => ['enabled' => true, 'path' => '/tmp/x.jsonl'],\n"
+            . "        'storage' => ['driver' => 'memory'],\n"
+            . "    ],\n"
+            . "];\n",
+        );
+
+        $config = Config::fromFile($file);
+
+        self::assertSame(45, $config->int('thresholds.spam'));
+        self::assertTrue($config->bool('log.enabled'));
+        self::assertSame('/tmp/x.jsonl', $config->string('log.path'));
+        // Defaults still apply underneath the unwrapped site config.
+        self::assertSame(8, $config->int('rate_limit.max'));
+    }
+
+    public function testPlainConfigurationWithConfigKeyIsNotUnwrapped(): void
+    {
+        $file = $this->tempDir() . DIRECTORY_SEPARATOR . 'plain.php';
+        file_put_contents($file, "<?php return ['thresholds' => ['spam' => 50], 'config' => ['x' => 1]];\n");
+
+        $config = Config::fromFile($file);
+
+        self::assertSame(50, $config->int('thresholds.spam'));
+    }
+
     public function testFromFileLoadsPhpArray(): void
     {
         $file = $this->tempDir() . DIRECTORY_SEPARATOR . 'config.php';

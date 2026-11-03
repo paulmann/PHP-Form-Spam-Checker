@@ -81,6 +81,41 @@ final class CliTest extends TempDirTestCase
         self::assertSame('clean', json_decode($result['stdout'], true)['status']);
     }
 
+    public function testSiteConfigurationFileIsAcceptedAndLogs(): void
+    {
+        $dir = $this->tempDir();
+        $log = $dir . '/verdicts.jsonl';
+        $configFile = $dir . '/site.php';
+        $state = $dir . '/state';
+
+        file_put_contents($configFile, "<?php return [\n"
+            . "    'site' => 'example.ru',\n"
+            . "    'mode' => 'enforce',\n"
+            . "    'match' => ['#^/api/lead#'],\n"
+            . "    'config' => [\n"
+            . "        'storage' => ['driver' => 'file', 'path' => " . var_export($state, true) . "],\n"
+            . "        'log' => ['enabled' => true, 'path' => " . var_export($log, true) . ", 'pii' => true],\n"
+            . "    ],\n"
+            . "];\n");
+
+        $payload = json_encode([
+            'form' => 'lead',
+            'fields' => ['name' => 'bot', 'website' => 'filled'],
+            'context' => ['ip' => '203.0.113.30', 'userAgent' => self::UA],
+        ], JSON_UNESCAPED_UNICODE);
+
+        $result = $this->runCli(['--json=' . $payload, '--config=' . $configFile]);
+
+        self::assertSame(2, $result['code'], $result['stderr']);
+        self::assertFileExists($log);
+        $lines = file($log, FILE_IGNORE_NEW_LINES);
+        self::assertIsArray($lines);
+        self::assertCount(1, $lines);
+        $record = json_decode((string) $lines[0], true);
+        self::assertSame('spam', $record['status']);
+        self::assertSame('lead', $record['form']);
+    }
+
     public function testCustomConfigFileIsApplied(): void
     {
         $config = $this->tempDir() . '/spam.php';

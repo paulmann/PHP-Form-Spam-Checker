@@ -78,6 +78,18 @@ final class Config
             throw new InvalidConfigException(sprintf('Configuration file must return an array: %s', $path));
         }
 
+        // A shared-guard site configuration wraps the pipeline configuration in
+        // a 'config' key and adds metadata (site, mode, match, skip). Every entry
+        // point must understand the same file, so unwrap it here: the CLI bridge
+        // and the HTTP endpoint receive exactly the path the guard uses.
+        if (
+            isset($data['config'])
+            && is_array($data['config'])
+            && (isset($data['mode']) || isset($data['site']) || isset($data['match']) || isset($data['skip']))
+        ) {
+            $data = $data['config'];
+        }
+
         return new self($data);
     }
 
