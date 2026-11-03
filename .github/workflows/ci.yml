@@ -46,7 +46,7 @@ jobs:
       # composer.lock is committed, so the cache key includes it and the install
       # step resolves exactly the locked set.
       - name: Cache Composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cache/composer/files
