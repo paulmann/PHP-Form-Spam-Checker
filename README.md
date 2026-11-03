@@ -64,6 +64,9 @@ with which scores, and why.
   the firewall (HTTP/HTTPS only) with `maxretry = 1`.
 - **Application auto-ban** — `autoban` check: after N hard events inside a
   window the IP is rejected before any other check for the configured TTL.
+- **Russian name check** — `language.require_cyrillic`: a name/surname with
+  letters but no Cyrillic scores 60 (spam threshold) on the reference
+  deployments; e-mail, company and message fields are never punished.
 - `CurlClient` no longer uses the deprecated `curl_close()` (PHP 8.5).
 
 See [CHANGELOG.md](CHANGELOG.md) and [docs/WAF.md#fail2ban](docs/WAF.md#fail2ban).
@@ -133,7 +136,7 @@ All scores are 0–100; `spam` is a hard verdict that ignores the total.
 | Content | `keywords` | on | 12 per hit, max 90 |
 | Contact | `email` | on | invalid 40; disposable 70 |
 | Content | `repetition` | on | runs/repeats → 25, max 60 |
-| Content | `language` | off | mixed scripts → 20, max 40 |
+| Content | `language` | off (reference deployments: on) | mixed scripts → 20, max 40; `require_cyrillic` → Latin-only name 60 (spam) |
 | Network | `abuseipdb` | off | confidence ≥ 90 → **spam** (score = confidence) |
 | Network | `dnsbl` | off | listing → **spam** 100 |
 | Domain | `spf` | off | no usable policy → 10 |

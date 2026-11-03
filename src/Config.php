@@ -426,6 +426,16 @@ final class Config
                 'enabled' => false,
                 'mixed_script_score' => 20,
                 'max_score' => 40,
+                // Require Cyrillic in name-like fields (Russian-language sites).
+                'require_cyrillic' => false,
+                'missing_score' => 40,
+                'min_letters' => 2,
+                'fields' => [
+                    'name', 'fio', 'fullname', 'full_name', 'firstname', 'first_name',
+                    'lastname', 'last_name', 'surname', 'secondname', 'second_name',
+                    'middlename', 'middle_name', 'family', 'givenname', 'given_name',
+                    'имя', 'фамилия', 'фио',
+                ],
             ],
             'log' => [
                 'enabled' => false,

@@ -6,6 +6,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [2.1.2] — 2026-11-04
+
+### Added
+
+- **Cyrillic requirement for names** (`language.require_cyrillic`): configured
+  name-like fields (`name`, `fio`, `first_name`, `last_name`, `surname`, …,
+  case/separator-insensitive) must contain at least one Cyrillic letter. Fields
+  with letters but no Cyrillic add `language.missing_score` points (reference
+  deployments: 60 → hard spam); e-mail, company and free-text fields are never
+  checked. `language.fields`, `min_letters` and `max_score` tune the rule.
+- Reference deployment configs enable the rule on all sites; set
+  `missing_score = 40` to downgrade it to "suspicious" instead of blocking.
+
 ## [2.1.0] - 2026-11-03
 
 ### Added
