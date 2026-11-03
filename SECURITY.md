@@ -4,8 +4,9 @@
 
 | Version | Supported |
 |---|---|
-| `v2.0` (2.0.x) | ✅ |
-| `main` (1.x line, maintenance) | security fixes only |
+| `2.1.x` | yes |
+| `2.0.x` | security fixes only |
+| `1.x` | no — upgrade to 2.1 |
 
 ## Reporting a vulnerability
 

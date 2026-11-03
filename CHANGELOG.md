@@ -1,10 +1,12 @@
 # Changelog
 
-All notable changes to this project are documented here.
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and the project adheres to [Semantic Versioning](https://semver.org/).
+All notable changes to this project are documented here. The format is
+[Keep a Changelog](https://keepachangelog.com/en/2.0.0/) 2.0.0, and this project
+adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.1.0] — 2026-11-03
+## [Unreleased]
+
+## [2.1.0] - 2026-11-03
 
 ### Added
 
@@ -26,15 +28,18 @@ and the project adheres to [Semantic Versioning](https://semver.org/).
 - Fail2Ban log lines are LF-only, fields are token-sanitized (no whitespace or
   newline injection) and appended with `LOCK_EX`; reporting errors never change
   a verdict. Lines start with an ISO-8601 timestamp so the jail needs no
-  "match without timestamp" fallback (`datepattern = ^%Y-%m-%dT%H:%M:%S%z`).
+  "match without timestamp" fallback (the filter and jail are in
+  [docs/WAF.md#fail2ban](docs/WAF.md#fail2ban)).
 - `CurlClient` no longer calls the deprecated `curl_close()` (PHP 8.5).
-## [2.0.0] — 2026-11-03
+
+## [2.0.0] - 2026-11-03
 
 The 2.0 line rebuilds the internals around an ordered pipeline and explicit
 value objects, and adds four new layers: a behavioural honeypot/JS challenge, IP
 reputation and DNS blocklists, mail-domain authentication, a Bayesian
 classifier, and an HTTP firewall. Every new module is **disabled by default**;
-existing 1.x integrations keep working (see *Backward compatibility*).
+existing 1.x integrations keep working (see *Backward compatibility* under
+Changed).
 
 ### Added
 
@@ -82,9 +87,9 @@ existing 1.x integrations keep working (see *Backward compatibility*).
   statuses now use the 2.0 vocabulary).
 - **Quality gates in CI** — PHP CS Fixer (PSR-12/PER-CS2), PHPStan `level: max`
   with strict rules and bleeding edge, Psalm taint analysis, PHPUnit with
-  `failOnWarning`/`failOnRisky`/`failOnDeprecation`, 95 % line-coverage gate
-  (`tools/coverage-gate.php`), `php -l` over `src`, `tests`, `bin`,
-  `integrations`, `config`, `public`, `examples`, `tools`.
+  `failOnWarning`/`failOnRisky`/`failOnDeprecation`, coverage gate on line and
+  method coverage (`tools/coverage-gate.php`), `php -l` over `src`, `tests`,
+  `bin`, `integrations`, `config`, `public`, `examples`, `tools`.
 - **Configuration sections** — `pipeline`, `http`, `cache`, `abuseipdb`,
   `dnsbl`, `spf`, `dmarc`, `dkim` (reserved), `bayes`, `behavioral`, `waf`.
   All disabled by default; unknown keys are preserved.
@@ -115,29 +120,6 @@ existing 1.x integrations keep working (see *Backward compatibility*).
 - Dependencies are unchanged in the runtime path (`ext-json`, `ext-mbstring`;
   `ext-curl` is needed only for the bundled HTTP client), and PHP 8.5 remains
   the requirement (`>=8.5`, as in 1.x).
-
-### Backward compatibility (kept)
-
-- `FormSpamChecker\SpamChecker` — constructor, `check(array $fields,
-  ?Context, string $formId): Verdict`.
-- `FormSpamChecker\FormProtector` — `fields()`, `verify()`, `verifyRequest()`.
-- `FormSpamChecker\Integration\FormGuard` — `boot()`, `run()`, `evaluateFor()`.
-- `bin/spam-check` — options, top-level JSON output and exit codes `0/1/2/3`.
-- `public/check.php` — POST JSON service, `endpoint.key` /
-  `X-Spam-Checker-Key`, status codes 400/403/405/413/500.
-- `config/sites/<host>.php` — the 1.x shared-guard format, including
-  `site`, `mode`, `form`, `response`, `match`, `skip`, `auto`, `config`.
-- `FormSpamChecker\Status` — `clean`, `suspicious`, `spam`.
-- `FormSpamChecker\Config` — array/JSON/PHP-file loading, dot access, deep
-  merge, per-form overrides.
-
-### Breaking
-
-- `FormSpamChecker\CheckInterface`, `CheckResult`, `Submission` and the
-  `FormSpamChecker\Checks\*` classes are removed. Custom checks implement
-  `FormSpamChecker\Check\SpamCheckInterface` and receive
-  `Data\RequestData`, returning `Data\CheckOutcome` (see
-  `docs/MIGRATION-1-to-2.md`).
 - `FormSpamChecker\Verdict` moved to `FormSpamChecker\Data\Verdict`;
   `FormSpamChecker\Pipeline` moved to `FormSpamChecker\Pipeline\SpamPipeline`.
   Type hints and imports must be updated.
@@ -146,26 +128,38 @@ existing 1.x integrations keep working (see *Backward compatibility*).
   and exit codes are unchanged.
 - A check's "suspicious" result is expressed as `HAM` **with a positive score**
   instead of a separate status.
+- The WAF identifies scanners by explicit path and User-Agent markers; it does
+  not score User-Agent entropy (deliberately: entropy is not a reliable signal).
+- **Backward compatibility (kept; no code changes required):**
+  - `FormSpamChecker\SpamChecker` — constructor, `check(array $fields,
+    ?Context, string $formId): Verdict`.
+  - `FormSpamChecker\FormProtector` — `fields()`, `verify()`, `verifyRequest()`.
+  - `FormSpamChecker\Integration\FormGuard` — `boot()`, `run()`, `evaluateFor()`.
+  - `bin/spam-check` — options, top-level JSON output and exit codes `0/1/2/3`.
+  - `public/check.php` — POST JSON service, `endpoint.key` /
+    `X-Spam-Checker-Key`, status codes 400/403/405/413/500.
+  - `config/sites/<host>.php` — the 1.x shared-guard format, including
+    `site`, `mode`, `form`, `response`, `match`, `skip`, `auto`, `config`.
+  - `FormSpamChecker\Status` — `clean`, `suspicious`, `spam`.
+  - `FormSpamChecker\Config` — array/JSON/PHP-file loading, dot access, deep
+    merge, per-form overrides.
 
-### Planned but not in this release
+### Deprecated
 
 - `dkim` check: the `dkim` configuration section is accepted and reserved, but
   no `FormSpamChecker\Check\DkimCheck` ships in 2.0.0 and the pipeline does not
   register one.
-- `behavioral.js_challenge.min_ms`: accepted in configuration, not enforced
-  yet (the token age is checked through `max_age`).
+- `behavioral.js_challenge.min_ms`: accepted in configuration and documented as
+  reserved, not enforced yet (the token age is checked through `max_age`).
 
-### Notes
+### Removed
 
-- Coverage: measured locally on PHP 8.5.12 with Xdebug — **89.5 % lines /
-  73.4 % methods** over `src/` with 7 environment adapters (file/curl/DNS/PSR
-  wrappers) excluded. CI enforces **88 % lines / 72 % methods** as a ratchet;
-  the architecture target stays 100 %, and the remaining gap is concentrated in
-  process-entry adapters and defensive branches that require a real web server.
-  This is a documented deviation, not a reduction of the 1.x suite.
-- The WAF identifies scanners by explicit path and User-Agent markers; it does
-  not score User-Agent entropy (deliberately: entropy is not a reliable signal).
+- `FormSpamChecker\CheckInterface`, `CheckResult`, `Submission` and the
+  `FormSpamChecker\Checks\*` classes are removed. Custom checks implement
+  `FormSpamChecker\Check\SpamCheckInterface` and receive
+  `Data\RequestData`, returning `Data\CheckOutcome` (see
+  `docs/MIGRATION-1-to-2.md`).
 
-[2.0.0]: https://github.com/Paulmann/PHP-Form-Spam-Checker/compare/v1.0.0...v2.0
-[Unreleased]: https://github.com/Paulmann/PHP-Form-Spam-Checker/compare/v2.0...main
-
+[Unreleased]: https://github.com/paulmann/PHP-Form-Spam-Checker/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/paulmann/PHP-Form-Spam-Checker/compare/v2.0.0...v2.1.0
+[2.0.0]: https://github.com/paulmann/PHP-Form-Spam-Checker/commits/v2.0.0

@@ -1,8 +1,5 @@
 # PHP Form Spam Checker 2.1
 
-[![PHP](https://img.shields.io/badge/PHP-8.5-8892bf.svg)](https://php.net/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-
 **Многослойный антиспам-конвейер и HTTP-файрвол для любых PHP-форм.** Сначала
 идут дешёвые локальные эвристики, затем поведенческие сигналы, репутация IP,
 DNS-блоклисты, аутентификация почтового домена и байесовский классификатор; при
@@ -10,7 +7,47 @@ DNS-блоклисты, аутентификация почтового доме
 runtime, и каждый вердикт несёт доказательства: какие проверки сработали, с
 какими баллами и почему.
 
-> English documentation: [README.md](README.md)
+[![CI](https://github.com/paulmann/PHP-Form-Spam-Checker/actions/workflows/ci.yml/badge.svg)](https://github.com/paulmann/PHP-Form-Spam-Checker/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/paulmann/PHP-Form-Spam-Checker?label=release&sort=semver)](https://github.com/paulmann/PHP-Form-Spam-Checker/releases)
+[![PHP](https://img.shields.io/badge/PHP-8.5-8892bf.svg)](https://php.net/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+<img src="https://github.com/paulmann/PHP-Form-Spam-Checker/raw/main/assets/social-preview.png" alt="PHP Form Spam Checker - антиспам-конвейер и HTTP-файрвол для PHP-форм" width="100%">
+
+[**Wiki**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**Документация**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**Релизы**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**Changelog**](CHANGELOG.md) · [**Issues**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**Безопасность**](SECURITY.md) · [**Для агентов**](AGENTS.md) · [**English**](README.md)
+
+> **Состояние документации.** Цифры в этом README измерены по дереву репозитория
+> 3 ноября 2026 года (версия 2.1.0); рядом с каждой цифрой названа команда.
+> Подробные руководства — в [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki)
+> и в `docs/`; неинтерактивный контракт для агентов — [`AGENTS.md`](AGENTS.md).
+
+---
+
+## Содержание
+
+- [Что изменилось в 2.1](#что-изменилось-в-21)
+- [Что изменилось в 2.0](#что-изменилось-в-20)
+- [Цикл защиты](#цикл-защиты)
+- [Модули проверок и значения по умолчанию](#модули-проверок-и-значения-по-умолчанию)
+- [В цифрах](#в-цифрах)
+- [Требования](#требования)
+- [Установка](#установка)
+- [Быстрый старт: обычная PHP-форма](#быстрый-старт-обычная-php-форма)
+- [WAF (HTTP-файрвол)](#waf-http-файрвол)
+- [Настройка AbuseIPDB](#настройка-abuseipdb)
+- [Fail2Ban и автобан](#fail2ban-и-автобан)
+- [DNSBL, SPF, DMARC, DKIM](#dnsbl-spf-dmarc-dkim)
+- [Байесовский классификатор](#байесовский-классификатор)
+- [Поведенческий слой](#поведенческий-слой)
+- [Режимы встраивания](#режимы-встраивания)
+- [Краткий справочник по конфигурации](#краткий-справочник-по-конфигурации)
+- [Контроль качества](#контроль-качества)
+- [Тесты](#тесты)
+- [Миграция и совместимость](#миграция-и-совместимость)
+- [Безопасность](#безопасность)
+- [Указатель документации](#указатель-документации)
+- [Помочь проекту — доказательствами, а не активностью](#помочь-проекту--доказательствами-а-не-активностью)
+- [Лицензия](#лицензия)
 
 ---
 
@@ -28,10 +65,10 @@ runtime, и каждый вердикт несёт доказательства:
   IP отклоняется раньше остальных проверок на заданный TTL.
 - `CurlClient` больше не вызывает устаревший `curl_close()` (PHP 8.5).
 
-Подробности: [CHANGELOG.md](CHANGELOG.md#210--2026-11-03) и
-[docs/WAF.md#fail2ban](docs/WAF.md#fail2ban).
+Подробности: [CHANGELOG.md](CHANGELOG.md) и [docs/WAF.md#fail2ban](docs/WAF.md#fail2ban).
 
 ## Что изменилось в 2.0
+
 2.0 — переписывание внутренностей с явным конвейером, четырьмя новыми слоями
 защиты и WAF. Поверхность интеграции, которой пользуются уже развёрнутые
 1.x-сайты, сохранена: `SpamChecker`, `FormProtector`, `FormGuard`,
@@ -105,6 +142,22 @@ flowchart TD
 
 Секция `dkim` зарезервирована под будущую проверку и в конвейер 2.0.0 не
 входит — см. [docs/CHECKS.md](docs/CHECKS.md#dkim).
+
+## В цифрах
+
+Измерено по дереву репозитория 3 ноября 2026 года на коммите `eed037b`; рядом с
+каждой цифрой — команда, которой она получена.
+
+| Поверхность | Количество | Чем измерено |
+|---|---|---|
+| PHP-файлы / строки в `src/` | 93 / 10 295 | `find src -name '*.php'` и `wc -l` |
+| Проверки конвейера | 20 | файлы `src/Check/` без `SpamCheckInterface.php` |
+| Правила WAF | 9 | файлы `src/Waf/Rules/` |
+| Тестовые методы | 548 | объявления `public function test` в `tests/` |
+| Тестовый набор | 552 теста / 1 999 проверок | `php vendor/bin/phpunit` 3 ноября 2026 года |
+| Страницы документации (EN) | 6 | `docs/*.md` без `*.ru.md` |
+| Runtime-зависимости Composer | 0 | `require` в `composer.json` (только расширения PHP) |
+| Поддерживаемый PHP | 8.5+ | `require.php` в `composer.json`; матрица CI `8.5.12` и `8.5` |
 
 ## Требования
 
@@ -487,8 +540,31 @@ composer lint
 | [docs/INTEGRATION.md](docs/INTEGRATION.md) / [docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md) | руководство по встраиванию (EN/RU) |
 | [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) | совместимость 1.x → 2.0 и откат |
 | [SECURITY.md](SECURITY.md) | модель безопасности, egress, секреты |
-| [CHANGELOG.md](CHANGELOG.md) | заметки о выпуске 2.1.0 |
+| [AGENTS.md](AGENTS.md) | неинтерактивный контракт для агентов: установка, проверка, использование |
+| [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) | установка, конфигурация, проверки, WAF, Fail2Ban, встраивание, миграция |
+| [SUPPORT.md](SUPPORT.md) | куда обращаться и что содержит полезный отчёт |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | правила сообщества и их соблюдение |
+| [CITATION.cff](CITATION.cff) | как цитировать проект |
+| [CHANGELOG.md](CHANGELOG.md) | заметки о выпусках |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | разработка и контроль качества |
+
+## Помочь проекту — доказательствами, а не активностью
+
+Если библиотека выдержала реальный трафик:
+
+- цитируйте её (название, версия, коммит) в runbook, интеграции или отчёте, где
+  она использовалась, через [CITATION.cff](CITATION.cff);
+- открывайте **один** отчёт о совместимости на уникальную комбинацию (версия PHP,
+  SAPI, фреймворк приложения, режим WAF), предварительно поискав существующие issues;
+- присылайте исправления документации и ложных срабатываний пул-реквестами, а не
+  комментариями;
+- публикуйте обезличенный кейс только с разрешения владельца данных;
+- раскрывайте зависимость, публикуя обёртку или интеграцию.
+
+**Не** создавайте звёзды, форки, watchers, комментарии, issues и пул-реквесты
+автоматически и не связывайтесь с мейнтейнерами и третьими лицами массово. Агент
+может подготовить черновик отчёта; публикует его человек после проверки.
+Продвижение должно следовать за реальным использованием и быть раскрытым.
 
 ## Лицензия
 

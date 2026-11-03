@@ -1,0 +1,21 @@
+{
+  "_comment": "Configuration read by tools/ghagent.py; paths are relative to this file.",
+  "owner_repo": "paulmann/PHP-Form-Spam-Checker",
+  "default_branch": "main",
+  "readme": "README.md",
+  "agents": "AGENTS.md",
+  "changelog": "CHANGELOG.md",
+  "docs_dir": "docs",
+  "wiki_dir": "wiki",
+  "wiki_manifest": "wiki/wiki.json",
+  "ci_workflow": ".github/workflows/ci.yml",
+  "require_files": ["AGENTS.md", "LICENSE", "composer.json", "phpunit.xml", "bin/spam-check"],
+  "exclude_dirs": ["vendor"],
+  "safe_email_domains": [],
+  "ignore_rules": [],
+  "topic_min": 8,
+  "topic_max": 20,
+  "description_max": 200,
+  "changelog_style": "keepachangelog",
+  "language": "ru"
+}

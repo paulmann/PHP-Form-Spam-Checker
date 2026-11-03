@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, 'v2.0']
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -43,9 +43,8 @@ jobs:
       - name: Verify PHP version
         run: php -v
 
-      # composer.lock is currently git-ignored (see .gitignore). The cache key
-      # tolerates that: hashFiles() returns an empty string and the install step
-      # resolves dependencies from composer.json.
+      # composer.lock is committed, so the cache key includes it and the install
+      # step resolves exactly the locked set.
       - name: Cache Composer dependencies
         uses: actions/cache@v4
         with:
@@ -81,7 +80,7 @@ jobs:
         if: matrix.php == '8.5.12'
         run: composer test:coverage
 
-      - name: Coverage gate (95% lines / 90% methods, documented environment adapters excluded)
+      - name: Coverage gate (88% lines / 72% methods, documented environment adapters excluded)
         if: matrix.php == '8.5.12'
         run: php tools/coverage-gate.php .phpunit.cache/clover.xml --threshold=88 --threshold-methods=72 --exclude-env-adapters
 

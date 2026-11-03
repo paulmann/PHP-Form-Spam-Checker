@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/paulmann/PHP-Form-Spam-Checker/security/advisories/new
+    about: Report a vulnerability privately; never open a public issue for it.
+  - name: Support and questions
+    url: https://github.com/paulmann/PHP-Form-Spam-Checker/blob/main/SUPPORT.md
+    about: Where to ask before filing an issue, and what a useful report contains.
+  - name: Documentation
+    url: https://github.com/paulmann/PHP-Form-Spam-Checker/wiki
+    about: Installation, configuration and deployment guides.

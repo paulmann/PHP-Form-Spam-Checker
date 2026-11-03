@@ -17,6 +17,7 @@ upgrades.
 - [Field exclusions](#field-exclusions)
 - [Logging](#logging)
 - [Shared-guard site configuration](#shared-guard-site-configuration)
+- [Fail2Ban and auto-ban (2.1)](#fail2ban-and-auto-ban-21)
 
 ## Accessing configuration in code
 

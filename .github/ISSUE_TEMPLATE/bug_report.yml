@@ -1,0 +1,66 @@
+name: Bug report
+description: A check, a verdict, a bridge or the WAF behaves incorrectly
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste API keys, tokens, client IPs, raw submissions or personal data.
+        Redact them; the `evidence` block is what a maintainer needs.
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The tag or the output of `composer show paulmann/php-form-spam-checker`
+      placeholder: 2.1.0
+    validations:
+      required: true
+  - type: input
+    id: php
+    attributes:
+      label: PHP version
+      description: Output of `php -v`
+      placeholder: PHP 8.5.12 (cli)
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      description: Which bridge produced the unexpected result
+      options:
+        - Form pipeline (`bin/spam-check`)
+        - WAF (`bin/waf-check`)
+        - Integration guard (`FormGuard` / `integrations/guard.php`)
+        - HTTP endpoint (`public/check.php`)
+        - Bayesian classifier / trainer
+        - Documentation or examples
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command and output
+      description: The exact command or request, its exit code and the output, with secrets and personal data removed
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behaviour
+      description: Include the verdict `evidence` block with field values and client IP redacted
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: The report contains no tokens, passwords, keys, client IPs or personal data
+          required: true
+        - label: I searched the existing issues for the same symptom
+          required: true
+        - label: This is not a security vulnerability (those go through SECURITY.md)
+          required: true

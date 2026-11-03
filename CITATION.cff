@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this software in a report, runbook or publication, cite it as below."
+title: "PHP Form Spam Checker"
+version: 2.1.0
+date-released: 2026-11-03
+type: software
+license: MIT
+repository-code: "https://github.com/paulmann/PHP-Form-Spam-Checker"
+url: "https://github.com/paulmann/PHP-Form-Spam-Checker"
+abstract: >-
+  Framework-agnostic spam filtering for PHP 8.5 forms: an ordered pipeline of
+  local, behavioural and network checks, an optional HTTP firewall with nine
+  rules, CLI and HTTP bridges, and structured evidence for every verdict.
+  Zero runtime Composer dependencies.
+authors:
+  - family-names: Deynekin
+    given-names: Mikhail
+    alias: Paulmann
+    website: "https://github.com/paulmann"
+keywords:
+  - anti-spam
+  - php
+  - forms
+  - waf
+  - honeypot
+  - rate-limiting
+  - abuseipdb
+  - dnsbl
+  - bayesian-classifier

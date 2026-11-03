@@ -1,6 +1,7 @@
 /vendor/
 /.phpunit.cache/
 /.phpunit.result.cache
+/.ghagent/
 *.log
 *.tmp
 .DS_Store

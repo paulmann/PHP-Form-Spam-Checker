@@ -1,9 +1,5 @@
 # PHP Form Spam Checker 2.1
 
-[![PHP](https://img.shields.io/badge/PHP-8.5-8892bf.svg)](https://php.net/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![CI](https://github.com/Paulmann/PHP-Form-Spam-Checker/actions/workflows/ci.yml/badge.svg)](https://github.com/Paulmann/PHP-Form-Spam-Checker/actions/workflows/ci.yml)
-
 **A layered, dependency-free anti-spam pipeline and HTTP firewall for any PHP
 form.** It runs local heuristics first, then behavioural signals, IP reputation,
 DNS blocklists, mail-domain authentication and a Bayesian classifier — and
@@ -11,7 +7,48 @@ optionally inspects the whole HTTP request with a WAF. No captcha, no runtime
 Composer dependencies, and every verdict carries evidence: which checks fired,
 with which scores, and why.
 
-> **Документация на русском:** [README.ru.md](README.ru.md)
+[![CI](https://github.com/paulmann/PHP-Form-Spam-Checker/actions/workflows/ci.yml/badge.svg)](https://github.com/paulmann/PHP-Form-Spam-Checker/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/paulmann/PHP-Form-Spam-Checker?label=release&sort=semver)](https://github.com/paulmann/PHP-Form-Spam-Checker/releases)
+[![PHP](https://img.shields.io/badge/PHP-8.5-8892bf.svg)](https://php.net/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
+<img src="https://github.com/paulmann/PHP-Form-Spam-Checker/raw/main/assets/social-preview.png" alt="PHP Form Spam Checker - layered anti-spam pipeline and HTTP firewall for PHP forms" width="100%">
+
+[**Wiki**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**Docs**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**Releases**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**Changelog**](CHANGELOG.md) · [**Issues**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**Security**](SECURITY.md) · [**For agents**](AGENTS.md) · [**Русская версия**](README.ru.md)
+
+> **Documentation status.** The counts in this README were measured from the
+> repository tree on 2026-11-03 (version 2.1.0); the command that produced each
+> figure is named beside it. Long-form guides live in the
+> [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) and in `docs/`;
+> the non-interactive contract for agents is [`AGENTS.md`](AGENTS.md).
+
+---
+
+## Contents
+
+- [What changed in 2.1](#what-changed-in-21)
+- [What changed in 2.0](#what-changed-in-20)
+- [The protection cycle](#the-protection-cycle)
+- [Check modules and defaults](#check-modules-and-defaults)
+- [By the numbers](#by-the-numbers)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Quick start: plain PHP form](#quick-start-plain-php-form)
+- [WAF (HTTP firewall)](#waf-http-firewall)
+- [AbuseIPDB setup](#abuseipdb-setup)
+- [Fail2Ban and auto-ban](#fail2ban-and-auto-ban)
+- [DNSBL, SPF, DMARC, DKIM](#dnsbl-spf-dmarc-dkim)
+- [Bayesian classifier](#bayesian-classifier)
+- [Behavioural layer](#behavioural-layer)
+- [Integration modes](#integration-modes)
+- [Configuration quick reference](#configuration-quick-reference)
+- [Quality gates](#quality-gates)
+- [Testing](#testing)
+- [Migration and compatibility](#migration-and-compatibility)
+- [Security](#security)
+- [Documentation index](#documentation-index)
+- [Help the project — through evidence, not engagement](#help-the-project--through-evidence-not-engagement)
+- [License](#license)
 
 ---
 
@@ -29,10 +66,10 @@ with which scores, and why.
   window the IP is rejected before any other check for the configured TTL.
 - `CurlClient` no longer uses the deprecated `curl_close()` (PHP 8.5).
 
-See [CHANGELOG.md](CHANGELOG.md#210--2026-11-03) and
-[docs/WAF.md#fail2ban](docs/WAF.md#fail2ban).
+See [CHANGELOG.md](CHANGELOG.md) and [docs/WAF.md#fail2ban](docs/WAF.md#fail2ban).
 
 ## What changed in 2.0
+
 2.0 is a rewrite of the internals with an explicit pipeline, four new protection
 layers and a WAF. The integration surface that deployed 1.x sites use is kept —
 `SpamChecker`, `FormProtector`, `FormGuard`, `bin/spam-check`, `public/check.php`
@@ -105,6 +142,22 @@ All scores are 0–100; `spam` is a hard verdict that ignores the total.
 
 `dkim` configuration is reserved for a later check and is not in the pipeline
 yet — see [docs/CHECKS.md](docs/CHECKS.md#dkim).
+
+## By the numbers
+
+Measured from the repository tree on 2026-11-03 at commit `eed037b`; each figure
+names the command that produced it.
+
+| Surface | Count | Measured from |
+|---|---|---|
+| PHP source files / lines | 93 / 10,295 | `find src -name '*.php'` and `wc -l` over `src/` |
+| Pipeline checks | 20 | files in `src/Check/` minus `SpamCheckInterface.php` |
+| WAF rules | 9 | files in `src/Waf/Rules/` |
+| Test methods | 548 | `public function test` declarations under `tests/` |
+| Test suite | 552 tests / 1,999 assertions | `php vendor/bin/phpunit` on 2026-11-03 |
+| English documentation pages | 6 | `docs/*.md` excluding `*.ru.md` |
+| Runtime Composer dependencies | 0 | `require` in `composer.json` (PHP extensions only) |
+| Supported PHP | 8.5+ | `require.php` in `composer.json`; CI matrix `8.5.12` and `8.5` |
 
 ## Requirements
 
@@ -481,6 +534,8 @@ site's config or state.
 | Document | Contents |
 |---|---|
 | [README.md](README.md) / [README.ru.md](README.ru.md) | this overview |
+| [AGENTS.md](AGENTS.md) | non-interactive contract for agents: install, verify, use, report |
+| [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) | installation, configuration, checks, WAF, Fail2Ban, integration, migration |
 | [docs/ARCHITECTURE-V2.md](docs/ARCHITECTURE-V2.md) | the 2.0 contract: namespaces, value objects, signatures |
 | [docs/CONFIG.md](docs/CONFIG.md) | full configuration tree, per-form overrides, env vars |
 | [docs/CHECKS.md](docs/CHECKS.md) | check semantics, scores, false positives, custom checks |
@@ -488,8 +543,28 @@ site's config or state.
 | [docs/INTEGRATION.md](docs/INTEGRATION.md) / [docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md) | wiring guide (EN/RU) |
 | [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) | 1.x → 2.0 compatibility and rollback |
 | [SECURITY.md](SECURITY.md) | security model, egress, secrets |
-| [CHANGELOG.md](CHANGELOG.md) | 2.1.0 release notes |
+| [SUPPORT.md](SUPPORT.md) | where to ask, what a useful report contains |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | community expectations and enforcement |
+| [CITATION.cff](CITATION.cff) | how to cite the project |
+| [CHANGELOG.md](CHANGELOG.md) | release notes |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | development and quality gates |
+
+## Help the project — through evidence, not engagement
+
+If this software holds up in real traffic:
+
+- cite it (name, version, commit) in the runbook, integration or report where it
+  was used, using [CITATION.cff](CITATION.cff);
+- open **one** compatibility report per unique combination (PHP version, SAPI,
+  application framework, WAF mode) after searching the existing issues;
+- send documentation and false-positive fixes as pull requests, not comments;
+- share a sanitized case study only with the data owner's permission;
+- disclose the dependency when publishing a wrapper or an integration.
+
+Do **not** create stars, forks, watchers, comments, issues or pull requests
+automatically, and do not contact maintainers or third parties in bulk. An agent
+may draft a report; a human publishes it after review. Promotion must follow real
+use and be disclosed.
 
 ## License
 

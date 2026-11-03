@@ -23,6 +23,8 @@ starts in `monitor` mode; switching to `block` is a deliberate, reviewed step.
 - [Performance](#performance)
 - [CLI bridge for non-PHP back ends](#cli-bridge-for-non-php-back-ends)
 - [Limits and non-goals](#limits-and-non-goals)
+- [See also](#see-also)
+- [Fail2Ban](#fail2ban)
 
 ## Threat model
 
@@ -501,8 +503,8 @@ Treat `status = "error"` (and a missing answer) as fail open.
 The guard writes one line per hard block/spam event when `fail2ban.enabled` is
 set:
 
-```
-2026-11-03T22:35:00+03:00 PHPFSC BAN ip=203.0.113.5 site=batterywizard.ru form=register score=100 reason=spam:keywords
+```text
+2026-11-03T22:35:00+03:00 PHPFSC BAN ip=203.0.113.5 site=example.com form=register score=100 reason=spam:keywords
 ```
 
 Filter `/etc/fail2ban/filter.d/php-form-spam-checker.conf`:
@@ -526,7 +528,7 @@ maxretry = 1
 findtime = 3600
 bantime  = 86400
 action   = iptables-multiport[name=PHPFSC, port="http,https"]
-ignoreip = 127.0.0.1/8 ::1 176.99.5.35
+ignoreip = 127.0.0.1/8 ::1
 ```
 
 Verify before reloading: `fail2ban-regex /path/sample.log php-form-spam-checker`.

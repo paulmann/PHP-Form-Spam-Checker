@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-label="PHP Form Spam Checker 2.1 — Layered anti-spam pipeline and HTTP firewall for any PHP form: 20 checks, 9 WAF rules, evidence for every verdict.">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1220"/>
+      <stop offset="1" stop-color="#1b3354"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="640" fill="url(#background)"/>
+  <rect x="0" y="0" width="1280" height="5" rx="0" fill="#4f9cf9" stroke="#4f9cf9" stroke-width="1"/>
+  <text x="48" y="84" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="17" fill="#4f9cf9" text-anchor="start">ANTI-SPAM PIPELINE &amp; HTTP FIREWALL</text>
+  <text x="48" y="172" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="76" font-weight="700" fill="#e6edf3" text-anchor="start"><tspan x="48"><tspan fill="#4f9cf9">P</tspan>HP</tspan><tspan x="201">Form</tspan><tspan x="395">Spam</tspan><tspan x="590">Checker</tspan><tspan x="910">2.1</tspan></text>
+  <text x="48" y="242" font-family="'Segoe UI', 'DejaVu Sans', sans-serif" font-size="30" font-weight="700" fill="#e6edf3" text-anchor="start">Layered anti-spam pipeline and HTTP firewall for any PHP form: 20 checks, 9 WAF</text>
+  <text x="48" y="280" font-family="'Segoe UI', 'DejaVu Sans', sans-serif" font-size="30" font-weight="700" fill="#e6edf3" text-anchor="start">rules, evidence for every verdict.</text>
+  <text x="48" y="342" font-family="'Segoe UI', 'DejaVu Sans', sans-serif" font-size="20" fill="#96a4b2" text-anchor="start">PHP 8.5 - no captcha - zero runtime dependencies - fail-open by design</text>
+  <rect x="48" y="368" width="113" height="36" rx="18" fill="#141d29" stroke="#2a3848" stroke-width="1"/>
+  <text x="66" y="392" font-family="'Segoe UI', 'DejaVu Sans', sans-serif" font-size="18" fill="#96a4b2" text-anchor="start">20 checks</text>
+  <rect x="173" y="368" width="131" height="36" rx="18" fill="#141d29" stroke="#2a3848" stroke-width="1"/>
+  <text x="191" y="392" font-family="'Segoe UI', 'DejaVu Sans', sans-serif" font-size="18" fill="#96a4b2" text-anchor="start">9 WAF rules</text>
+  <rect x="316" y="368" width="226" height="36" rx="18" fill="#141d29" stroke="#2a3848" stroke-width="1"/>
+  <text x="334" y="392" font-family="'Segoe UI', 'DejaVu Sans', sans-serif" font-size="18" fill="#96a4b2" text-anchor="start">0 runtime dependencies</text>
+  <rect x="554" y="368" width="108" height="36" rx="18" fill="#141d29" stroke="#2a3848" stroke-width="1"/>
+  <text x="572" y="392" font-family="'Segoe UI', 'DejaVu Sans', sans-serif" font-size="18" fill="#96a4b2" text-anchor="start">552 tests</text>
+  <rect x="674" y="368" width="142" height="36" rx="18" fill="#141d29" stroke="#2a3848" stroke-width="1"/>
+  <text x="692" y="392" font-family="'Segoe UI', 'DejaVu Sans', sans-serif" font-size="18" fill="#96a4b2" text-anchor="start">6 docs pages</text>
+  <rect x="48" y="416" width="1184" height="154" rx="16" fill="#0a1018" stroke="#22303f" stroke-width="1"/>
+  <circle cx="68" cy="438" r="6" fill="#ff5f56"/>
+  <circle cx="90" cy="438" r="6" fill="#ffbd2e"/>
+  <circle cx="112" cy="438" r="6" fill="#27c93f"/>
+  <line x1="48" y1="460" x2="1232" y2="460" stroke="#22303f" stroke-width="1"/>
+  <text x="144" y="443" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="15" fill="#96a4b2" text-anchor="start">PHP Form Spam Checker 2.1 · github.com/paulmann/PHP-Form-Spam-Checker</text>
+  <text x="76" y="486" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="17" fill="#e6edf3" text-anchor="start"><tspan fill="#4f9cf9">$ </tspan>php bin/spam-check --help</text>
+  <text x="76" y="513" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="17" fill="#96a4b2" text-anchor="start">Usage: php bin/spam-check [options] [BASE64_PAYLOAD]</text>
+  <text x="76" y="540" font-family="Consolas, 'DejaVu Sans Mono', monospace" font-size="17" fill="#96a4b2" text-anchor="start">Exit codes: 0 clean, 1 suspicious, 2 spam, 3 error.</text>
+  <text x="48" y="606" font-family="'Segoe UI', 'DejaVu Sans', sans-serif" font-size="19" font-weight="700" fill="#e6edf3" text-anchor="start">github.com/paulmann/PHP-Form-Spam-Checker</text>
+</svg>

@@ -1,0 +1,41 @@
+name: Feature request
+description: A check, a rule, an adapter or a CLI capability you would like to see
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The library is deliberately dependency-free and fails open. A proposal that
+        needs a runtime Composer package or a network call by default will be
+        discussed as an opt-in module, not merged as a default.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What false positive, false negative or operational gap you hit
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behaviour
+      description: What should happen; name the configuration key and the default
+    validations:
+      required: true
+  - type: textarea
+    id: tradeoff
+    attributes:
+      label: False-positive / false-negative trade-off
+      description: What legitimate messages could this affect, and how should that be detected
+    validations:
+      required: true
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Confirmations
+      options:
+        - label: I searched the existing issues and the documentation first
+          required: true
+        - label: The proposal needs no runtime Composer dependency by default
+          required: true
