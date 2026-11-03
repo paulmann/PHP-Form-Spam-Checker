@@ -196,12 +196,16 @@ require '/var/www/lib/PHP-Form-Spam-Checker/integrations/guard.php';
 require '/var/www/lib/PHP-Form-Spam-Checker/integrations/waf.php';
 ```
 
-…или глобально для PHP-FPM пула. `auto-prepend.php` запускает WAF независимо
-от legacy-флага `auto` (сам конвейер формы по-прежнему ограничен флагом):
+…или глобально для PHP-FPM пула:
 
 ```ini
-php_admin_value[auto_prepend_file] = /var/www/lib/PHP-Form-Spam-Checker/integrations/auto-prepend.php
+; только файрвол
+php_admin_value[auto_prepend_file] = /var/www/lib/PHP-Form-Spam-Checker/integrations/waf.php
 ```
+
+Если в пуле используется и guard формы, укажите в `auto_prepend_file`
+`integrations/auto-prepend.php`: он запускает WAF независимо от legacy-флага
+`auto`, а конвейер формы включает по этому флагу.
 
 Конфиг сайта — тот же `config/sites/<host>.php`, что у guard формы (секция
 `waf` внутри `config`, необязательные ключи верхнего уровня `waf_mode`,

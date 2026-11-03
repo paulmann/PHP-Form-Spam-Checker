@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FormSpamChecker\Cli;
 
+use Closure;
 use FormSpamChecker\Config;
 use FormSpamChecker\Log\ErrorLogLogger;
 use FormSpamChecker\SpamChecker;
@@ -27,6 +28,35 @@ use Throwable;
  */
 final class WafCommand
 {
+    /** @var Closure(string): void */
+    private readonly Closure $out;
+
+    /** @var Closure(string): void */
+    private readonly Closure $err;
+    /** @var Closure(): string */
+    private readonly Closure $in;
+
+    /**
+     * Streams are injectable so the commands can be tested in-process without
+     * spawning a child PHP process (and without covering the wrapper only).
+     *
+     * @param Closure(string): void|null $out
+     * @param Closure(string): void|null $err
+     */
+    public function __construct(?Closure $out = null, ?Closure $err = null, ?Closure $in = null)
+    {
+        $this->out = $out ?? static function (string $text): void {
+            fwrite(STDOUT, $text);
+        };
+        $this->err = $err ?? static function (string $text): void {
+            fwrite(STDERR, $text);
+        };
+        $this->in = $in ?? static function (): string {
+            $stream = stream_get_contents(STDIN);
+
+            return $stream === false ? '' : $stream;
+        };
+    }
     public const int EXIT_ALLOW = 0;
     public const int EXIT_BLOCK = 2;
     public const int EXIT_ERROR = 3;
@@ -40,7 +70,7 @@ final class WafCommand
             $options = $this->parse(\array_slice($argv, 1));
 
             if (($options['help'] ?? false) === true) {
-                fwrite(STDERR, self::usage());
+                ($this->err)(self::usage());
 
                 return self::EXIT_ALLOW;
             }
@@ -99,7 +129,7 @@ final class WafCommand
                 'findings' => [],
                 'reasons' => [$exception->getMessage()],
             ]);
-            fwrite(STDERR, 'waf-check: ' . $exception->getMessage() . PHP_EOL);
+            ($this->err)('waf-check: ' . $exception->getMessage() . PHP_EOL);
 
             return self::EXIT_ERROR;
         }
@@ -267,8 +297,11 @@ final class WafCommand
         }
 
         if (($options['stdin'] ?? false) === true || stream_isatty(STDIN) === false) {
-            $stdin = stream_get_contents(STDIN);
-            if ($stdin !== false && trim($stdin) !== '') {
+            $stdin = ($this->in)();
+            if (!\is_string($stdin)) {
+                $stdin = '';
+            }
+            if (trim($stdin) !== '') {
                 return $stdin;
             }
         }
@@ -306,7 +339,7 @@ final class WafCommand
      */
     private function emit(array $payload): void
     {
-        fwrite(STDOUT, json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL);
+        ($this->out)(json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL);
     }
 
     public static function usage(): string

@@ -237,7 +237,7 @@ final readonly class RequestData
             }
         }
 
-        if (isset($server['HTTP_X_FORWARDED_FOR']) && \is_string($server['HTTP_X_FORWARDED_FOR'])) {
+        if (!isset($server['HTTP_CF_CONNECTING_IP']) && isset($server['HTTP_X_FORWARDED_FOR']) && \is_string($server['HTTP_X_FORWARDED_FOR'])) {
             $remote = $server['REMOTE_ADDR'] ?? '';
             if (!\is_string($remote)) {
                 $remote = '';

@@ -324,6 +324,55 @@ final class WafGuard
      * Answer a blocked request and terminate. Public so that a front
      * controller can reuse the guard's response format.
      */
+    /**
+     * Build the response for a blocked request without producing output.
+     *
+     * @return array{status: int, headers: array<string, string>, body: string}
+     */
+    public function buildResponse(WafRequest $request, WafVerdict $verdict): array
+    {
+        $type = $this->responseType;
+
+        if ($type === 'auto') {
+            $accept = $request->header('accept');
+            $type = str_contains($accept, 'application/json')
+                || preg_match('#/(api|ajax|json)(/|\.|$)#i', $request->uri) === 1
+                ? 'json'
+                : 'html';
+        }
+
+        $headers = ['X-WAF' => 'blocked', 'Cache-Control' => 'no-store'];
+
+        if ($type === 'silent') {
+            return ['status' => 200, 'headers' => $headers, 'body' => ''];
+        }
+
+        if ($type === 'json') {
+            $body = json_encode([
+                'ok' => false,
+                'error' => 'waf_blocked',
+                'message' => 'Запрос отклонён защитой сайта.',
+            ], JSON_UNESCAPED_UNICODE);
+
+            return [
+                'status' => $this->blockStatus,
+                'headers' => $headers + ['Content-Type' => 'application/json; charset=utf-8'],
+                'body' => $body === false ? '{}' : $body,
+            ];
+        }
+
+        return [
+            'status' => $this->blockStatus,
+            'headers' => $headers + ['Content-Type' => 'text/html; charset=utf-8'],
+            'body' => '<!doctype html><meta charset="utf-8"><title>Запрос отклонён</title>'
+                . '<p>Запрос отклонён защитой сайта.</p>',
+        ];
+    }
+
+    /**
+     * Answer a blocked request and terminate. Public so that a front
+     * controller can reuse the guard's response format.
+     */
     public function reject(WafRequest $request, WafVerdict $verdict): never
     {
         error_log(\sprintf(
@@ -336,54 +385,19 @@ final class WafGuard
             implode('; ', $verdict->reasons()),
         ));
 
-        if (!headers_sent()) {
-            http_response_code($this->blockStatus);
-            header('X-WAF: blocked');
-            header('Cache-Control: no-store');
-        }
-
-        $type = $this->responseType;
-
-        if ($type === 'auto') {
-            $accept = $request->header('accept');
-            $type = str_contains($accept, 'application/json')
-                || preg_match('#/(api|ajax|json)(/|\.|$)#i', $request->uri) === 1
-                ? 'json'
-                : 'html';
-        }
-
-        if ($type === 'silent') {
-            if (!headers_sent()) {
-                http_response_code(200);
-            }
-
-            exit;
-        }
-
-        if ($type === 'json') {
-            if (!headers_sent()) {
-                header('Content-Type: application/json; charset=utf-8');
-            }
-
-            echo json_encode([
-                'ok' => false,
-                'error' => 'waf_blocked',
-                'message' => 'Запрос отклонён защитой сайта.',
-            ], JSON_UNESCAPED_UNICODE);
-
-            exit;
-        }
+        $response = $this->buildResponse($request, $verdict);
 
         if (!headers_sent()) {
-            header('Content-Type: text/html; charset=utf-8');
+            http_response_code($response['status']);
+            foreach ($response['headers'] as $name => $value) {
+                header($name . ': ' . $value);
+            }
         }
 
-        echo '<!doctype html><meta charset="utf-8"><title>Запрос отклонён</title>'
-            . '<p>Запрос отклонён защитой сайта.</p>';
+        echo $response['body'];
 
         exit;
     }
-
     private function logVerdict(WafRequest $request, WafVerdict $verdict): void
     {
         if ($verdict->findings === []) {

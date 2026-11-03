@@ -196,12 +196,16 @@ require '/var/www/lib/PHP-Form-Spam-Checker/integrations/guard.php';
 require '/var/www/lib/PHP-Form-Spam-Checker/integrations/waf.php';
 ```
 
-…or globally for a PHP-FPM pool. `auto-prepend.php` runs the WAF layer
-independently of the legacy `auto` flag (it still gates the form pipeline):
+…or globally for a PHP-FPM pool:
 
 ```ini
-php_admin_value[auto_prepend_file] = /var/www/lib/PHP-Form-Spam-Checker/integrations/auto-prepend.php
+; firewall only
+php_admin_value[auto_prepend_file] = /var/www/lib/PHP-Form-Spam-Checker/integrations/waf.php
 ```
+
+On a pool that also uses the form guard, point `auto_prepend_file` at
+`integrations/auto-prepend.php` instead: it runs the WAF layer independently of
+the legacy `auto` flag and gates the form pipeline with that flag.
 
 Per-site configuration is the same `config/sites/<host>.php` file the form
 guard uses (`waf` section inside `config`, optional top-level `waf_mode`,

@@ -259,6 +259,63 @@ final class FormGuard
      *
      * @param array<string, mixed> $server
      */
+    /**
+     * Build the response for a spam submission without producing output.
+     *
+     * Kept separate from {@see reject()} so the response matrix (json/html/
+     * silent, auto-detection, status codes) is unit-testable.
+     *
+     * @param  array<string, mixed>                                             $server
+     * @return array{status: int, headers: array<string, string>, body: string}
+     */
+    public function buildResponse(Verdict $verdict, array $server = []): array
+    {
+        $type = $this->responseType;
+
+        if ($type === 'auto') {
+            $acceptValue = $server['HTTP_ACCEPT'] ?? $_SERVER['HTTP_ACCEPT'] ?? '';
+            $accept = \is_string($acceptValue) ? $acceptValue : '';
+
+            $uriValue = $server['REQUEST_URI'] ?? $_SERVER['REQUEST_URI'] ?? '';
+            $uri = \is_string($uriValue) ? $uriValue : '';
+            $type = str_contains($accept, 'application/json') || preg_match('#/(api|ajax|json)(/|\.|$)#i', $uri) === 1
+                ? 'json'
+                : 'html';
+        }
+
+        $headers = ['X-Spam-Guard' => 'blocked', 'Cache-Control' => 'no-store'];
+
+        if ($type === 'silent') {
+            return ['status' => 200, 'headers' => $headers, 'body' => ''];
+        }
+
+        if ($type === 'json') {
+            $body = json_encode([
+                'ok' => false,
+                'error' => 'spam_detected',
+                'message' => 'Заявка отклонена антиспам-проверкой.',
+            ], JSON_UNESCAPED_UNICODE);
+
+            return [
+                'status' => 400,
+                'headers' => $headers + ['Content-Type' => 'application/json; charset=utf-8'],
+                'body' => $body === false ? '{}' : $body,
+            ];
+        }
+
+        return [
+            'status' => 400,
+            'headers' => $headers + ['Content-Type' => 'text/html; charset=utf-8'],
+            'body' => '<!doctype html><meta charset="utf-8"><title>Заявка отклонена</title>'
+                . '<p>Заявка отклонена антиспам-проверкой. Если это ошибка, напишите нам обычной почтой.</p>',
+        ];
+    }
+
+    /**
+     * Answer a spam submission and terminate.
+     *
+     * @param array<string, mixed> $server
+     */
     public function reject(Verdict $verdict, array $server = []): never
     {
         $requestUri = $server['REQUEST_URI'] ?? $_SERVER['REQUEST_URI'] ?? '';
@@ -280,46 +337,19 @@ final class FormGuard
             implode('; ', $verdict->reasons()),
         ));
 
+        $response = $this->buildResponse($verdict, $server);
+
         if (!headers_sent()) {
-            http_response_code(400);
-            header('X-Spam-Guard: blocked');
-            header('Cache-Control: no-store');
+            http_response_code($response['status']);
+            foreach ($response['headers'] as $name => $value) {
+                header($name . ': ' . $value);
+            }
         }
 
-        $type = $this->responseType;
+        echo $response['body'];
 
-        if ($type === 'auto') {
-            $acceptValue = $server['HTTP_ACCEPT'] ?? $_SERVER['HTTP_ACCEPT'] ?? '';
-            $accept = \is_string($acceptValue) ? $acceptValue : '';
-
-            $uriValue = $server['REQUEST_URI'] ?? $_SERVER['REQUEST_URI'] ?? '';
-            $uri = \is_string($uriValue) ? $uriValue : '';
-            $type = str_contains($accept, 'application/json') || preg_match('#/(api|ajax|json)(/|\.|$)#i', $uri) === 1
-                ? 'json'
-                : 'html';
-        }
-
-        if ($type === 'silent') {
-            http_response_code(200);
-            exit;
-        }
-
-        if ($type === 'json') {
-            header('Content-Type: application/json; charset=utf-8');
-            echo json_encode([
-                'ok' => false,
-                'error' => 'spam_detected',
-                'message' => 'Заявка отклонена антиспам-проверкой.',
-            ], JSON_UNESCAPED_UNICODE);
-            exit;
-        }
-
-        header('Content-Type: text/html; charset=utf-8');
-        echo '<!doctype html><meta charset="utf-8"><title>Заявка отклонена</title>'
-            . '<p>Заявка отклонена антиспам-проверкой. Если это ошибка, напишите нам обычной почтой.</p>';
         exit;
     }
-
     /**
      * @param array<string, mixed> $fields
      * @param array<string, mixed> $server

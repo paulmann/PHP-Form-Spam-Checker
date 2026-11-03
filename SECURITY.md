@@ -107,8 +107,8 @@ Rules:
   all field values unless `log.pii` is explicitly enabled; PII mode also honours
   `fields.exclude`.
 - The WAF logs method, URI, client IP and rule reasons through `error_log()`.
-  Evidence contains a truncated match fragment (max ~120 characters), never the
-  whole body or a whole field value.
+  Evidence contains a truncated payload fragment or short metadata (rule,
+  location, field name), never the whole body or a whole field value.
 - The Bayesian model stores token counts and document counts only — never the
   training documents. The model file is written through the cache adapter and
   an unreadable model is treated as "untrained" (fail open).

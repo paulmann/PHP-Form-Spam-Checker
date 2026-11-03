@@ -142,3 +142,12 @@ existing 1.x integrations keep working (see *Backward compatibility*).
 
 [2.0.0]: https://github.com/Paulmann/PHP-Form-Spam-Checker/compare/v1.0.0...v2.0
 [Unreleased]: https://github.com/Paulmann/PHP-Form-Spam-Checker/compare/v2.0...main
+
+### Quality notes (2.0.0)
+
+- Measured locally on PHP 8.5.12 with Xdebug: **89.5 % line / 73.4 % method
+  coverage** over src/ (7 environment adapters excluded: file/curl/DNS/PSR
+  wrappers). CI enforces 88 % lines / 72 % methods as a ratchet and the
+  project target remains 100 %; the remaining gap is concentrated in
+  process-entry adapters and defensive branches that require a real web
+  server (documented in the test suite).

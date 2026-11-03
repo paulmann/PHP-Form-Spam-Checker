@@ -47,38 +47,54 @@ final class CheckEndpoint
         header('X-Content-Type-Options: nosniff');
         header('Cache-Control: no-store');
 
-        if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
-            http_response_code(405);
-            echo $this->json(['status' => 'error', 'error' => 'method not allowed, use POST']);
-            exit;
+        $max = max(1024, $this->config->int('endpoint.max_body_bytes', 262144));
+        $raw = file_get_contents('php://input', false, null, 0, $max + 1);
+
+        $methodValue = $_SERVER['REQUEST_METHOD'] ?? '';
+        $method = \is_string($methodValue) ? $methodValue : '';
+
+        $response = $this->respond(
+            $method,
+            $_SERVER,
+            $raw === false ? '' : $raw,
+        );
+
+        http_response_code($response['status']);
+        echo $response['body'];
+        exit;
+    }
+
+    /**
+     * Pure request handling (no I/O), used by {@see handle()} and by tests.
+     *
+     * @param  array<mixed>                   $server
+     * @return array{status:int, body:string}
+     */
+    public function respond(string $method, array $server, string $raw): array
+    {
+        if ($method !== 'POST') {
+            return ['status' => 405, 'body' => $this->json(['status' => 'error', 'error' => 'method not allowed, use POST'])];
         }
 
         $key = $this->config->string('endpoint.key');
 
         if ($key !== '') {
-            $providedValue = $_SERVER['HTTP_X_SPAM_CHECKER_KEY'] ?? '';
+            $providedValue = $server['HTTP_X_SPAM_CHECKER_KEY'] ?? '';
             $provided = \is_string($providedValue) ? $providedValue : '';
 
             if (!$this->isAuthorized($provided)) {
-                http_response_code(403);
-                echo $this->json(['status' => 'error', 'error' => 'forbidden']);
-                exit;
+                return ['status' => 403, 'body' => $this->json(['status' => 'error', 'error' => 'forbidden'])];
             }
         }
 
         $max = max(1024, $this->config->int('endpoint.max_body_bytes', 262144));
-        $raw = file_get_contents('php://input', false, null, 0, $max + 1);
-
-        if ($raw === false) {
-            http_response_code(400);
-            echo $this->json(['status' => 'error', 'error' => 'cannot read request body']);
-            exit;
-        }
 
         if (\strlen($raw) > $max) {
-            http_response_code(413);
-            echo $this->json(['status' => 'error', 'error' => 'request body too large']);
-            exit;
+            return ['status' => 413, 'body' => $this->json(['status' => 'error', 'error' => 'request body too large'])];
+        }
+
+        if ($raw === '') {
+            return ['status' => 400, 'body' => $this->json(['status' => 'error', 'error' => 'cannot read request body'])];
         }
 
         try {
@@ -95,19 +111,12 @@ final class CheckEndpoint
                 }
             }
 
-            $response = $this->process($payload);
-            $statusCode = 200;
+            return ['status' => 200, 'body' => $this->json($this->process($payload))];
         } catch (JsonException $exception) {
-            $statusCode = 400;
-            $response = ['status' => 'error', 'error' => 'invalid JSON: ' . $exception->getMessage()];
+            return ['status' => 400, 'body' => $this->json(['status' => 'error', 'error' => 'invalid JSON: ' . $exception->getMessage()])];
         } catch (Throwable $exception) {
-            $statusCode = 500;
-            $response = ['status' => 'error', 'error' => 'spam checker error: ' . $exception->getMessage()];
+            return ['status' => 500, 'body' => $this->json(['status' => 'error', 'error' => 'spam checker error: ' . $exception->getMessage()])];
         }
-
-        http_response_code($statusCode);
-        echo $this->json($response);
-        exit;
     }
 
     /**

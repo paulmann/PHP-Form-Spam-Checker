@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace FormSpamChecker\Cli;
 
+use Closure;
 use FormSpamChecker\Config;
 use FormSpamChecker\SpamChecker;
 use InvalidArgumentException;
@@ -24,6 +25,28 @@ use Throwable;
  */
 final class TrainCommand
 {
+    /** @var Closure(string): void */
+    private readonly Closure $out;
+
+    /** @var Closure(string): void */
+    private readonly Closure $err;
+
+    /**
+     * Streams are injectable so the commands can be tested in-process without
+     * spawning a child PHP process (and without covering the wrapper only).
+     *
+     * @param Closure(string): void|null $out
+     * @param Closure(string): void|null $err
+     */
+    public function __construct(?Closure $out = null, ?Closure $err = null)
+    {
+        $this->out = $out ?? static function (string $text): void {
+            fwrite(STDOUT, $text);
+        };
+        $this->err = $err ?? static function (string $text): void {
+            fwrite(STDERR, $text);
+        };
+    }
     public const int EXIT_OK = 0;
     public const int EXIT_ERROR = 3;
 
@@ -36,7 +59,7 @@ final class TrainCommand
             $options = $this->parse(\array_slice($argv, 1));
 
             if (($options['help'] ?? false) === true) {
-                fwrite(STDERR, self::usage());
+                ($this->err)(self::usage());
 
                 return self::EXIT_OK;
             }
@@ -54,6 +77,15 @@ final class TrainCommand
             if (($options['reset'] ?? false) === true) {
                 $classifier->reset();
                 $this->emit(['reset' => true]);
+
+                $hasTrainingData = isset($options['ham'])
+                    || isset($options['spam'])
+                    || isset($options['text-ham'])
+                    || isset($options['text-spam']);
+
+                if (!$hasTrainingData) {
+                    return self::EXIT_OK;
+                }
             }
 
             if (($options['stats'] ?? false) === true) {
@@ -88,7 +120,7 @@ final class TrainCommand
             return self::EXIT_OK;
         } catch (Throwable $exception) {
             $this->emit(['error' => $exception->getMessage()]);
-            fwrite(STDERR, 'spam-train: ' . $exception->getMessage() . PHP_EOL);
+            ($this->err)('spam-train: ' . $exception->getMessage() . PHP_EOL);
 
             return self::EXIT_ERROR;
         }
@@ -185,7 +217,7 @@ final class TrainCommand
      */
     private function emit(array $payload): void
     {
-        fwrite(STDOUT, json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL);
+        ($this->out)(json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . PHP_EOL);
     }
 
     public static function usage(): string
