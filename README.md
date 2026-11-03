@@ -26,6 +26,7 @@ with which scores, and why.
 
 ## Contents
 
+- [What changed in 2.1.2](#what-changed-in-212)
 - [What changed in 2.1](#what-changed-in-21)
 - [What changed in 2.0](#what-changed-in-20)
 - [The protection cycle](#the-protection-cycle)
@@ -52,6 +53,25 @@ with which scores, and why.
 
 ---
 
+## What changed in 2.1.2
+
+2.1.2 adds a locale check for Russian-language forms and turns it on in the
+reference deployment configs:
+
+- **Cyrillic requirement for names** (`language.require_cyrillic`): the
+  configured name-like fields (`name`, `fio`, `first_name`, `last_name`,
+  `surname`, `имя`, `фамилия`, `фио`, …; matched case- and
+  separator-insensitively) must contain at least one Cyrillic letter. A value
+  that has letters but no Cyrillic adds `language.missing_score` points —
+  `40` by default, `60` in the reference deployment configs, where a Latin-only
+  name alone reaches the spam threshold; `missing_score = 40` downgrades it to
+  "suspicious". E-mail, company and free-text fields are never checked, and
+  `language.fields` / `min_letters` / `max_score` tune the rule.
+- The shared-server configs in `config/sites/` enable the rule on every site.
+
+See [CHANGELOG.md](CHANGELOG.md) and the `language.*` keys in
+[docs/CONFIG.md](docs/CONFIG.md).
+
 ## What changed in 2.1
 
 2.1 adds the firewall bridge and the deployment hardening on top of 2.0:
@@ -64,9 +84,6 @@ with which scores, and why.
   the firewall (HTTP/HTTPS only) with `maxretry = 1`.
 - **Application auto-ban** — `autoban` check: after N hard events inside a
   window the IP is rejected before any other check for the configured TTL.
-- **Russian name check** — `language.require_cyrillic`: a name/surname with
-  letters but no Cyrillic scores 60 (spam threshold) on the reference
-  deployments; e-mail, company and message fields are never punished.
 - `CurlClient` no longer uses the deprecated `curl_close()` (PHP 8.5).
 
 See [CHANGELOG.md](CHANGELOG.md) and [docs/WAF.md#fail2ban](docs/WAF.md#fail2ban).
