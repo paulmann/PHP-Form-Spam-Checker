@@ -260,6 +260,20 @@ final class Config
     }
 
     /**
+     * File Fail2Ban follows for this installation.
+     *
+     * A blank `fail2ban.log_path` falls back to the state directory, so the
+     * shared library works out of the box and site configs usually override it
+     * with a per-site file under `var/log/sites/`.
+     */
+    public function fail2banLogPath(): string
+    {
+        $path = $this->string('fail2ban.log_path');
+
+        return $path !== '' ? $path : $this->storagePath() . DIRECTORY_SEPARATOR . 'fail2ban.log';
+    }
+
+    /**
      * Directory where the Bayesian model is persisted.
      */
     public function bayesStoragePath(): string
@@ -514,8 +528,20 @@ final class Config
                     'rate_limit' => false,
                 ],
             ],
-            'forms' => [],
-        ];
+            'autoban' => [
+                'enabled' => false,
+                'threshold' => 5,
+                'window' => 3600,
+                'ttl' => 86400,
+            ],
+            'fail2ban' => [
+                'enabled' => false,
+                'log_path' => '',
+                'site' => '',
+                'emit_on' => 'both',
+                'min_score' => 60,
+            ],
+            'forms' => [],        ];
     }
 
     /**

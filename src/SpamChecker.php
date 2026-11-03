@@ -8,6 +8,7 @@ use FormSpamChecker\Cache\ArrayCache;
 use FormSpamChecker\Cache\CacheInterface;
 use FormSpamChecker\Cache\FileCache;
 use FormSpamChecker\Cache\NullCache;
+use FormSpamChecker\Check\BanCheck;
 use FormSpamChecker\Check\EmailCheck;
 use FormSpamChecker\Check\HoneypotCheck;
 use FormSpamChecker\Check\KeywordCheck;
@@ -32,6 +33,8 @@ use FormSpamChecker\Log\ErrorLogLogger;
 use FormSpamChecker\Log\LoggerInterface;
 use FormSpamChecker\Log\VerdictLogger;
 use FormSpamChecker\Pipeline\SpamPipeline;
+use FormSpamChecker\Security\AutoBan;
+use FormSpamChecker\Security\Fail2Ban;
 use FormSpamChecker\Storage\FileStorage;
 use FormSpamChecker\Storage\MemoryStorage;
 use FormSpamChecker\Storage\StorageInterface;
@@ -111,6 +114,8 @@ final class SpamChecker
 
         $verdict = (new SpamPipeline($checks))->process($request, $config);
 
+        $this->applySecurityTools($config, $storage, $logger, $request, $verdict);
+
         $this->log($config, $verdict, $request);
 
         return $verdict;
@@ -144,6 +149,11 @@ final class SpamChecker
             new RepetitionCheck($config),
             new LanguageCheck($config),
         ];
+
+        if ($config->bool('autoban.enabled', false) && class_exists(BanCheck::class)) {
+            $fail2ban = self::createFail2Ban($config, $logger);
+            array_unshift($checks, new BanCheck(new AutoBan($config, $storage, $fail2ban)));
+        }
 
         $logger ??= new ErrorLogLogger('pipeline');
         $http ??= new CurlClient();
@@ -284,6 +294,60 @@ final class SpamChecker
             ))->log($verdict, $request);
         } catch (Throwable) {
             // Logging must never break form processing.
+        }
+    }
+    /**
+     * Fail2Ban bridge for this configuration, or null when disabled.
+     */
+    public static function createFail2Ban(Config $config, ?LoggerInterface $logger = null): ?Fail2Ban
+    {
+        if (!$config->bool('fail2ban.enabled', false)) {
+            return null;
+        }
+
+        return new Fail2Ban($config->fail2banLogPath(), $config->string('fail2ban.site'), $logger);
+    }
+
+    /**
+     * Report a hard-spam verdict to Fail2Ban and the application auto-ban.
+     *
+     * Both layers are optional and fail-open: a reporting error must never
+     * change the verdict or take a form down.
+     */
+    private function applySecurityTools(
+        Config $config,
+        StorageInterface $storage,
+        LoggerInterface $logger,
+        RequestData $request,
+        Verdict $verdict,
+    ): void {
+        if (!$verdict->isSpam() || $request->ip === '') {
+            return;
+        }
+
+        try {
+            $fail2ban = self::createFail2Ban($config, $logger);
+            $emitOn = $config->string('fail2ban.emit_on', 'both');
+
+            if (
+                $fail2ban !== null
+                && ($emitOn === 'spam' || $emitOn === 'both')
+                && $verdict->score >= $config->int('fail2ban.min_score', 60)
+            ) {
+                $fail2ban->report(
+                    $request->ip,
+                    'spam:' . implode(';', $verdict->reasons()),
+                    $verdict->score,
+                    $request->formId,
+                );
+            }
+
+            if ($config->bool('autoban.enabled', false)) {
+                (new AutoBan($config, $storage, $fail2ban))
+                    ->recordAbuse($request->ip, 'spam', $verdict->score, $request->formId);
+            }
+        } catch (Throwable $exception) {
+            error_log('[spam-checker] security reporting failed (fail open): ' . $exception->getMessage());
         }
     }
 }

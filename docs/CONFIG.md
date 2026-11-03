@@ -397,3 +397,21 @@ return [
 
 The guard defaults storage and logging into the module's `var/` tree unless the
 site config sets them explicitly (see `FormGuard::boot()`).
+
+## Fail2Ban and auto-ban (2.1)
+
+| Key | Default | Meaning |
+|---|---|---|
+| `autoban.enabled` | `false` | enable the application-level IP ban |
+| `autoban.threshold` | `5` | hard-spam events inside the window before the ban |
+| `autoban.window` | `3600` | counting window, seconds |
+| `autoban.ttl` | `86400` | ban duration, seconds |
+| `fail2ban.enabled` | `false` | write `PHPFSC BAN …` lines for the jail |
+| `fail2ban.log_path` | `storage/fail2ban.log` | log file followed by the jail; site configs use `var/log/sites/<site>.f2b.log` |
+| `fail2ban.site` | `''` | token written into `site=` |
+| `fail2ban.emit_on` | `both` | report hard form spam (`spam`), WAF blocks (`waf`) or both |
+| `fail2ban.min_score` | `60` | minimum verdict/block score to report |
+
+Banned IPs live in the same storage as rate-limit counters (`storage.*`), so
+`ban:<ip>` entries expire with `autoban.ttl`. `AutoBan::unban()` removes an
+entry; a failed storage call never blocks a form.

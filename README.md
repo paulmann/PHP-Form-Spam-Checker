@@ -251,6 +251,34 @@ IP is sent to AbuseIPDB — see [SECURITY.md](SECURITY.md#network-egress).
 
 Runnable wiring example: [examples/abuseipdb.php](examples/abuseipdb.php).
 
+## Fail2Ban and auto-ban
+
+Hard-spam verdicts and WAF blocks can be handed to the firewall:
+
+- `fail2ban.enabled` appends one line per event to `fail2ban.log_path`:
+  `PHPFSC BAN ip=<ip> site=<host> form=<form> score=<n> reason=<token>`;
+- a Fail2Ban filter/jail ([docs/WAF.md](docs/WAF.md#fail2ban)) turns those
+  lines into a firewall ban (http/https only);
+- `autoban.enabled` is the application-level fallback: after
+  `autoban.threshold` events inside `autoban.window` the IP is stored as banned
+  for `autoban.ttl`, and the first pipeline check (`autoban`) returns hard SPAM
+  before any other check runs.
+
+Both layers are optional and fail-open. Example:
+
+```php
+'autoban' => ['enabled' => true, 'threshold' => 5, 'window' => 3600, 'ttl' => 86400],
+'fail2ban' => [
+    'enabled' => true,
+    'log_path' => __DIR__ . '/../var/log/sites/' . $site . '.f2b.log',
+    'site' => $site,
+    'emit_on' => 'both',   // spam | waf | both
+    'min_score' => 60,
+],
+```
+For a conservative deployment set `'threshold' => 100`: only IPs whose AbuseIPDB
+confidence score is exactly 100 are treated as spam (the library default is 90).
+The deployment reference config uses 100.
 ## DNSBL, SPF, DMARC, DKIM
 
 ```php

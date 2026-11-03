@@ -495,3 +495,39 @@ Treat `status = "error"` (and a missing answer) as fail open.
 - [docs/CONFIG.md](CONFIG.md) — every `waf.*` key
 - [docs/CHECKS.md](CHECKS.md#waf-rules-vs-form-checks) — WAF vs form check semantics
 - [docs/MIGRATION-1-to-2.md](MIGRATION-1-to-2.md) — enabling the WAF on a 1.x install
+
+## Fail2Ban
+
+The guard writes one line per hard block/spam event when `fail2ban.enabled` is
+set:
+
+```
+PHPFSC BAN ip=203.0.113.5 site=batterywizard.ru form=register score=100 reason=spam:keywords
+```
+
+Filter `/etc/fail2ban/filter.d/php-form-spam-checker.conf`:
+
+```ini
+[Definition]
+failregex = ^PHPFSC BAN ip=<HOST> .*$
+ignoreregex =
+```
+
+Jail `/etc/fail2ban/jail.d/php-form-spam-checker.local` (ban only HTTP/HTTPS so
+SSH is never affected; keep admin hosts in `ignoreip`):
+
+```ini
+[php-form-spam-checker]
+enabled  = true
+filter   = php-form-spam-checker
+logpath  = /var/www/lib/PHP-Form-Spam-Checker/var/log/sites/*.f2b.log
+maxretry = 1
+findtime = 3600
+bantime  = 86400
+action   = iptables-multiport[name=PHPFSC, port="http,https"]
+ignoreip = 127.0.0.1/8 ::1 176.99.5.35
+```
+
+Verify before reloading: `fail2ban-regex /path/sample.log php-form-spam-checker`.
+The application-level `autoban` keeps working when Fail2Ban is absent; both
+layers are fail-open and never change a verdict on their own.

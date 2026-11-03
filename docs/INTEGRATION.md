@@ -384,3 +384,12 @@ on real traffic.
 Run the shipped `examples/` against a local or staging copy only: they use demo
 secrets and the system temp directory, and must never be pointed at a production
 site's config or state.
+
+## Fail2Ban and auto-ban
+
+`integrations/guard.php` runs the WAF (when enabled) and then the form pipeline.
+Both layers report hard events to `fail2ban.log_path` (when `fail2ban.enabled`)
+and feed the `autoban` counter (when `autoban.enabled`); the next request from a
+banned IP is rejected by the `autoban` check with a hard SPAM verdict. See
+`docs/CONFIG.md#fail2ban-and-auto-ban-21` for keys and `docs/WAF.md#fail2ban`
+for the jail.

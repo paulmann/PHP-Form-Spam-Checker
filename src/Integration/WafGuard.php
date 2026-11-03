@@ -7,6 +7,8 @@ namespace FormSpamChecker\Integration;
 use FormSpamChecker\Check\SpamCheckInterface;
 use FormSpamChecker\Config;
 use FormSpamChecker\Log\ErrorLogLogger;
+use FormSpamChecker\Security\AutoBan;
+use FormSpamChecker\SpamChecker;
 use FormSpamChecker\Storage\FileStorage;
 use FormSpamChecker\Storage\MemoryStorage;
 use FormSpamChecker\Storage\StorageInterface;
@@ -312,6 +314,7 @@ final class WafGuard
         }
 
         $this->logVerdict($request, $verdict);
+        $this->reportSecurityTools($request, $verdict);
 
         if ($this->mode !== self::MODE_BLOCK || !$verdict->blocked) {
             return false;
@@ -556,5 +559,42 @@ final class WafGuard
     private function matches(string $pattern, string $uri): bool
     {
         return @preg_match($pattern, $uri) === 1;
+    }
+    /**
+     * Report a blocked request to Fail2Ban and the application auto-ban.
+     *
+     * Runs in monitor mode too: Fail2Ban can ban at the firewall even while the
+     * WAF itself is only observing. Best-effort and fail-open.
+     */
+    private function reportSecurityTools(WafRequest $request, WafVerdict $verdict): void
+    {
+        if (!$verdict->blocked || $request->ip === '') {
+            return;
+        }
+
+        try {
+            $fail2ban = SpamChecker::createFail2Ban($this->config);
+            $emitOn = $this->config->string('fail2ban.emit_on', 'both');
+
+            if (
+                $fail2ban !== null
+                && ($emitOn === 'waf' || $emitOn === 'both')
+                && $verdict->score >= $this->config->int('fail2ban.min_score', 60)
+            ) {
+                $fail2ban->report(
+                    $request->ip,
+                    'waf:' . implode(';', $verdict->reasons()),
+                    $verdict->score,
+                    $request->uri,
+                );
+            }
+
+            if ($this->config->bool('autoban.enabled', false)) {
+                (new AutoBan($this->config, SpamChecker::createStorage($this->config), $fail2ban))
+                    ->recordAbuse($request->ip, 'waf', $verdict->score, $request->uri);
+            }
+        } catch (Throwable $exception) {
+            error_log('[waf] security reporting failed (fail open): ' . $exception->getMessage());
+        }
     }
 }

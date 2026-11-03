@@ -4,6 +4,28 @@ All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and the project adheres to [Semantic Versioning](https://semver.org/).
 
+## [2.1.0] — 2026-11-03
+
+### Added
+
+- **Application-level auto-ban** (`autoban`): after N hard-spam events inside a
+  time window the client IP is banned in shared storage for a TTL; the new
+  `autoban` pipeline check rejects it before any other check runs. Fail-open,
+  configurable per site (`enabled`, `threshold`, `window`, `ttl`).
+- **Fail2Ban bridge** (`FormSpamChecker\Security\Fail2Ban`): every hard-spam
+  verdict (form pipeline) and every hard WAF block appends a single sanitized
+  line `PHPFSC BAN ip=… site=… form=… score=… reason=…` to a configured log
+  file, ready for a Fail2Ban filter/jail. `emit_on` selects `spam`, `waf` or
+  `both`; `min_score` filters low-confidence events.
+- Deployment guidance: Fail2Ban filter/jail, firewall ban limited to
+  http/https, `ignoreip` for admin hosts, plus AbuseIPDB `threshold = 100`
+  guidance (deployments use 100; library default stays 90).
+
+### Security
+
+- Fail2Ban log lines are LF-only, fields are token-sanitized (no whitespace or
+  newline injection) and appended with `LOCK_EX`; reporting errors never change
+  a verdict.
 ## [2.0.0] — 2026-11-03
 
 The 2.0 line rebuilds the internals around an ordered pipeline and explicit

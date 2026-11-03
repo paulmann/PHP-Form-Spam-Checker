@@ -250,6 +250,30 @@ export ABUSEIPDB_KEY='…'
 
 Рабочий пример обвязки: [examples/abuseipdb.php](examples/abuseipdb.php).
 
+## Fail2Ban и автобан
+
+Жёсткие спам-вердикты и блокировки WAF можно передавать фаерволу:
+
+- `fail2ban.enabled` дописывает строку `PHPFSC BAN ip=<ip> site=<host>
+  form=<form> score=<n> reason=<token>` в `fail2ban.log_path`;
+- фильтр/джейл Fail2Ban ([docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md))
+  превращает строки в бан IP на фаерволе (только http/https);
+- `autoban.enabled` — прикладной запасной вариант: после `autoban.threshold`
+  событий за `autoban.window` IP запрещается на `autoban.ttl`, и первый чекер
+  конвейера (`autoban`) сразу возвращает жёсткий SPAM.
+
+Оба слоя опциональны и fail-open. Пример:
+
+```php
+'autoban' => ['enabled' => true, 'threshold' => 5, 'window' => 3600, 'ttl' => 86400],
+'fail2ban' => [
+    'enabled' => true,
+    'log_path' => __DIR__ . '/../var/log/sites/' . $site . '.f2b.log',
+    'site' => $site,
+    'emit_on' => 'both',   // spam | waf | both
+    'min_score' => 60,
+],
+```
 ## DNSBL, SPF, DMARC, DKIM
 
 ```php
