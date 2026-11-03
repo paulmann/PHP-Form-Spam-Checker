@@ -1,4 +1,4 @@
-# PHP Form Spam Checker 2.0
+# PHP Form Spam Checker 2.1
 
 [![PHP](https://img.shields.io/badge/PHP-8.5-8892bf.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -15,8 +15,24 @@ with which scores, and why.
 
 ---
 
-## What changed in 2.0
+## What changed in 2.1
 
+2.1 adds the firewall bridge and the deployment hardening on top of 2.0:
+
+- **AbuseIPDB** with `threshold = 100` in the reference deployment configs
+  (only IPs whose confidence is exactly 100 are blocked); cached 6 h, fail open,
+  circuit breaker, quota surfaced in the evidence.
+- **Fail2Ban bridge** — every hard-spam verdict and every WAF block appends a
+  timestamped `PHPFSC BAN ip=…` line to a per-site log; the jail bans the IP on
+  the firewall (HTTP/HTTPS only) with `maxretry = 1`.
+- **Application auto-ban** — `autoban` check: after N hard events inside a
+  window the IP is rejected before any other check for the configured TTL.
+- `CurlClient` no longer uses the deprecated `curl_close()` (PHP 8.5).
+
+See [CHANGELOG.md](CHANGELOG.md#210--2026-11-03) and
+[docs/WAF.md#fail2ban](docs/WAF.md#fail2ban).
+
+## What changed in 2.0
 2.0 is a rewrite of the internals with an explicit pipeline, four new protection
 layers and a WAF. The integration surface that deployed 1.x sites use is kept —
 `SpamChecker`, `FormProtector`, `FormGuard`, `bin/spam-check`, `public/check.php`
@@ -72,6 +88,7 @@ All scores are 0–100; `spam` is a hard verdict that ignores the total.
 | Behaviour | `js_challenge` | off | missing/invalid answer → 15 (never hard) |
 | Identity | `user_agent` | on | empty UA → 40; tool/marker UA → **spam** 100 |
 | Volume | `rate_limit` | on, 8 / 900 s | exceeded → **spam** 100 |
+| Firewall | `autoban` | off (reference deployments: on) | banned IP → **spam** 100, before any other check |
 | Payload | `length` | on, max 5000 | long → 30; > 20000 or control chars → **spam** 100 |
 | Injection | `sql_injection` | on | strong signature → **spam** 100; weak → 40 |
 | Injection | `xss` | on | script/handler → **spam** 100; encoded → 45 |
@@ -471,9 +488,9 @@ site's config or state.
 | [docs/INTEGRATION.md](docs/INTEGRATION.md) / [docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md) | wiring guide (EN/RU) |
 | [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) | 1.x → 2.0 compatibility and rollback |
 | [SECURITY.md](SECURITY.md) | security model, egress, secrets |
-| [CHANGELOG.md](CHANGELOG.md) | 2.0.0 release notes |
+| [CHANGELOG.md](CHANGELOG.md) | 2.1.0 release notes |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | development and quality gates |
 
 ## License
 
-[MIT](LICENSE) © 2026 Paulmann
+[MIT](LICENSE) © 2026 Mikhail Deynekin (Paulmann)

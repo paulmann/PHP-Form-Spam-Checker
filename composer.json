@@ -19,8 +19,9 @@
     ],
     "authors": [
         {
-            "name": "Paulmann",
-            "homepage": "https://github.com/paulmann"
+            "name": "Mikhail Deynekin",
+            "homepage": "https://github.com/paulmann",
+            "role": "Developer"
         }
     ],
     "require": {

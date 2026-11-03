@@ -1,4 +1,4 @@
-# PHP Form Spam Checker 2.0
+# PHP Form Spam Checker 2.1
 
 [![PHP](https://img.shields.io/badge/PHP-8.5-8892bf.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -14,8 +14,24 @@ runtime, и каждый вердикт несёт доказательства:
 
 ---
 
-## Что изменилось в 2.0
+## Что изменилось в 2.1
 
+2.1 добавляет мост к фаерволу и усиление эксплуатации поверх 2.0:
+
+- **AbuseIPDB** с `threshold = 100` в эталонных конфигах развёртывания
+  (блокируются только IP с уверенностью ровно 100); кэш 6 ч, fail open,
+  circuit breaker, квота видна в evidence.
+- **Мост Fail2Ban** — каждый жёсткий спам-вердикт и каждый блок WAF дописывает
+  строку `PHPFSC BAN ip=…` с ISO-таймстампом в per-site лог; jail банит IP на
+  фаерволе (только HTTP/HTTPS) при `maxretry = 1`.
+- **Прикладной автобан** — проверка `autoban`: после N жёстких событий за окно
+  IP отклоняется раньше остальных проверок на заданный TTL.
+- `CurlClient` больше не вызывает устаревший `curl_close()` (PHP 8.5).
+
+Подробности: [CHANGELOG.md](CHANGELOG.md#210--2026-11-03) и
+[docs/WAF.md#fail2ban](docs/WAF.md#fail2ban).
+
+## Что изменилось в 2.0
 2.0 — переписывание внутренностей с явным конвейером, четырьмя новыми слоями
 защиты и WAF. Поверхность интеграции, которой пользуются уже развёрнутые
 1.x-сайты, сохранена: `SpamChecker`, `FormProtector`, `FormGuard`,
@@ -72,6 +88,7 @@ flowchart TD
 | Поведение | `js_challenge` | выкл. | нет/неверный ответ → 15 (никогда не жёстко) |
 | Идентификация | `user_agent` | вкл. | пустой UA → 40; UA инструмента → **спам** 100 |
 | Объём | `rate_limit` | вкл., 8 / 900 с | превышение → **спам** 100 |
+| Фаервол | `autoban` | выкл. (в эталонных конфигах вкл.) | забаненный IP → **спам** 100, до остальных проверок |
 | Полезная нагрузка | `length` | вкл., max 5000 | длинное → 30; > 20000 или control-символы → **спам** 100 |
 | Инъекции | `sql_injection` | вкл. | сильная сигнатура → **спам** 100; слабая → 40 |
 | Инъекции | `xss` | вкл. | script/обработчик → **спам** 100; закодированное → 45 |
@@ -470,9 +487,9 @@ composer lint
 | [docs/INTEGRATION.md](docs/INTEGRATION.md) / [docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md) | руководство по встраиванию (EN/RU) |
 | [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) | совместимость 1.x → 2.0 и откат |
 | [SECURITY.md](SECURITY.md) | модель безопасности, egress, секреты |
-| [CHANGELOG.md](CHANGELOG.md) | заметки о выпуске 2.0.0 |
+| [CHANGELOG.md](CHANGELOG.md) | заметки о выпуске 2.1.0 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | разработка и контроль качества |
 
 ## Лицензия
 
-[MIT](LICENSE) © 2026 Paulmann
+[MIT](LICENSE) © 2026 Михаил Дейнекин (Paulmann)
