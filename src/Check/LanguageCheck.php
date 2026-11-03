@@ -14,9 +14,7 @@ use FormSpamChecker\Data\RequestData;
  */
 final readonly class LanguageCheck implements SpamCheckInterface
 {
-    public function __construct(private Config $config)
-    {
-    }
+    public function __construct(private Config $config) {}
 
     public function name(): string
     {
@@ -55,10 +53,10 @@ final readonly class LanguageCheck implements SpamCheckInterface
             $this->name(),
             min(
                 $this->config->int('language.max_score', 40),
-                count($mixed) * max(1, $this->config->int('language.mixed_script_score', 20)),
+                \count($mixed) * max(1, $this->config->int('language.mixed_script_score', 20)),
             ),
-            sprintf('%d word(s) mix Cyrillic and Latin letters', count($mixed)),
-            ['words' => array_slice($mixed, 0, 10)],
+            \sprintf('%d word(s) mix Cyrillic and Latin letters', \count($mixed)),
+            ['words' => \array_slice($mixed, 0, 10)],
         );
     }
 }

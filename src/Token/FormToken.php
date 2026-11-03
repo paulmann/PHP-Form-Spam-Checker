@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FormSpamChecker\Token;
 
 use FormSpamChecker\Exception\InvalidConfigException;
+use JsonException;
 
 /**
  * Signed, URL-safe token that records *when* a form was rendered.
@@ -52,7 +53,7 @@ final class FormToken
     {
         $parts = explode('.', $token);
 
-        if (count($parts) !== 2) {
+        if (\count($parts) !== 2) {
             return null;
         }
 
@@ -75,15 +76,15 @@ final class FormToken
 
         try {
             $data = json_decode($payload, true, 8, JSON_THROW_ON_ERROR);
-        } catch (\JsonException) {
+        } catch (JsonException) {
             return null;
         }
 
-        if (!is_array($data) || ($data['v'] ?? null) !== self::VERSION) {
+        if (!\is_array($data) || ($data['v'] ?? null) !== self::VERSION) {
             return null;
         }
 
-        if (!is_string($data['f'] ?? null) || !is_int($data['t'] ?? null)) {
+        if (!\is_string($data['f'] ?? null) || !\is_int($data['t'] ?? null)) {
             return null;
         }
 
@@ -107,7 +108,7 @@ final class FormToken
     private static function base64UrlDecode(string $value): ?string
     {
         $padded = strtr($value, '-_', '+/');
-        $padded .= str_repeat('=', (4 - strlen($padded) % 4) % 4);
+        $padded .= str_repeat('=', (4 - \strlen($padded) % 4) % 4);
 
         $decoded = base64_decode($padded, true);
 

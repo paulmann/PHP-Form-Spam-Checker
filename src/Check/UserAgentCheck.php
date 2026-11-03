@@ -16,9 +16,7 @@ use FormSpamChecker\Support\Patterns;
  */
 final readonly class UserAgentCheck implements SpamCheckInterface
 {
-    public function __construct(private Config $config)
-    {
-    }
+    public function __construct(private Config $config) {}
 
     public function name(): string
     {
@@ -49,7 +47,7 @@ final readonly class UserAgentCheck implements SpamCheckInterface
         $markers = Patterns::userAgentMarkers();
 
         foreach ($this->config->array('user_agent.extra_blocklist', []) as $extra) {
-            if (is_string($extra) && $extra !== '') {
+            if (\is_string($extra) && $extra !== '') {
                 $markers[] = $extra;
             }
         }
@@ -60,7 +58,7 @@ final readonly class UserAgentCheck implements SpamCheckInterface
                     $this->name(),
                     CheckStatus::SPAM,
                     $this->config->int('user_agent.blocked_score', 100),
-                    sprintf('automation marker "%s" in user agent', $marker),
+                    \sprintf('automation marker "%s" in user agent', $marker),
                     ['marker' => $marker],
                 );
             }

@@ -14,9 +14,7 @@ use FormSpamChecker\Support\Patterns;
  */
 final readonly class EmailCheck implements SpamCheckInterface
 {
-    public function __construct(private Config $config)
-    {
-    }
+    public function __construct(private Config $config) {}
 
     public function name(): string
     {
@@ -31,7 +29,7 @@ final readonly class EmailCheck implements SpamCheckInterface
 
         $disposable = Patterns::disposableDomains();
         foreach ($this->config->array('email.disposable_domains', []) as $domain) {
-            if (is_string($domain) && $domain !== '') {
+            if (\is_string($domain) && $domain !== '') {
                 $disposable[] = mb_strtolower($domain);
             }
         }
@@ -41,7 +39,7 @@ final readonly class EmailCheck implements SpamCheckInterface
         $findings = [];
 
         foreach ($this->config->array('email.fields', []) as $field) {
-            if (!is_string($field) || $field === '') {
+            if (!\is_string($field) || $field === '') {
                 continue;
             }
 
@@ -52,7 +50,7 @@ final readonly class EmailCheck implements SpamCheckInterface
 
             if (filter_var($value, FILTER_VALIDATE_EMAIL) === false) {
                 $score += $this->config->int('email.invalid_score', 40);
-                $reasons[] = sprintf('invalid e-mail in field "%s"', $field);
+                $reasons[] = \sprintf('invalid e-mail in field "%s"', $field);
                 $findings[] = ['field' => $field, 'reason' => 'invalid'];
                 continue;
             }
@@ -66,7 +64,7 @@ final readonly class EmailCheck implements SpamCheckInterface
             foreach ($disposable as $candidate) {
                 if ($domain === $candidate || str_ends_with($domain, '.' . $candidate)) {
                     $score += $this->config->int('email.disposable_score', 70);
-                    $reasons[] = sprintf('disposable e-mail domain "%s" in field "%s"', $domain, $field);
+                    $reasons[] = \sprintf('disposable e-mail domain "%s" in field "%s"', $domain, $field);
                     $findings[] = ['field' => $field, 'reason' => 'disposable', 'domain' => $domain];
                     break;
                 }

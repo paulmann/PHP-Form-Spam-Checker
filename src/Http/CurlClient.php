@@ -12,13 +12,11 @@ namespace FormSpamChecker\Http;
  */
 final readonly class CurlClient implements HttpClientInterface
 {
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function send(HttpRequest $request): HttpResponse
     {
-        if (!function_exists('curl_init')) {
+        if (!\function_exists('curl_init')) {
             throw new HttpClientException('cURL extension is not available.');
         }
 
@@ -35,10 +33,17 @@ final readonly class CurlClient implements HttpClientInterface
 
         $timeoutMs = max(1, (int) ($request->timeout * 1000));
 
+        $url = $request->url;
+        if ($url === '') {
+            throw new HttpClientException('HTTP request URL must not be empty.');
+        }
+
+        $method = $request->method === '' ? 'GET' : $request->method;
+
         curl_setopt_array($handle, [
-            CURLOPT_URL => $request->url,
+            CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_CUSTOMREQUEST => $request->method,
+            CURLOPT_CUSTOMREQUEST => $method,
             CURLOPT_HTTPHEADER => $headerLines,
             CURLOPT_TIMEOUT_MS => $timeoutMs,
             CURLOPT_CONNECTTIMEOUT_MS => $timeoutMs,
@@ -47,11 +52,11 @@ final readonly class CurlClient implements HttpClientInterface
             CURLOPT_SSL_VERIFYHOST => 2,
             CURLOPT_HEADERFUNCTION => static function ($curl, string $line) use (&$responseHeaders): int {
                 $parts = explode(':', $line, 2);
-                if (count($parts) === 2) {
+                if (\count($parts) === 2) {
                     $responseHeaders[strtolower(trim($parts[0]))] = trim($parts[1]);
                 }
 
-                return strlen($line);
+                return \strlen($line);
             },
         ]);
 
@@ -60,11 +65,11 @@ final readonly class CurlClient implements HttpClientInterface
         }
 
         $body = curl_exec($handle);
-        $status = (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
+        $status = curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
         $error = curl_error($handle);
         curl_close($handle);
 
-        if ($body === false || $body === null) {
+        if ($body === false) {
             throw new HttpClientException('HTTP request failed: ' . ($error !== '' ? $error : 'unknown error'));
         }
 

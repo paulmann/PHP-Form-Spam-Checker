@@ -120,8 +120,9 @@ final class CommandInjectionRuleTest extends WafTestCase
         self::assertNull((new CommandInjectionRule(new Config([
             'waf' => ['rules' => ['command_injection' => false]],
         ])))->inspect($request));
-        self::assertNull((new CommandInjectionRule(new Config([
-            'waf' => ['rules' => ['command_injection' => ['enabled' => false]]]],
+        self::assertNull((new CommandInjectionRule(new Config(
+            [
+                'waf' => ['rules' => ['command_injection' => ['enabled' => false]]]],
         )))->inspect($request));
     }
 

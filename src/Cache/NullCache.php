@@ -14,16 +14,12 @@ final readonly class NullCache implements CacheInterface
         return null;
     }
 
-    public function set(string $key, mixed $value, int $ttl = 0): void
-    {
-    }
+    public function set(string $key, mixed $value, int $ttl = 0): void {}
 
     public function has(string $key): bool
     {
         return false;
     }
 
-    public function delete(string $key): void
-    {
-    }
+    public function delete(string $key): void {}
 }

@@ -1,0 +1,54 @@
+# PHPStan configuration for PHP-Form-Spam-Checker 2.0.
+#
+# Strict rules are injected automatically by phpstan/extension-installer
+# (enabled in composer.json "allow-plugins"): the plugin adds
+# vendor/phpstan/phpstan-strict-rules/rules.neon to every run. Including the
+# same rules file here again would double-load it, so it is intentionally not
+# listed.
+#
+# Bleeding edge is NOT a separate Composer package: PHPStan ships the config
+# inside the phpstan/phpstan dist, at conf/bleedingEdge.neon. This is the
+# mechanism the official documentation prescribes for a Composer install
+# (the PHAR variant uses phar://phpstan.phar/conf/bleedingEdge.neon).
+includes:
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+#
+# Note: there is no "universal newline" parameter in PHPStan 2.x. Line endings
+# are enforced by .editorconfig / .gitattributes ("* text=auto eol=lf"); the
+# analyzer itself normalises line endings when reading files.
+
+parameters:
+    # Highest level. Combined with strict-rules this also forbids loose
+    # comparisons, implicit mixed, missing iterable value types and unsafe
+    # PHPUnit/Symfony-style reflection.
+    level: max
+
+    # The library declares `php: >=8.5` in composer.json; pin the analysis
+    # target explicitly so the result does not depend on the CI runner build.
+    phpVersion: 80500
+
+    # Production code only. tests/, bin/ and tools/ are checked by php -l and
+    # phpunit/psalm; analysing them at level max would drown real src/ defects.
+    paths:
+        - src
+
+    # PHPStan has nothing to exclude here: templates/, generated and vendored
+    # adapter code do not exist under src/. PSR interfaces (psr/http-client,
+    # psr/http-message, psr/http-factory, psr/cache, psr/simple-cache, psr/log)
+    # are autoloadable from vendor/, so no stubFiles/scanFiles plumbing is
+    # needed for the adapters that reference them.
+    treatPhpDocTypesAsCertain: true
+
+    # A property declared without a default must be initialised in the
+    # constructor; an uninitialised readonly property is a runtime Error.
+    checkUninitializedProperties: true
+
+    # An ignore entry that silently stops matching is a stale suppression:
+    # fail instead of hiding it.
+    reportUnmatchedIgnoredErrors: true
+
+    # Deliberately empty: every message in this tree is either a real defect to
+    # fix in src/ or a finding reported to the module owner. Add errors only
+    # with a comment naming the file, the PHPStan message identifier and why it
+    # cannot be fixed (e.g. an unavoidable dynamic call in a PSR adapter).
+    ignoreErrors: []

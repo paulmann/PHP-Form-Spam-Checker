@@ -17,9 +17,7 @@ use FormSpamChecker\Data\RequestData;
  */
 final readonly class HoneypotCheck implements SpamCheckInterface
 {
-    public function __construct(private Config $config)
-    {
-    }
+    public function __construct(private Config $config) {}
 
     public function name(): string
     {
@@ -34,7 +32,7 @@ final readonly class HoneypotCheck implements SpamCheckInterface
 
         $filled = [];
         foreach ($this->config->array('honeypot.fields', []) as $field) {
-            if (!is_string($field) || $field === '' || !$data->hasField($field)) {
+            if (!\is_string($field) || $field === '' || !$data->hasField($field)) {
                 continue;
             }
 
@@ -52,7 +50,7 @@ final readonly class HoneypotCheck implements SpamCheckInterface
             $this->name(),
             CheckStatus::SPAM,
             $this->config->int('honeypot.score', 100),
-            sprintf('honeypot field filled: %s', implode(', ', array_keys($filled))),
+            \sprintf('honeypot field filled: %s', implode(', ', array_keys($filled))),
             ['fields' => $filled],
         );
     }

@@ -7,6 +7,7 @@ namespace FormSpamChecker\Tests\Integration;
 use FormSpamChecker\Config;
 use FormSpamChecker\Http\CheckEndpoint;
 use FormSpamChecker\Tests\Support\TempDirTestCase;
+use InvalidArgumentException;
 
 /**
  * HTTP bridge tests: the in-process handler and a real request against the
@@ -67,7 +68,7 @@ final class EndpointTest extends TempDirTestCase
             $fields['field' . $i] = 'x';
         }
 
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $endpoint->process(['fields' => $fields]);
     }
 
@@ -85,15 +86,21 @@ final class EndpointTest extends TempDirTestCase
 
     public function testHttpServerCleanAndRejectedRequests(): void
     {
-        $root = dirname(__DIR__, 2);
+        $root = \dirname(__DIR__, 2);
         $port = random_int(18000, 18800);
         $log = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'spam-checker-server-' . $port . '.log';
+        $configPath = $this->tempDir() . '/endpoint-config.json';
+        file_put_contents($configPath, '{"storage":{"driver":"memory"},"cache":{"driver":"memory"}}');
+
+        $env = getenv();
+        $env['SPAM_CHECKER_CONFIG'] = $configPath;
 
         $process = proc_open(
             [PHP_BINARY, '-S', '127.0.0.1:' . $port, '-t', $root . DIRECTORY_SEPARATOR . 'public'],
             [1 => ['file', $log, 'a'], 2 => ['file', $log, 'a']],
             $pipes,
             $root,
+            $env,
         );
 
         self::assertIsResource($process);
@@ -133,7 +140,7 @@ final class EndpointTest extends TempDirTestCase
     {
         for ($attempt = 0; $attempt < 50; $attempt++) {
             $socket = @fsockopen('127.0.0.1', $port, $errorCode, $errorMessage, 0.2);
-            if (is_resource($socket)) {
+            if (\is_resource($socket)) {
                 fclose($socket);
 
                 return true;

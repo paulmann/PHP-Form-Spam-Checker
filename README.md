@@ -1,59 +1,99 @@
-# PHP Form Spam Checker
+# PHP Form Spam Checker 2.0
 
-[![PHP](https://img.shields.io/badge/PHP-8.5.12-8892bf.svg)](https://php.net/)
+[![PHP](https://img.shields.io/badge/PHP-8.5-8892bf.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![CI](https://github.com/Paulmann/PHP-Form-Spam-Checker/actions/workflows/ci.yml/badge.svg)](https://github.com/Paulmann/PHP-Form-Spam-Checker/actions/workflows/ci.yml)
 
-**A layered, dependency-free spam checker for any PHP form.** Drop it into a plain
-`mail()` handler, a custom CMS, a legacy portal or a non-PHP application
-(Node, Go, Python) through the CLI/HTTP bridge — with no captcha, no external
-API and no runtime Composer dependencies.
-
-Every verdict carries evidence: which checks fired, with which scores, and why.
+**A layered, dependency-free anti-spam pipeline and HTTP firewall for any PHP
+form.** It runs local heuristics first, then behavioural signals, IP reputation,
+DNS blocklists, mail-domain authentication and a Bayesian classifier — and
+optionally inspects the whole HTTP request with a WAF. No captcha, no runtime
+Composer dependencies, and every verdict carries evidence: which checks fired,
+with which scores, and why.
 
 > **Документация на русском:** [README.ru.md](README.ru.md)
 
 ---
 
-## Why another spam checker
+## What changed in 2.0
 
-CAPTCHAs punish visitors and still lose to LLM-driven form spam. Cloud APIs add
-a network round-trip, a privacy question and a billing dependency to every
-submission. This library stays local: nine cheap heuristics run first, the
-payload is inspected for injection and spam signatures, and rate limiting is
-durable across PHP-FPM workers. A form handler gets one boolean answer and a
-human-readable reason trail.
+2.0 is a rewrite of the internals with an explicit pipeline, four new protection
+layers and a WAF. The integration surface that deployed 1.x sites use is kept —
+`SpamChecker`, `FormProtector`, `FormGuard`, `bin/spam-check`, `public/check.php`
+and `config/sites/<host>.php` keep their contracts. Upgrading is configuration,
+not code, for most installations.
 
-## Features
-
-| Layer | Check | What it catches |
+| | 1.x | 2.0 |
 |---|---|---|
-| Honeypot | `honeypot` | Bots that fill hidden fields |
-| Behaviour | `time_trap` | Submissions sent milliseconds after the page was rendered (HMAC-signed token, bound to the form) |
-| Identity | `user_agent` | HTTP libraries, headless browsers, scanners, empty UA |
-| Volume | `rate_limit` | Per-IP counters that survive worker restarts (file storage, flock) |
-| Payload | `length` | Oversized fields and control characters |
-| Injection | `sql_injection` | `UNION SELECT`, `DROP TABLE`, tautologies, time-based probes |
-| Injection | `xss` | Script tags, event handlers, `javascript:` URIs, encoded payloads |
-| Content | `links` | Link floods, URL shorteners, obfuscated `hxxp://` links |
-| Content | `keywords` | Configurable multilingual spam vocabulary and regexes |
-| Contact | `email` | Broken addresses and disposable mailboxes |
-| Content | `repetition` | Keyboard mashing, repeated words |
-| Content | `language` | Mixed-script homoglyphs (off by default) |
+| Pipeline | one checker aggregating 12 checks | ordered `SpamPipeline`, early exit on hard spam |
+| Behavioural | static honeypot + time trap | + **dynamic honeypot** (hourly HMAC names) and **JS challenge** |
+| Network | none | **AbuseIPDB**, **DNSBL** (opt-in, fail open) |
+| Mail domains | syntactic e-mail check | + **SPF**, **DMARC** domain trust signals |
+| Machine learning | none | **Bayesian classifier** with `bin/spam-train` |
+| HTTP firewall | none | **WAF**: 9 rules, `off`/`monitor`/`block`, drop-in `auto_prepend` |
+| Evidence | reason list | per-check `status`, `score`, `reason`, structured `evidence` |
+| CLI | `bin/spam-check` | + `bin/waf-check`, + `bin/spam-train` |
+| Quality gates | PHPUnit + `php -l` | CS Fixer, PHPStan `max`, Psalm taint, coverage gate, CI |
 
-Plus:
+Full details and the breaking changes (removed internal classes, per-check
+status vocabulary): [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md).
 
-- **Signed time trap** — `FormProtector::fields()` renders a honeypot and HMAC token; tokens cannot be forged or replayed across forms.
-- **Durable storage** — file-backed counters work on shared hosting without Redis/APCu; the interface allows a custom backend.
-- **Evidence-rich verdicts** — `Verdict::reasons()`, per-check scores, JSON-serialisable results.
-- **Privacy-first logging** — JSONL verdict log hashes IPs and redacts fields unless PII logging is explicitly enabled.
-- **Non-PHP bridges** — `bin/spam-check` CLI and `public/check.php` HTTP endpoint.
-- **Server-wide use** — one shared copy at `/var/www/lib/PHP-Form-Spam-Checker` with per-site configs and `off`/`shadow`/`enforce` modes.
+## The protection cycle
+
+```mermaid
+flowchart TD
+    A[HTTP request] --> B{WAF enabled?}
+    B -- yes --> C[WAF rules: method, URI,<br/>query, fields, cookies,<br/>headers, body]
+    C -- blocked --> Z[403 / monitor: log only]
+    C -- pass --> D[Form submission]
+    B -- no --> D
+    D --> E[Behavioural:<br/>dynamic honeypot · time trap · JS challenge]
+    E --> F[Local heuristics:<br/>UA · rate limit · length · SQLi ·<br/>XSS · links · keywords · email ·<br/>repetition · language]
+    F --> G[Network reputation:<br/>AbuseIPDB · DNSBL]
+    G --> H[Mail-domain authentication:<br/>SPF · DMARC]
+    H --> I[Bayesian classifier]
+    I --> J[Aggregate: hard verdicts +<br/>capped score vs thresholds]
+    J --> K{Clean / Suspicious / Spam}
+```
+
+Cheap checks run first. `pipeline.stop_on_spam` (default `true`) stops the run on
+the first hard spam verdict, which saves AbuseIPDB quota and DNS lookups. A
+check that throws is recorded as `error` and fails open.
+
+## Check modules and defaults
+
+All scores are 0–100; `spam` is a hard verdict that ignores the total.
+
+| Layer | Check | Default | Score / effect |
+|---|---|---|---|
+| Behaviour | `honeypot` | on | filled hidden field → **spam** 100 |
+| Behaviour | `dynamic_honeypot` | on when a ≥16-char secret is set | filled → **spam** 100; neither expected field posted → 10 |
+| Behaviour | `time_trap` | off (needs a rendered secret) | too fast / forged → spam 80; missing / expired → 30 |
+| Behaviour | `js_challenge` | off | missing/invalid answer → 15 (never hard) |
+| Identity | `user_agent` | on | empty UA → 40; tool/marker UA → **spam** 100 |
+| Volume | `rate_limit` | on, 8 / 900 s | exceeded → **spam** 100 |
+| Payload | `length` | on, max 5000 | long → 30; > 20000 or control chars → **spam** 100 |
+| Injection | `sql_injection` | on | strong signature → **spam** 100; weak → 40 |
+| Injection | `xss` | on | script/handler → **spam** 100; encoded → 45 |
+| Content | `links` | on, max 2 | extra link 15; shortener 35; obfuscated 25 |
+| Content | `keywords` | on | 12 per hit, max 90 |
+| Contact | `email` | on | invalid 40; disposable 70 |
+| Content | `repetition` | on | runs/repeats → 25, max 60 |
+| Content | `language` | off | mixed scripts → 20, max 40 |
+| Network | `abuseipdb` | off | confidence ≥ 90 → **spam** (score = confidence) |
+| Network | `dnsbl` | off | listing → **spam** 100 |
+| Domain | `spf` | off | no usable policy → 10 |
+| Domain | `dmarc` | off | missing → 10; `p=none` → 5 |
+| Model | `bayes` | off | `P(spam) ≥ 0.92` → score = `P × 100` (suspicious by default) |
+
+`dkim` configuration is reserved for a later check and is not in the pipeline
+yet — see [docs/CHECKS.md](docs/CHECKS.md#dkim).
 
 ## Requirements
 
-- PHP **8.5.12** (tested; compatible with the 8.5 branch)
-- `ext-mbstring`, `ext-json`
+- PHP **8.5** (`>=8.5`; CI runs 8.5.12 and 8.5)
+- `ext-mbstring`, `ext-json`; `ext-curl` only when the bundled HTTP client is
+  used (AbuseIPDB)
 - No runtime Composer dependencies
 
 ## Installation
@@ -72,6 +112,8 @@ Copy the repository somewhere readable by PHP and include `autoload.php`:
 require '/var/www/lib/PHP-Form-Spam-Checker/autoload.php';
 ```
 
+The bundled `autoload.php` works with and without `vendor/`.
+
 ## Quick start: plain PHP form
 
 ```php
@@ -89,8 +131,8 @@ $config = Config::fromFile(__DIR__ . '/config/spam-checker.php');
 $checker = new SpamChecker($config);
 $protector = new FormProtector($checker, $config);
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $verdict = $protector->verifyRequest('contact');
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
+    $verdict = $protector->verify($_POST, 'contact', Context::fromGlobals());
 
     if ($verdict->isSpam()) {
         http_response_code(400);
@@ -101,131 +143,304 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 <form method="post">
-    <?= $protector->fields('contact') /* honeypot + signed time token */ ?>
+    <?= $protector->fields('contact') /* honeypot + signed token + JS challenge */ ?>
     <input name="email" type="email" required>
     <textarea name="message" required></textarea>
     <button type="submit">Отправить</button>
 </form>
 ```
 
-Without the time trap (e.g. a cached page), disable it in the configuration and
-keep the rest of the pipeline.
+Run the demo: `php -S 127.0.0.1:8080 examples/plain-form.php`
+([examples/plain-form.php](examples/plain-form.php)).
+
+## WAF (HTTP firewall)
+
+The WAF inspects every HTTP request before the application: method, URI, query,
+form fields, cookies, headers and the raw body. It is **off by default**.
+
+| Mode | Behaviour |
+|---|---|
+| `off` | nothing is inspected |
+| `monitor` | verdict is computed and logged; every request passes |
+| `block` | a blocked request is answered (`403` by default, `X-WAF: blocked`) |
+
+```php
+// config/spam.php
+'waf' => [
+    'enabled' => true,
+    'mode' => 'monitor',         // start here, switch to block after review
+    'block_status' => 403,
+    'max_body_bytes' => 1048576,
+    'rules' => [
+        'sql_injection' => true,
+        'xss' => true,
+        'path_traversal' => true,
+        'command_injection' => true,
+        'scanner' => true,
+        'header_injection' => true,
+        'protocol' => true,
+        'ip_reputation' => false, // needs an injected reputation check
+        'rate_limit' => false,    // needs injected storage
+    ],
+],
+```
+
+Install as a drop-in. Pick the include that matches the site — `guard.php`
+already runs the WAF first when `waf.enabled` is set, so do not load both:
+
+```php
+// site with a form guard: WAF first, then the form pipeline
+require '/var/www/lib/PHP-Form-Spam-Checker/integrations/guard.php';
+
+// site without a form guard: firewall only
+require '/var/www/lib/PHP-Form-Spam-Checker/integrations/waf.php';
+```
+
+…or globally for a PHP-FPM pool. `auto-prepend.php` runs the WAF layer
+independently of the legacy `auto` flag (it still gates the form pipeline):
+
+```ini
+php_admin_value[auto_prepend_file] = /var/www/lib/PHP-Form-Spam-Checker/integrations/auto-prepend.php
+```
+
+Per-site configuration is the same `config/sites/<host>.php` file the form
+guard uses (`waf` section inside `config`, optional top-level `waf_mode`,
+`waf_skip`, `waf_match`, `waf_response`). The default skip list protects
+`/admin`, `/login`, `/auth`, `/wp-admin`, `/bitrix/admin`, `/cpanel`; an
+explicit `waf_skip` replaces it. Response codes and bodies: `403` + JSON for
+`Accept: application/json` or `/api` URIs, HTML otherwise, `silent` = HTTP 200
+with an empty body.
+
+For non-PHP back ends: `bin/waf-check` (`0` allow, `2` block, `3` error).
+Full guide: [docs/WAF.md](docs/WAF.md).
+
+## AbuseIPDB setup
+
+1. Create a key at <https://www.abuseipdb.com> → *API*.
+2. Export it, never commit it:
+
+```bash
+export ABUSEIPDB_KEY='…'
+```
+
+3. Reference the environment variable in the configuration:
+
+```php
+'abuseipdb' => [
+    'enabled' => true,
+    'api_key' => getenv('ABUSEIPDB_KEY') ?: '',
+    'threshold' => 90,       // abuseConfidenceScore that becomes hard spam
+    'cache_ttl' => 21600,    // 6 h per-IP cache: a burst costs one query
+    'timeout' => 2.0,
+    'max_age_days' => 30,    // reports newer than 30 days
+    'fail_open' => true,     // lookup failure contributes nothing
+    'circuit_breaker' => ['failures' => 3, 'cooldown' => 300],
+],
+```
+
+Behaviour: private/loopback addresses and missing keys never trigger a network
+call (`uncertain`); a score on or above `threshold` is a hard spam verdict with
+the confidence as its score; `HTTP 429` stores `Retry-After` and backs off
+without retrying; three consecutive transport/`5xx` failures open the circuit
+breaker for 5 minutes; the first successful HTTP response closes it. The client
+IP is sent to AbuseIPDB — see [SECURITY.md](SECURITY.md#network-egress).
+
+Runnable wiring example: [examples/abuseipdb.php](examples/abuseipdb.php).
+
+## DNSBL, SPF, DMARC, DKIM
+
+```php
+'dnsbl' => [
+    'enabled' => true,
+    'zones' => ['zen.spamhaus.org', 'bl.spamcop.net'],
+    'cache_ttl' => 3600,
+    'timeout' => 2,
+    'hit_score' => 100,      // a listing is a hard verdict
+],
+'spf'   => ['enabled' => true],   // missing/unusable policy: 10
+'dmarc' => ['enabled' => true],   // missing: 10, p=none: 5
+'dkim'  => ['enabled' => false],  // reserved: no checker in 2.0.0
+```
+
+`dnsbl` reverses the client IP (IPv4 and IPv6 nibble format) and queries the
+configured zones; the first listing wins. `spf`/`dmarc` ask a **domain-level**
+question ("does the claimed e-mail domain publish a usable policy"), not a
+sender question: a visitor's IP is not the sending MTA, so `fail` for a
+legitimate `gmail.com` address is normal. Both only contribute a score and never
+produce a hard verdict. A listing is cached by the resolver.
+
+## Bayesian classifier
+
+Off by default; abstains until the model has `min_documents` (20) documents.
+
+```bash
+# train from files: one document per line, blank lines and "#" comments skipped
+php bin/spam-train --config=/etc/spam.php \
+    --ham=/etc/spam/ham.txt --spam=/etc/spam/spam.txt
+
+# quick inline checks
+php bin/spam-train --config=/etc/spam.php \
+    --text-spam="casino bitcoin payday loan" \
+    --text-ham="нужен отчёт по поверке прибора"
+
+php bin/spam-train --config=/etc/spam.php --stats
+php bin/spam-train --config=/etc/spam.php --reset
+```
+
+```php
+'bayes' => [
+    'enabled' => true,
+    'storage_path' => '/var/lib/php-form-spam-checker/bayes',
+    'threshold' => 0.92,     // P(spam) that scores
+    'min_documents' => 20,   // below this the model abstains
+    'score_scale' => 100,    // score = round(P * scale)
+    // 'hard' => false,      // true: a match becomes a hard spam verdict
+],
+```
+
+The model keeps **token counts only** — never the training documents — and is
+stored through the configured cache; `bayes.storage_path` namespaces the model
+key. With a file cache it lives under
+`<storage.path>/cache/<hash>.json`. Training is offline; nothing leaves the
+machine. Runnable demo: [examples/bayes-train.php](examples/bayes-train.php).
+
+## Behavioural layer
+
+```php
+'behavioral' => [
+    'honeypot' => [
+        'dynamic' => true,                 // field name rotates hourly
+        'field_prefix' => '_hp_',
+        'secret' => getenv('SPAM_CHECKER_SECRET') ?: '',   // >= 16 chars
+        'missing_score' => 10,             // neither expected field posted
+    ],
+    'js_challenge' => [
+        'enabled' => false,
+        'field' => '_js',
+        'missing_score' => 15,             // suspicion, never hard spam
+    ],
+],
+```
+
+- **Dynamic honeypot** — the field name is
+  `_hp_ + substr(hmac_sha256(secret, "formId|hourBucket"), 0, 12)`; the current
+  and previous hour are accepted. A filled field is hard spam; a submission
+  without either field is suspicious.
+- **JS challenge** — a signed token + inline script computes a small challenge;
+  a bot that does not run JavaScript submits an empty answer and is suspicious,
+  never hard-spam. The script is CSP-hash friendly:
+  `JsChallenge::inlineScriptHash($formId)` → `sha256-…`.
+- `FormProtector::fields()` renders both automatically when enabled.
 
 ## Integration modes
 
-### 1. Inside PHP
+| Mode | How |
+|---|---|
+| In PHP | `new SpamChecker($config)` or `FormProtector` (see above) |
+| Shared module | `require '/var/www/lib/PHP-Form-Spam-Checker/integrations/guard.php'` + `config/sites/<host>.php`, modes `off`/`shadow`/`enforce` |
+| WAF drop-in | `require '…/integrations/waf.php'`, modes `off`/`monitor`/`block` |
+| Non-PHP (form) | `php bin/spam-check --config=… --form=… --base64=…`, exit `0/1/2/3` |
+| Non-PHP (WAF) | `php bin/waf-check --config=… --json=…`, exit `0` allow / `2` block / `3` error |
+| HTTP service | `public/check.php`, POST JSON, optional `X-Spam-Checker-Key` |
 
-Directly construct `SpamChecker` (see above) or use the shared-module guard:
+Server layout, guard rollout and Node bridge: [docs/INTEGRATION.md](docs/INTEGRATION.md)
+([по-русски](docs/INTEGRATION.ru.md)). Node example:
+[examples/node/bridge.mjs](examples/node/bridge.mjs).
 
-```php
-require '/var/www/lib/PHP-Form-Spam-Checker/integrations/guard.php';
-```
+## Configuration quick reference
 
-The guard is configuration-driven (`config/sites/<host>.php`) and supports
-`off` / `shadow` / `enforce`. See [docs/INTEGRATION.md](docs/INTEGRATION.md).
-
-### 2. From Node / Go / Python (CLI bridge)
-
-```bash
-php bin/spam-check --config=/etc/spam.php --form=register --base64=BASE64_JSON
-```
-
-Output is one JSON object on STDOUT:
-
-```json
-{"form":"register","status":"spam","score":100,"reasons":["honeypot: honeypot field filled: website"],"checks":[...]}
-```
-
-Exit codes: `0` clean, `1` suspicious, `2` spam, `3` error. STDOUT stays clean
-for `JSON.parse`. See [examples/node/bridge.mjs](examples/node/bridge.mjs).
-
-### 3. Over HTTP (endpoint)
-
-Deploy `public/check.php` and POST `{"form":..., "fields":{...},
-"context":{"ip":...,"userAgent":...}}`. Protect it with `endpoint.key` and the
-`X-Spam-Checker-Key` header.
-
-## Server-wide deployment (one copy, many sites)
-
-The recommended production layout is a single shared module:
-
-```text
-/var/www/lib/PHP-Form-Spam-Checker/
-├── src/            # library
-├── bin/spam-check  # CLI bridge
-├── integrations/   # guard.php, auto-prepend.php
-├── config/sites/   # per-host configuration
-├── var/sites/      # per-host counters
-└── var/log/        # per-host verdict logs
-```
-
-Add one line to a site's form handler:
-
-```php
-require '/var/www/lib/PHP-Form-Spam-Checker/integrations/guard.php';
-```
-
-and create `config/sites/<host>.php`:
-
-```php
-<?php
-return [
-    'site' => 'example.ru',
-    'mode' => 'shadow',            // off | shadow | enforce
-    'form' => 'contact',
-    'match' => ['#^/feedback\.php#'],
-    'skip'  => ['#^/admin#', '#^/auth#'],
-    'config' => [
-        'rate_limit' => ['max' => 8, 'window' => 900],
-        'links' => ['max' => 2],
-    ],
-];
-```
-
-Start in `shadow` (log-only), review `var/log/sites/<host>.jsonl`, then switch
-to `enforce`. `deploy/install-shared.sh` lays out the module with correct owners
-and permissions.
-
-## Configuration
-
-A PHP array (returned from a file) or JSON. Every key is optional; defaults are
-safe. The most useful knobs:
+A PHP array (returned from a file), JSON, or `Config::fromArray()`. Every key is
+optional; the defaults are safe. Unknown keys are preserved and ignored.
 
 | Key | Default | Meaning |
 |---|---|---|
-| `thresholds.spam` | `60` | score at which a submission is spam |
-| `thresholds.suspicious` | `30` | score at which it becomes suspicious |
+| `thresholds.spam` / `suspicious` | `60` / `30` | score at which the verdict becomes spam / suspicious |
+| `pipeline.stop_on_spam` | `true` | stop after the first hard spam verdict |
 | `time_trap.secret` | — | HMAC secret (required when the time trap is enabled) |
 | `rate_limit.max` / `window` | `8` / `900` | requests per IP per window |
 | `keywords.words` | RU+EN starter list | spam vocabulary |
 | `links.max` | `2` | links allowed in the whole message |
 | `email.disposable_domains` | ~70 domains | extra throwaway domains |
-| `storage.path` | temp dir | counter storage |
-| `log.path` | — | JSONL verdict log |
-| `log.pii` | `false` | store raw IP and field samples |
+| `storage.path` | temp dir | counters |
+| `cache.driver` | `file` | `file` / `memory` / `none` |
+| `log.path`, `log.pii` | — / `false` | JSONL verdict log, raw PII |
+| `abuseipdb.*`, `dnsbl.*`, `spf.*`, `dmarc.*` | off | network checks |
+| `bayes.*` | off | Bayesian classifier |
+| `behavioral.*` | honeypot dynamic on when a secret is set | behavioural layer |
+| `waf.enabled` / `mode` | `false` / `monitor` | HTTP firewall |
 | `forms.<id>` | — | per-form overrides |
 
-Full reference: [docs/CONFIG.md](docs/CONFIG.md). Check semantics:
-[docs/CHECKS.md](docs/CHECKS.md).
+Full reference: [docs/CONFIG.md](docs/CONFIG.md). Check semantics and false
+positives: [docs/CHECKS.md](docs/CHECKS.md).
+
+## Quality gates
+
+All of these run in CI (`.github/workflows/ci.yml`) on PHP 8.5.12 and 8.5 and
+block merges:
+
+```bash
+composer cs:check        # PHP CS Fixer, PSR-12/PER-CS2, zero diffs
+composer phpstan         # level: max + strict rules + bleeding edge, zero errors
+composer psalm           # taint analysis, zero errors
+composer test:strict     # PHPUnit, fail on warning/risky/deprecation
+composer test:coverage   # pcov + clover; 95 % line gate via tools/coverage-gate.php
+composer lint            # php -l over src, tests, bin
+composer qa              # all of the above in sequence
+```
 
 ## Testing
 
 ```bash
 composer install
-composer test              # PHPUnit: 180 tests, 465 assertions
-composer lint              # php -l over src, tests, bin
+composer test            # PHPUnit suite (unit + integration, no network)
+composer test:strict     # strict mode, as in CI
+composer lint
 ```
 
-CI runs the suite on PHP 8.5.12 and 8.5 with strict warnings, risky-test and
-deprecation gates.
+Examples are linted in CI too (`php -l`), so they stay runnable without
+`vendor/` — except `examples/abuseipdb.php`, which needs `ext-curl` and a key
+only for live lookups. Run examples against a **local or staging** copy: the
+demos write to the system temp directory and must not be pointed at a production
+site's config or state.
+
+## Migration and compatibility
+
+- `SpamChecker`, `FormProtector`, `FormGuard`, `bin/spam-check`,
+  `public/check.php`, `config/sites/<host>.php` — kept.
+- Removed internals (`CheckInterface`, `CheckResult`, `Submission`,
+  `Checks\*`) and the per-check status vocabulary — documented with before/
+  after code in [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md).
+- Every new module is disabled by default; rollback is a configuration change
+  first (WAF off, guard back to `shadow`, new sections off).
 
 ## Security
 
-- No network calls, no `eval`, no shell.
-- The time-trap token is HMAC-SHA-256, constant-time compared, bound to the form id.
-- The HTTP endpoint refuses non-POST requests, enforces a body limit and an optional shared key.
-- Logging is privacy-preserving by default.
+- No network calls, `eval`, shell or deserialisation unless you explicitly
+  enable a network check; every egress destination is listed in
+  [SECURITY.md](SECURITY.md#network-egress).
+- HMAC-SHA-256 tokens, `hash_equals`, form binding; ≥16-character secrets.
+- File storage uses `flock`, hashed file names and JSON encoding — a key never
+  becomes a path.
+- Verdict logs pseudonymise the client IP and redact field values unless
+  `log.pii` is enabled.
+- A throwing check or rule fails **open**: a broken check never blocks a form, a
+  broken WAF rule never blocks a request.
 - Report vulnerabilities per [SECURITY.md](SECURITY.md).
+
+## Documentation index
+
+| Document | Contents |
+|---|---|
+| [README.md](README.md) / [README.ru.md](README.ru.md) | this overview |
+| [docs/ARCHITECTURE-V2.md](docs/ARCHITECTURE-V2.md) | the 2.0 contract: namespaces, value objects, signatures |
+| [docs/CONFIG.md](docs/CONFIG.md) | full configuration tree, per-form overrides, env vars |
+| [docs/CHECKS.md](docs/CHECKS.md) | check semantics, scores, false positives, custom checks |
+| [docs/WAF.md](docs/WAF.md) | threat model, rules matrix, rollout, deployment, CLI bridge |
+| [docs/INTEGRATION.md](docs/INTEGRATION.md) / [docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md) | wiring guide (EN/RU) |
+| [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) | 1.x → 2.0 compatibility and rollback |
+| [SECURITY.md](SECURITY.md) | security model, egress, secrets |
+| [CHANGELOG.md](CHANGELOG.md) | 2.0.0 release notes |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | development and quality gates |
 
 ## License
 

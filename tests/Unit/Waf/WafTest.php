@@ -12,6 +12,7 @@ use FormSpamChecker\Waf\WafFinding;
 use FormSpamChecker\Waf\WafRequest;
 use FormSpamChecker\Waf\WafVerdict;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 final class WafTest extends TestCase
 {
@@ -31,7 +32,7 @@ final class WafTest extends TestCase
                 'ip_reputation',
                 'rate_limit',
             ],
-            array_map(static fn (RuleInterface $rule): string => $rule->name(), $waf->rules()),
+            array_map(static fn(RuleInterface $rule): string => $rule->name(), $waf->rules()),
         );
     }
 
@@ -187,12 +188,11 @@ final class WafTest extends TestCase
 
     private static function stubRule(string $name, ?WafFinding $finding): RuleInterface
     {
-        return new class($name, $finding) implements RuleInterface {
+        return new class ($name, $finding) implements RuleInterface {
             public function __construct(
                 private readonly string $ruleName,
                 private readonly ?WafFinding $ruleFinding,
-            ) {
-            }
+            ) {}
 
             public function name(): string
             {
@@ -208,10 +208,8 @@ final class WafTest extends TestCase
 
     private static function throwingRule(string $name): RuleInterface
     {
-        return new class($name) implements RuleInterface {
-            public function __construct(private readonly string $ruleName)
-            {
-            }
+        return new class ($name) implements RuleInterface {
+            public function __construct(private readonly string $ruleName) {}
 
             public function name(): string
             {
@@ -220,7 +218,7 @@ final class WafTest extends TestCase
 
             public function inspect(WafRequest $request): ?WafFinding
             {
-                throw new \RuntimeException('rule failure');
+                throw new RuntimeException('rule failure');
             }
         };
     }

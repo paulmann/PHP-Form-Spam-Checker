@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FormSpamChecker\Storage;
 
 use FormSpamChecker\Exception\StorageException;
+use JsonException;
 
 /**
  * File-backed storage with advisory locking and atomic in-place counters.
@@ -30,11 +31,11 @@ final class FileStorage implements StorageInterface
         $this->gcPercent = max(0, min(100, $gcPercent));
 
         if (!is_dir($this->directory) && !@mkdir($this->directory, 0775, true) && !is_dir($this->directory)) {
-            throw new StorageException(sprintf('Cannot create storage directory: %s', $this->directory));
+            throw new StorageException(\sprintf('Cannot create storage directory: %s', $this->directory));
         }
 
         if (!is_writable($this->directory)) {
-            throw new StorageException(sprintf('Storage directory is not writable: %s', $this->directory));
+            throw new StorageException(\sprintf('Storage directory is not writable: %s', $this->directory));
         }
     }
 
@@ -47,7 +48,7 @@ final class FileStorage implements StorageInterface
 
     public function set(string $key, string $value, int $ttl): void
     {
-        $this->lockedUpdate($key, $ttl, static fn (): array => [null, $value]);
+        $this->lockedUpdate($key, $ttl, static fn(): array => [null, $value]);
     }
 
     public function get(string $key): ?string
@@ -126,12 +127,12 @@ final class FileStorage implements StorageInterface
         $handle = @fopen($file, 'c+b');
 
         if ($handle === false) {
-            throw new StorageException(sprintf('Cannot open storage entry for writing: %s', $file));
+            throw new StorageException(\sprintf('Cannot open storage entry for writing: %s', $file));
         }
 
         try {
             if (!flock($handle, LOCK_EX)) {
-                throw new StorageException(sprintf('Cannot lock storage entry: %s', $file));
+                throw new StorageException(\sprintf('Cannot lock storage entry: %s', $file));
             }
 
             $raw = stream_get_contents($handle);
@@ -157,7 +158,7 @@ final class FileStorage implements StorageInterface
 
             return $count ?? (int) ($value ?? 0);
         } finally {
-            if (is_resource($handle)) {
+            if (\is_resource($handle)) {
                 fclose($handle);
             }
         }
@@ -174,11 +175,15 @@ final class FileStorage implements StorageInterface
 
         try {
             $data = json_decode($raw, true, 8, JSON_THROW_ON_ERROR);
-        } catch (\JsonException) {
+        } catch (JsonException) {
             return null;
         }
 
-        if (!is_array($data) || !isset($data['value'], $data['expires']) || !is_int($data['expires'])) {
+        if (!\is_array($data)
+            || !isset($data['value'], $data['expires'])
+            || !\is_int($data['expires'])
+            || !\is_scalar($data['value'])
+        ) {
             return null;
         }
 

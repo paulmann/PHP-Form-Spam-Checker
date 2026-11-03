@@ -16,8 +16,7 @@ final readonly class HttpResponse
         public int $status,
         public array $headers = [],
         public string $body = '',
-    ) {
-    }
+    ) {}
 
     public function header(string $name): string
     {

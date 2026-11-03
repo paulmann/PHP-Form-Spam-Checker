@@ -80,8 +80,9 @@ final class HeaderInjectionRuleTest extends WafTestCase
         self::assertNull((new HeaderInjectionRule(new Config([
             'waf' => ['rules' => ['header_injection' => false]],
         ])))->inspect($request));
-        self::assertNull((new HeaderInjectionRule(new Config([
-            'waf' => ['rules' => ['header_injection' => ['enabled' => false]]]],
+        self::assertNull((new HeaderInjectionRule(new Config(
+            [
+                'waf' => ['rules' => ['header_injection' => ['enabled' => false]]]],
         )))->inspect($request));
     }
 

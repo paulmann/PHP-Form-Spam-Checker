@@ -66,7 +66,7 @@ final class RateLimitRule extends AbstractRule
         }
 
         return $this->finding(
-            sprintf('rate limit exceeded: %d requests in %d s window (max %d)', $count, $window, $max),
+            \sprintf('rate limit exceeded: %d requests in %d s window (max %d)', $count, $window, $max),
             'ip',
             ['count' => $count, 'max' => $max, 'window' => $window],
             null,

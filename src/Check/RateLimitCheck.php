@@ -19,8 +19,7 @@ final readonly class RateLimitCheck implements SpamCheckInterface
     public function __construct(
         private Config $config,
         private StorageInterface $storage,
-    ) {
-    }
+    ) {}
 
     public function name(): string
     {
@@ -42,13 +41,13 @@ final readonly class RateLimitCheck implements SpamCheckInterface
         $window = max(1, $this->config->int('rate_limit.window', 900));
         $perForm = $this->config->bool('rate_limit.per_form', true);
 
-        $key = sprintf('rl:%s:%s', $perForm ? $data->formId : '*', $ip);
+        $key = \sprintf('rl:%s:%s', $perForm ? $data->formId : '*', $ip);
         $count = $this->storage->increment($key, $window);
 
         if ($count <= $max) {
             return CheckOutcome::ham(
                 $this->name(),
-                sprintf('%d/%d requests in %d s window', $count, $max, $window),
+                \sprintf('%d/%d requests in %d s window', $count, $max, $window),
             );
         }
 
@@ -56,7 +55,7 @@ final readonly class RateLimitCheck implements SpamCheckInterface
             $this->name(),
             CheckStatus::SPAM,
             $this->config->int('rate_limit.score', 100),
-            sprintf('rate limit exceeded: %d requests in %d s window (max %d)', $count, $window, $max),
+            \sprintf('rate limit exceeded: %d requests in %d s window (max %d)', $count, $window, $max),
             ['count' => $count, 'max' => $max, 'window' => $window],
         );
     }

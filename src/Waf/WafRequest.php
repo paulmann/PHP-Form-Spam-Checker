@@ -47,8 +47,7 @@ final readonly class WafRequest
         public array $fields = [],
         public ?int $now = null,
         public string $formId = 'default',
-    ) {
-    }
+    ) {}
 
     /**
      * Build a request snapshot from superglobals or from explicit arrays.
@@ -78,7 +77,7 @@ final readonly class WafRequest
         $body = self::truncate($body, $maxBodyBytes);
 
         $contentType = $headers['content-type'] ?? '';
-        $contentLength = strlen($body);
+        $contentLength = \strlen($body);
 
         if (isset($server['CONTENT_LENGTH']) && is_numeric($server['CONTENT_LENGTH'])) {
             $contentLength = (int) $server['CONTENT_LENGTH'];
@@ -89,7 +88,7 @@ final readonly class WafRequest
         $query = $get ?? [];
         if ($get === null) {
             $rawQuery = $server['QUERY_STRING'] ?? '';
-            if (is_string($rawQuery) && $rawQuery !== '') {
+            if (\is_string($rawQuery) && $rawQuery !== '') {
                 parse_str($rawQuery, $query);
             }
         }
@@ -97,7 +96,7 @@ final readonly class WafRequest
 
         $cookies = [];
         foreach (($cookie ?? $_COOKIE) as $name => $value) {
-            if (is_string($name) && is_string($value)) {
+            if (\is_string($name) && \is_string($value)) {
                 $cookies[$name] = $value;
             }
         }
@@ -159,16 +158,16 @@ final readonly class WafRequest
      */
     public function queryString(string $name): string
     {
-        if (!array_key_exists($name, $this->query)) {
+        if (!\array_key_exists($name, $this->query)) {
             return '';
         }
 
         $value = $this->query[$name];
 
         return match (true) {
-            is_string($value) => trim($value),
-            is_int($value), is_float($value) => (string) $value,
-            is_bool($value) => $value ? '1' : '',
+            \is_string($value) => trim($value),
+            \is_int($value), \is_float($value) => (string) $value,
+            \is_bool($value) => $value ? '1' : '',
             default => '',
         };
     }
@@ -185,7 +184,7 @@ final readonly class WafRequest
     {
         $path = parse_url($this->uri, PHP_URL_PATH);
 
-        if (is_string($path) && $path !== '') {
+        if (\is_string($path) && $path !== '') {
             return $path;
         }
 
@@ -264,7 +263,7 @@ final readonly class WafRequest
     }
 
     /**
-     * @param array<mixed> $server
+     * @param  array<mixed>          $server
      * @return array<string, string>
      */
     private static function headers(array $server): array
@@ -272,7 +271,7 @@ final readonly class WafRequest
         $headers = [];
 
         foreach ($server as $key => $value) {
-            if (!is_string($key) || !is_string($value) || $value === '') {
+            if (!\is_string($key) || !\is_string($value) || $value === '') {
                 continue;
             }
 
@@ -325,7 +324,7 @@ final readonly class WafRequest
 
     private static function scalarString(mixed $value): string
     {
-        return is_scalar($value) ? (string) $value : '';
+        return \is_scalar($value) ? (string) $value : '';
     }
 
     private static function readBody(int $maxBodyBytes): string
@@ -338,11 +337,11 @@ final readonly class WafRequest
 
         $raw = @file_get_contents('php://input', false, null, 0, $cap + 1);
 
-        if (!is_string($raw)) {
+        if (!\is_string($raw)) {
             return '';
         }
 
-        return strlen($raw) > $cap ? substr($raw, 0, $cap) : $raw;
+        return \strlen($raw) > $cap ? substr($raw, 0, $cap) : $raw;
     }
 
     private static function truncate(string $body, int $maxBodyBytes): string
@@ -353,6 +352,6 @@ final readonly class WafRequest
             return '';
         }
 
-        return strlen($body) > $cap ? substr($body, 0, $cap) : $body;
+        return \strlen($body) > $cap ? substr($body, 0, $cap) : $body;
     }
 }

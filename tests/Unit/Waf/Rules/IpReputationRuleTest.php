@@ -144,9 +144,7 @@ final class FakeIpReputationCheck implements SpamCheckInterface
 {
     public ?RequestData $seen = null;
 
-    public function __construct(private readonly CheckOutcome $outcome)
-    {
-    }
+    public function __construct(private readonly CheckOutcome $outcome) {}
 
     public function name(): string
     {

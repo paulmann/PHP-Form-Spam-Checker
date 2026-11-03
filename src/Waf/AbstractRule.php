@@ -23,8 +23,7 @@ abstract class AbstractRule implements RuleInterface
 
     public function __construct(
         protected readonly Config $config,
-    ) {
-    }
+    ) {}
 
     /**
      * Inspect the request unless the rule is disabled.
@@ -55,8 +54,8 @@ abstract class AbstractRule implements RuleInterface
     {
         $raw = $this->config->get('waf.rules.' . $this->name());
 
-        if (is_array($raw)) {
-            if (!array_key_exists('enabled', $raw)) {
+        if (\is_array($raw)) {
+            if (!\array_key_exists('enabled', $raw)) {
                 return $this->defaultEnabled();
             }
 
@@ -85,7 +84,7 @@ abstract class AbstractRule implements RuleInterface
     {
         $value = $this->option('hard', static::DEFAULT_HARD);
 
-        if (is_bool($value)) {
+        if (\is_bool($value)) {
             return $value;
         }
 
@@ -121,7 +120,7 @@ abstract class AbstractRule implements RuleInterface
     {
         $raw = $this->config->get('waf.rules.' . $this->name());
 
-        if (is_array($raw) && array_key_exists($key, $raw)) {
+        if (\is_array($raw) && \array_key_exists($key, $raw)) {
             return $raw[$key];
         }
 
@@ -129,16 +128,16 @@ abstract class AbstractRule implements RuleInterface
     }
 
     /**
-     * @param list<string> $default
+     * @param  list<string> $default
      * @return list<string>
      */
     final protected function patternList(string $key, array $default): array
     {
         $configured = $this->option($key, null);
-        $patterns = is_array($configured) ? self::strings($configured) : $default;
+        $patterns = \is_array($configured) ? self::strings($configured) : $default;
 
         $extra = $this->option('extra_' . $key, null);
-        if (is_array($extra)) {
+        if (\is_array($extra)) {
             $patterns = [...$patterns, ...self::strings($extra)];
         }
 
@@ -148,14 +147,14 @@ abstract class AbstractRule implements RuleInterface
     /**
      * A list-of-strings setting: array when configured, $default otherwise.
      *
-     * @param list<string> $default
+     * @param  list<string> $default
      * @return list<string>
      */
     final protected function listOption(string $key, array $default): array
     {
         $configured = $this->option($key, null);
 
-        return is_array($configured) ? self::strings($configured) : $default;
+        return \is_array($configured) ? self::strings($configured) : $default;
     }
 
     /**
@@ -166,7 +165,7 @@ abstract class AbstractRule implements RuleInterface
         foreach (['allowlist', 'allow_patterns'] as $key) {
             $patterns = $this->option($key, null);
 
-            if (!is_array($patterns)) {
+            if (!\is_array($patterns)) {
                 continue;
             }
 
@@ -241,7 +240,7 @@ abstract class AbstractRule implements RuleInterface
         }
 
         $twice = rawurldecode($raw);
-        if ($twice !== $raw && !in_array($twice, $variants, true)) {
+        if ($twice !== $raw && !\in_array($twice, $variants, true)) {
             $variants[] = $twice;
         }
 
@@ -251,7 +250,7 @@ abstract class AbstractRule implements RuleInterface
     /**
      * First pattern that matches one of the text's decoded variants.
      *
-     * @param list<string> $patterns
+     * @param  list<string>                               $patterns
      * @return array{pattern: string, match: string}|null
      */
     final protected function firstMatch(array $patterns, string $text): ?array
@@ -287,7 +286,7 @@ abstract class AbstractRule implements RuleInterface
             return;
         }
 
-        if (is_array($value)) {
+        if (\is_array($value)) {
             foreach ($value as $key => $item) {
                 $this->flattenInto($target, $prefix . '[' . (string) $key . ']', $item, $depth + 1);
             }
@@ -295,7 +294,7 @@ abstract class AbstractRule implements RuleInterface
             return;
         }
 
-        if (is_string($value)) {
+        if (\is_string($value)) {
             if (trim($value) !== '') {
                 $target[$prefix] = $value;
             }
@@ -303,13 +302,13 @@ abstract class AbstractRule implements RuleInterface
             return;
         }
 
-        if (is_int($value) || is_float($value)) {
+        if (\is_int($value) || \is_float($value)) {
             $target[$prefix] = (string) $value;
         }
     }
 
     /**
-     * @param array<mixed> $values
+     * @param  array<mixed> $values
      * @return list<string>
      */
     private static function strings(array $values): array
@@ -317,7 +316,7 @@ abstract class AbstractRule implements RuleInterface
         $result = [];
 
         foreach ($values as $value) {
-            if (is_string($value) && $value !== '') {
+            if (\is_string($value) && $value !== '') {
                 $result[] = $value;
             }
         }

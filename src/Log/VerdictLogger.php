@@ -23,8 +23,7 @@ final readonly class VerdictLogger
         private bool $pii = false,
         private bool $sampleFields = true,
         private array $excludedFields = [],
-    ) {
-    }
+    ) {}
 
     public function path(): string
     {
@@ -42,7 +41,7 @@ final readonly class VerdictLogger
             'ip' => $this->ip($request->ip),
             'page' => mb_substr($request->uri, 0, 200),
             'checks' => array_map(
-                static fn ($outcome): array => $outcome->toArray(),
+                static fn($outcome): array => $outcome->toArray(),
                 $verdict->outcomes,
             ),
             'fields' => $this->fields($request),
@@ -56,7 +55,7 @@ final readonly class VerdictLogger
      */
     private function append(array $record): void
     {
-        $directory = dirname($this->path);
+        $directory = \dirname($this->path);
 
         if (!is_dir($directory) && !@mkdir($directory, 0775, true) && !is_dir($directory)) {
             return;

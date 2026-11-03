@@ -7,6 +7,9 @@ namespace FormSpamChecker\Http;
 use FormSpamChecker\Config;
 use FormSpamChecker\Data\RequestData;
 use FormSpamChecker\SpamChecker;
+use InvalidArgumentException;
+use JsonException;
+use Throwable;
 
 /**
  * JSON HTTP endpoint for applications whose back end is not PHP.
@@ -21,16 +24,14 @@ use FormSpamChecker\SpamChecker;
  */
 final class CheckEndpoint
 {
-    public function __construct(private readonly Config $config)
-    {
-    }
+    public function __construct(private readonly Config $config) {}
 
     public static function fromEnvironment(): self
     {
         $path = getenv('SPAM_CHECKER_CONFIG');
 
-        if (!is_string($path) || $path === '') {
-            $default = dirname(__DIR__, 2) . '/config/spam-checker.php';
+        if (!\is_string($path) || $path === '') {
+            $default = \dirname(__DIR__, 2) . '/config/spam-checker.php';
             $path = is_file($default) ? $default : '';
         }
 
@@ -55,7 +56,8 @@ final class CheckEndpoint
         $key = $this->config->string('endpoint.key');
 
         if ($key !== '') {
-            $provided = (string) ($_SERVER['HTTP_X_SPAM_CHECKER_KEY'] ?? '');
+            $providedValue = $_SERVER['HTTP_X_SPAM_CHECKER_KEY'] ?? '';
+            $provided = \is_string($providedValue) ? $providedValue : '';
 
             if (!$this->isAuthorized($provided)) {
                 http_response_code(403);
@@ -73,25 +75,32 @@ final class CheckEndpoint
             exit;
         }
 
-        if (strlen($raw) > $max) {
+        if (\strlen($raw) > $max) {
             http_response_code(413);
             echo $this->json(['status' => 'error', 'error' => 'request body too large']);
             exit;
         }
 
         try {
-            $payload = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
+            $rawPayload = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
 
-            if (!is_array($payload)) {
-                throw new \InvalidArgumentException('body must be a JSON object');
+            if (!\is_array($rawPayload)) {
+                throw new InvalidArgumentException('body must be a JSON object');
+            }
+
+            $payload = [];
+            foreach ($rawPayload as $payloadKey => $payloadValue) {
+                if (\is_string($payloadKey)) {
+                    $payload[$payloadKey] = $payloadValue;
+                }
             }
 
             $response = $this->process($payload);
             $statusCode = 200;
-        } catch (\JsonException $exception) {
+        } catch (JsonException $exception) {
             $statusCode = 400;
             $response = ['status' => 'error', 'error' => 'invalid JSON: ' . $exception->getMessage()];
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $statusCode = 500;
             $response = ['status' => 'error', 'error' => 'spam checker error: ' . $exception->getMessage()];
         }
@@ -104,60 +113,91 @@ final class CheckEndpoint
     /**
      * Check a decoded payload. Kept public and free of I/O for testability.
      *
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed> $payload
      * @return array<string, mixed>
      */
     public function process(array $payload): array
     {
-        $formId = isset($payload['form']) && is_string($payload['form']) && $payload['form'] !== ''
+        $formId = isset($payload['form']) && \is_string($payload['form']) && $payload['form'] !== ''
             ? $payload['form']
             : 'default';
 
-        $fields = $payload['fields'] ?? null;
-
-        if (!is_array($fields)) {
-            $fields = [];
+        $fields = [];
+        $rawFields = $payload['fields'] ?? null;
+        if (\is_array($rawFields)) {
+            foreach ($rawFields as $name => $value) {
+                if (\is_string($name)) {
+                    $fields[$name] = $value;
+                }
+            }
+        } else {
             foreach ($payload as $key => $value) {
-                if (in_array($key, ['form', 'context'], true)) {
+                if (\in_array($key, ['form', 'context'], true)) {
                     continue;
                 }
                 $fields[$key] = $value;
             }
         }
 
-        if (count($fields) > 200) {
-            throw new \InvalidArgumentException('too many fields (max 200)');
+        if (\count($fields) > 200) {
+            throw new InvalidArgumentException('too many fields (max 200)');
         }
 
-        $context = isset($payload['context']) && is_array($payload['context']) ? $payload['context'] : [];
+        $context = isset($payload['context']) && \is_array($payload['context']) ? $payload['context'] : [];
 
         $headers = [];
-        if (isset($context['headers']) && is_array($context['headers'])) {
+        if (isset($context['headers']) && \is_array($context['headers'])) {
             foreach ($context['headers'] as $name => $value) {
-                if (is_string($name) && is_string($value)) {
+                if (\is_string($name) && \is_string($value)) {
                     $headers[strtolower($name)] = $value;
                 }
             }
         }
 
-        $userAgent = (string) ($context['userAgent'] ?? $context['user_agent'] ?? '');
+        $userAgent = $context['userAgent'] ?? $context['user_agent'] ?? '';
+        if (!\is_string($userAgent)) {
+            $userAgent = '';
+        }
         if ($userAgent !== '') {
             $headers['user-agent'] = $userAgent;
         }
 
-        $referer = (string) ($context['referer'] ?? '');
+        $referer = $context['referer'] ?? '';
+        if (!\is_string($referer)) {
+            $referer = '';
+        }
         if ($referer !== '') {
             $headers['referer'] = $referer;
         }
 
+        $ip = $context['ip'] ?? '';
+        if (!\is_string($ip)) {
+            $ip = '';
+        }
+
+        $method = $context['method'] ?? 'POST';
+        if (!\is_string($method) || $method === '') {
+            $method = 'POST';
+        }
+
+        $uri = $context['page'] ?? $context['uri'] ?? '';
+        if (!\is_string($uri)) {
+            $uri = '';
+        }
+
+        $body = $payload['body'] ?? '';
+        if (!\is_string($body)) {
+            $body = '';
+        }
+
         $request = new RequestData(
             fields: $fields,
-            ip: (string) ($context['ip'] ?? ''),
+            ip: $ip,
             headers: $headers,
-            method: (string) ($context['method'] ?? 'POST'),
-            uri: (string) ($context['page'] ?? $context['uri'] ?? ''),
-            body: (string) ($payload['body'] ?? ''),
-            now: isset($context['now']) && is_int($context['now']) ? $context['now'] : null,
+            method: $method,
+            uri: $uri,
+            body: $body,
+            now: isset($context['now']) && \is_int($context['now']) ? $context['now'] : null,
             formId: $formId,
         );
 

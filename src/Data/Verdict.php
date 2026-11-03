@@ -6,6 +6,7 @@ namespace FormSpamChecker\Data;
 
 use FormSpamChecker\Config;
 use FormSpamChecker\Status;
+use InvalidArgumentException;
 
 /**
  * Final verdict for one submission: status, capped score and every executed
@@ -22,7 +23,7 @@ final readonly class Verdict
         public array $outcomes = [],
     ) {
         if ($score < 0 || $score > 100) {
-            throw new \InvalidArgumentException(sprintf('Verdict score must be between 0 and 100, %d given.', $score));
+            throw new InvalidArgumentException(\sprintf('Verdict score must be between 0 and 100, %d given.', $score));
         }
     }
 
@@ -79,7 +80,7 @@ final readonly class Verdict
         $reasons = [];
         foreach ($this->flagged() as $outcome) {
             $reasons[] = $outcome->reason !== ''
-                ? sprintf('%s: %s', $outcome->check, $outcome->reason)
+                ? \sprintf('%s: %s', $outcome->check, $outcome->reason)
                 : $outcome->check;
         }
 
@@ -93,7 +94,7 @@ final readonly class Verdict
     {
         return array_values(array_filter(
             $this->outcomes,
-            static fn (CheckOutcome $outcome): bool => $outcome->isFlagged(),
+            static fn(CheckOutcome $outcome): bool => $outcome->isFlagged(),
         ));
     }
 
@@ -107,7 +108,7 @@ final readonly class Verdict
             'score' => $this->score,
             'reasons' => $this->reasons(),
             'checks' => array_map(
-                static fn (CheckOutcome $outcome): array => $outcome->toArray(),
+                static fn(CheckOutcome $outcome): array => $outcome->toArray(),
                 $this->outcomes,
             ),
         ];
@@ -118,26 +119,66 @@ final readonly class Verdict
      */
     public static function fromArray(array $data): self
     {
-        $status = Status::tryFrom((string) ($data['status'] ?? ''))
-            ?? throw new \InvalidArgumentException('Verdict array has an unknown status.');
+        $statusValue = $data['status'] ?? '';
+        $status = \is_string($statusValue) ? Status::tryFrom($statusValue) : null;
+
+        if ($status === null) {
+            throw new InvalidArgumentException('Verdict array has an unknown status.');
+        }
+
+        $checks = $data['checks'] ?? [];
+        if (!\is_array($checks)) {
+            $checks = [];
+        }
 
         $outcomes = [];
-        foreach ((array) ($data['checks'] ?? []) as $check) {
-            if (!is_array($check)) {
+        foreach ($checks as $check) {
+            if (!\is_array($check)) {
                 continue;
             }
 
-            $checkStatus = CheckStatus::tryFrom((string) ($check['status'] ?? ''));
+            $name = $check['check'] ?? 'unknown';
+            if (!\is_string($name)) {
+                $name = 'unknown';
+            }
+
+            $checkStatusValue = $check['status'] ?? '';
+            $checkStatus = \is_string($checkStatusValue) ? CheckStatus::tryFrom($checkStatusValue) : null;
+
+            $checkScore = $check['score'] ?? 0;
+            if (!\is_int($checkScore)) {
+                $checkScore = 0;
+            }
+
+            $reason = $check['reason'] ?? '';
+            if (!\is_string($reason)) {
+                $reason = '';
+            }
+
+            $evidence = [];
+            $rawEvidence = $check['evidence'] ?? [];
+            if (\is_array($rawEvidence)) {
+                foreach ($rawEvidence as $evidenceKey => $evidenceValue) {
+                    if (\is_string($evidenceKey)) {
+                        $evidence[$evidenceKey] = $evidenceValue;
+                    }
+                }
+            }
 
             $outcomes[] = new CheckOutcome(
-                check: (string) ($check['check'] ?? 'unknown'),
+                check: $name,
                 status: $checkStatus ?? CheckStatus::HAM,
-                score: (int) ($check['score'] ?? 0),
-                reason: (string) ($check['reason'] ?? ''),
-                evidence: (array) ($check['evidence'] ?? []),
+                score: min(100, max(0, $checkScore)),
+                reason: $reason,
+                evidence: $evidence,
             );
         }
 
-        return new self($status, (int) ($data['score'] ?? 0), $outcomes);
+        $score = $data['score'] ?? 0;
+        if (!\is_int($score)) {
+            $score = 0;
+        }
+
+        return new self($status, min(100, max(0, $score)), $outcomes);
     }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FormSpamChecker\Waf;
 
+use InvalidArgumentException;
+
 /**
  * One rule result: what was found, how bad it is and where.
  *
@@ -29,7 +31,7 @@ final readonly class WafFinding
         public string $location = '',
     ) {
         if ($severity < 0 || $severity > 100) {
-            throw new \InvalidArgumentException(sprintf(
+            throw new InvalidArgumentException(\sprintf(
                 'WAF finding severity must be between 0 and 100, %d given for rule "%s".',
                 $severity,
                 $rule,

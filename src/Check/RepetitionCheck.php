@@ -14,9 +14,7 @@ use FormSpamChecker\Data\RequestData;
  */
 final readonly class RepetitionCheck implements SpamCheckInterface
 {
-    public function __construct(private Config $config)
-    {
-    }
+    public function __construct(private Config $config) {}
 
     public function name(): string
     {
@@ -42,17 +40,20 @@ final readonly class RepetitionCheck implements SpamCheckInterface
         $runs = preg_match_all('/(\S)\1{' . ($minRun - 1) . ',}/u', $text, $matches);
         if ($runs !== false && $runs > 0) {
             $hits += $runs;
-            $evidence['runs'] = array_slice($matches[0], 0, 5);
+            $evidence['runs'] = \array_slice($matches[0], 0, 5);
         }
 
         $minRepeats = max(2, $this->config->int('repetition.min_word_repeats', 4));
         $words = preg_split('/\s+/u', mb_strtolower($text), -1, PREG_SPLIT_NO_EMPTY);
+        // array_count_values() uses each word as an array key; PHP turns numeric
+        // string keys into integers, so normalise the key before measuring it.
         $frequencies = array_count_values($words === false ? [] : $words);
 
         foreach ($frequencies as $word => $count) {
-            if ($count >= $minRepeats && mb_strlen((string) $word) > 2) {
+            $wordText = self::wordText($word);
+            if ($count >= $minRepeats && mb_strlen($wordText) > 2) {
                 $hits++;
-                $evidence['repeated_words'][(string) $word] = $count;
+                $evidence['repeated_words'][$wordText] = $count;
             }
         }
 
@@ -66,8 +67,16 @@ final readonly class RepetitionCheck implements SpamCheckInterface
                 $this->config->int('repetition.max_score', 60),
                 $hits * max(1, $this->config->int('repetition.score', 25)),
             ),
-            sprintf('%d repetition pattern(s)', $hits),
+            \sprintf('%d repetition pattern(s)', $hits),
             $evidence,
         );
+    }
+
+    /**
+     * Normalise a word key: array_count_values() turns numeric words into int keys.
+     */
+    private static function wordText(int|string $word): string
+    {
+        return (string) $word;
     }
 }

@@ -8,6 +8,9 @@ use FormSpamChecker\Config;
 use FormSpamChecker\Data\RequestData;
 use FormSpamChecker\SpamChecker;
 use FormSpamChecker\Status;
+use InvalidArgumentException;
+use JsonException;
+use Throwable;
 
 /**
  * CLI bridge for non-PHP back ends.
@@ -36,7 +39,7 @@ final class CheckCommand
     public function run(array $argv): int
     {
         try {
-            $options = $this->parse(array_slice($argv, 1));
+            $options = $this->parse(\array_slice($argv, 1));
 
             if (($options['help'] ?? false) === true) {
                 fwrite(STDERR, self::usage());
@@ -44,14 +47,19 @@ final class CheckCommand
                 return self::EXIT_CLEAN;
             }
 
-            $configPath = (string) ($options['config'] ?? getenv('SPAM_CHECKER_CONFIG') ?: '');
+            $configOption = $options['config'] ?? null;
+            $configPath = \is_string($configOption) ? $configOption : '';
+            if ($configPath === '') {
+                $environmentPath = getenv('SPAM_CHECKER_CONFIG');
+                $configPath = \is_string($environmentPath) ? $environmentPath : '';
+            }
             $config = $configPath !== '' ? Config::fromFile($configPath) : new Config();
 
             $payload = $this->decode($this->readPayload($options));
 
-            $formId = isset($options['form']) && is_string($options['form'])
+            $formId = isset($options['form']) && \is_string($options['form'])
                 ? $options['form']
-                : (isset($payload['form']) && is_string($payload['form']) ? $payload['form'] : 'default');
+                : (isset($payload['form']) && \is_string($payload['form']) ? $payload['form'] : 'default');
 
             $request = $this->requestFromPayload($payload, $formId);
             $verdict = (new SpamChecker($config))->checkRequest($request);
@@ -63,7 +71,7 @@ final class CheckCommand
                 Status::Suspicious => self::EXIT_SUSPICIOUS,
                 Status::Clean => self::EXIT_CLEAN,
             };
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $this->emit(['status' => 'error', 'score' => 0, 'reasons' => [$exception->getMessage()]]);
             fwrite(STDERR, 'spam-check: ' . $exception->getMessage() . PHP_EOL);
 
@@ -76,62 +84,93 @@ final class CheckCommand
      */
     public function requestFromPayload(array $payload, string $formId): RequestData
     {
-        $fields = $payload['fields'] ?? null;
-
-        if (!is_array($fields)) {
-            $fields = [];
+        $fields = [];
+        $rawFields = $payload['fields'] ?? null;
+        if (\is_array($rawFields)) {
+            foreach ($rawFields as $name => $value) {
+                if (\is_string($name)) {
+                    $fields[$name] = $value;
+                }
+            }
+        } else {
             foreach ($payload as $key => $value) {
-                if (in_array($key, ['form', 'context'], true)) {
+                if (\in_array($key, ['form', 'context'], true)) {
                     continue;
                 }
                 $fields[$key] = $value;
             }
         }
 
-        if (count($fields) > 200) {
-            throw new \InvalidArgumentException('Too many fields in the payload (max 200).');
+        if (\count($fields) > 200) {
+            throw new InvalidArgumentException('Too many fields in the payload (max 200).');
         }
 
-        $context = isset($payload['context']) && is_array($payload['context']) ? $payload['context'] : [];
+        $context = isset($payload['context']) && \is_array($payload['context']) ? $payload['context'] : [];
 
         $headers = [];
-        if (isset($context['headers']) && is_array($context['headers'])) {
+        if (isset($context['headers']) && \is_array($context['headers'])) {
             foreach ($context['headers'] as $name => $value) {
-                if (is_string($name) && is_string($value)) {
+                if (\is_string($name) && \is_string($value)) {
                     $headers[strtolower($name)] = $value;
                 }
             }
         }
 
-        $userAgent = (string) ($context['userAgent'] ?? $context['user_agent'] ?? $context['ua'] ?? '');
+        $userAgent = $context['userAgent'] ?? $context['user_agent'] ?? $context['ua'] ?? '';
+        if (!\is_string($userAgent)) {
+            $userAgent = '';
+        }
         if ($userAgent !== '') {
             $headers['user-agent'] = $userAgent;
         }
 
-        $referer = (string) ($context['referer'] ?? '');
+        $referer = $context['referer'] ?? '';
+        if (!\is_string($referer)) {
+            $referer = '';
+        }
         if ($referer !== '') {
             $headers['referer'] = $referer;
         }
 
         $now = $context['now'] ?? null;
-        if (is_string($now) && ctype_digit($now)) {
+        if (\is_string($now) && ctype_digit($now)) {
             $now = (int) $now;
+        }
+
+        $ip = $context['ip'] ?? '';
+        if (!\is_string($ip)) {
+            $ip = '';
+        }
+
+        $method = $context['method'] ?? 'POST';
+        if (!\is_string($method) || $method === '') {
+            $method = 'POST';
+        }
+
+        $uri = $context['page'] ?? $context['uri'] ?? '';
+        if (!\is_string($uri)) {
+            $uri = '';
+        }
+
+        $body = $payload['body'] ?? '';
+        if (!\is_string($body)) {
+            $body = '';
         }
 
         return new RequestData(
             fields: $fields,
-            ip: (string) ($context['ip'] ?? ''),
+            ip: $ip,
             headers: $headers,
-            method: (string) ($context['method'] ?? 'POST'),
-            uri: (string) ($context['page'] ?? $context['uri'] ?? ''),
-            body: (string) ($payload['body'] ?? ''),
-            now: is_int($now) ? $now : null,
+            method: $method,
+            uri: $uri,
+            body: $body,
+            now: \is_int($now) ? $now : null,
             formId: $formId,
         );
     }
 
     /**
-     * @param list<string> $args
+     * @param  list<string>               $args
      * @return array<string, string|bool>
      */
     private function parse(array $args): array
@@ -153,14 +192,14 @@ final class CheckCommand
             if (str_starts_with($arg, '--')) {
                 $equals = strpos($arg, '=');
                 if ($equals === false) {
-                    throw new \InvalidArgumentException(sprintf('Option "%s" requires a value (--name=value).', $arg));
+                    throw new InvalidArgumentException(\sprintf('Option "%s" requires a value (--name=value).', $arg));
                 }
 
                 $name = substr($arg, 2, $equals - 2);
                 $value = substr($arg, $equals + 1);
 
-                if (!in_array($name, ['config', 'form', 'json', 'base64'], true)) {
-                    throw new \InvalidArgumentException(sprintf('Unknown option "--%s".', $name));
+                if (!\in_array($name, ['config', 'form', 'json', 'base64'], true)) {
+                    throw new InvalidArgumentException(\sprintf('Unknown option "--%s".', $name));
                 }
 
                 $options[$name] = $value;
@@ -171,8 +210,8 @@ final class CheckCommand
         }
 
         if ($positional !== []) {
-            if (count($positional) > 1) {
-                throw new \InvalidArgumentException('Only one positional payload is allowed.');
+            if (\count($positional) > 1) {
+                throw new InvalidArgumentException('Only one positional payload is allowed.');
             }
             $options['positional'] = $positional[0];
         }
@@ -186,14 +225,14 @@ final class CheckCommand
     private function readPayload(array $options): string
     {
         foreach (['json', 'base64', 'positional'] as $source) {
-            if (isset($options[$source]) && is_string($options[$source])) {
+            if (isset($options[$source]) && \is_string($options[$source])) {
                 if ($source === 'json') {
                     return $options[$source];
                 }
 
                 $decoded = base64_decode($options[$source], true);
                 if ($decoded === false) {
-                    throw new \InvalidArgumentException(sprintf('Payload in "--%s" is not valid base64.', $source));
+                    throw new InvalidArgumentException(\sprintf('Payload in "--%s" is not valid base64.', $source));
                 }
 
                 return $decoded;
@@ -207,7 +246,7 @@ final class CheckCommand
             }
         }
 
-        throw new \InvalidArgumentException('No payload: pass --json=, --base64=, a base64 argument or data on STDIN. ' . self::usage());
+        throw new InvalidArgumentException('No payload: pass --json=, --base64=, a base64 argument or data on STDIN. ' . self::usage());
     }
 
     /**
@@ -217,20 +256,27 @@ final class CheckCommand
     {
         $raw = trim($raw);
         if ($raw === '') {
-            throw new \InvalidArgumentException('Empty payload.');
+            throw new InvalidArgumentException('Empty payload.');
         }
 
         try {
             $data = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $exception) {
-            throw new \InvalidArgumentException('Payload is not valid JSON: ' . $exception->getMessage());
+        } catch (JsonException $exception) {
+            throw new InvalidArgumentException('Payload is not valid JSON: ' . $exception->getMessage());
         }
 
-        if (!is_array($data)) {
-            throw new \InvalidArgumentException('Payload must be a JSON object.');
+        if (!\is_array($data)) {
+            throw new InvalidArgumentException('Payload must be a JSON object.');
         }
 
-        return $data;
+        $payload = [];
+        foreach ($data as $key => $value) {
+            if (\is_string($key)) {
+                $payload[$key] = $value;
+            }
+        }
+
+        return $payload;
     }
 
     /**

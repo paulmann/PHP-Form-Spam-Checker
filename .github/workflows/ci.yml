@@ -2,45 +2,94 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'v2.0']
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  COMPOSER_NO_INTERACTION: '1'
+  COMPOSER_MEMORY_LIMIT: '-1'
+
 jobs:
-  tests:
-    name: PHP ${{ matrix.php }}
+  quality:
+    name: Quality gates (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         php: ['8.5.12', '8.5']
-    steps:
-      - uses: actions/checkout@v4
 
-      - name: Set up PHP
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP ${{ matrix.php }}
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: mbstring, json
-          coverage: none
+          extensions: mbstring, json, curl, xml, simplexml, dom
+          # pcov only where the coverage job runs; the other leg stays fast.
+          coverage: ${{ matrix.php == '8.5.12' && 'pcov' || 'none' }}
+          ini-values: pcov.directory=src
           tools: composer:v2
 
       - name: Verify PHP version
         run: php -v
 
+      # composer.lock is currently git-ignored (see .gitignore). The cache key
+      # tolerates that: hashFiles() returns an empty string and the install step
+      # resolves dependencies from composer.json.
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/composer/files
+            vendor
+          key: composer-${{ runner.os }}-php${{ matrix.php }}-${{ hashFiles('composer.json') }}-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            composer-${{ runner.os }}-php${{ matrix.php }}-
+
       - name: Validate composer.json
-        run: composer validate --strict
+        run: composer validate --strict --no-check-publish
 
       - name: Install dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
 
-      - name: Run test suite
-        run: vendor/bin/phpunit --testsuite all --no-coverage
+      # ----------------------------------------------------------------------
+      # Blocking quality gates: any non-zero exit fails the build.
+      # ----------------------------------------------------------------------
+      - name: Coding style (PHP CS Fixer dry-run)
+        run: composer cs:check
+
+      - name: Static analysis (PHPStan level max + strict rules)
+        run: composer phpstan
+
+      - name: Taint analysis (Psalm)
+        run: composer psalm
+
+      - name: Test suite (strict)
+        run: composer test:strict
+
+      - name: Coverage report (pcov, Clover)
+        if: matrix.php == '8.5.12'
+        run: composer test:coverage
+
+      - name: Coverage gate (95% lines / 90% methods, documented environment adapters excluded)
+        if: matrix.php == '8.5.12'
+        run: php tools/coverage-gate.php .phpunit.cache/clover.xml --threshold=95 --threshold-methods=90 --exclude-env-adapters
 
       - name: Lint every PHP file
         run: |
-          find src tests bin integrations config public examples -type f \( -name '*.php' -o -name 'spam-check' \) -print0 \
+          set -euo pipefail
+          find src tests bin integrations config public examples tools \
+            -type f -name '*.php' -print0 \
             | xargs -0 -n1 php -l
+          # CLI entry point without a .php extension.
+          if [ -f bin/spam-check ]; then php -l bin/spam-check; fi

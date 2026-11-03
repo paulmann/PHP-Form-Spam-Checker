@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<!--
+    Psalm configuration for PHP-Form-Spam-Checker 2.0.
+
+    - errorLevel 1: every issue is an error; no tolerance.
+    - resolveFromConfigFile: relative paths resolve against this file, so
+      `composer psalm` works from any working directory.
+    - findUnusedCode: dead public API surface is an error (the contract in
+      docs/ARCHITECTURE-V2.md is intentionally small).
+    - checkForThrowsDocblock: a method that throws must declare it.
+    - findUnusedBaselineEntry / findUnusedPsalmSuppress: a stale suppression is
+      itself an error, so a suppressed issue cannot rot silently.
+
+    Taint analysis is a separate mode, not a static configuration switch: it is
+    requested on the command line with the taint flag (composer psalm does it).
+    Only src/ is a project file, therefore tests/ can never be a taint source
+    or sink: taint flows are evaluated inside src/ alone (test doubles are
+    never seen by the taint engine).
+-->
+<psalm
+    errorLevel="1"
+    resolveFromConfigFile="true"
+    findUnusedCode="true"
+    checkForThrowsDocblock="true"
+    findUnusedBaselineEntry="true"
+    findUnusedPsalmSuppress="true"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="https://getpsalm.org/schema/config"
+    xsi:schemaLocation="https://getpsalm.org/schema/config vendor/vimeo/psalm/config.xsd"
+>
+    <projectFiles>
+        <directory name="src"/>
+        <ignoreFiles>
+            <directory name="vendor"/>
+        </ignoreFiles>
+    </projectFiles>
+</psalm>

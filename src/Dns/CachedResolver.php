@@ -18,8 +18,7 @@ final readonly class CachedResolver implements ResolverInterface
         private ResolverInterface $inner,
         private CacheInterface $cache,
         private int $ttl = 3600,
-    ) {
-    }
+    ) {}
 
     /**
      * @return list<string>
@@ -53,8 +52,8 @@ final readonly class CachedResolver implements ResolverInterface
         $key = 'dns:' . $type . ':' . strtolower(rtrim($name, '.'));
 
         $cached = $this->cache->get($key);
-        if (is_array($cached)) {
-            return array_values(array_filter($cached, static fn (mixed $value): bool => is_string($value)));
+        if (\is_array($cached)) {
+            return array_values(array_filter($cached, static fn(mixed $value): bool => \is_string($value)));
         }
 
         $records = match ($type) {

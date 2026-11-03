@@ -341,8 +341,6 @@ final class Classifier
      */
     public function load(): void
     {
-        $model = null;
-
         try {
             $model = $this->storage->load();
         } catch (Throwable) {

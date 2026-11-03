@@ -17,9 +17,7 @@ use FormSpamChecker\Data\RequestData;
  */
 final readonly class KeywordCheck implements SpamCheckInterface
 {
-    public function __construct(private Config $config)
-    {
-    }
+    public function __construct(private Config $config) {}
 
     public function name(): string
     {
@@ -39,7 +37,7 @@ final readonly class KeywordCheck implements SpamCheckInterface
         if ($scanFields !== []) {
             $allowed = [];
             foreach ($scanFields as $field) {
-                if (is_string($field) && isset($content[$field])) {
+                if (\is_string($field) && isset($content[$field])) {
                     $allowed[$field] = $content[$field];
                 }
             }
@@ -55,7 +53,7 @@ final readonly class KeywordCheck implements SpamCheckInterface
         $perHit = max(1, $this->config->int('keywords.per_hit', 12));
 
         foreach ($this->config->array('keywords.words', []) as $word) {
-            if (!is_string($word) || $word === '') {
+            if (!\is_string($word) || $word === '') {
                 continue;
             }
 
@@ -66,7 +64,7 @@ final readonly class KeywordCheck implements SpamCheckInterface
         }
 
         foreach ($this->config->array('keywords.patterns', []) as $pattern) {
-            if (!is_string($pattern) || $pattern === '') {
+            if (!\is_string($pattern) || $pattern === '') {
                 continue;
             }
 
@@ -85,7 +83,7 @@ final readonly class KeywordCheck implements SpamCheckInterface
         return CheckOutcome::suspicious(
             $this->name(),
             max(1, $score),
-            sprintf('%d spam keyword hit(s): %s', $total, implode(', ', array_keys($hits))),
+            \sprintf('%d spam keyword hit(s): %s', $total, implode(', ', array_keys($hits))),
             ['hits' => $hits],
         );
     }

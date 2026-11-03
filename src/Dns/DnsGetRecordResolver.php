@@ -20,20 +20,16 @@ final readonly class DnsGetRecordResolver implements ResolverInterface
     {
         $records = @dns_get_record($name, DNS_TXT);
 
-        if (!is_array($records)) {
+        if (!\is_array($records)) {
             return [];
         }
 
         $values = [];
         foreach ($records as $record) {
-            if (!is_array($record)) {
-                continue;
-            }
-
-            if (isset($record['entries']) && is_array($record['entries'])) {
+            if (isset($record['entries']) && \is_array($record['entries'])) {
                 $parts = [];
                 foreach ($record['entries'] as $part) {
-                    if (is_string($part)) {
+                    if (\is_string($part)) {
                         $parts[] = $part;
                     }
                 }
@@ -41,7 +37,7 @@ final readonly class DnsGetRecordResolver implements ResolverInterface
                 continue;
             }
 
-            if (isset($record['txt']) && is_string($record['txt'])) {
+            if (isset($record['txt']) && \is_string($record['txt'])) {
                 $values[] = $record['txt'];
             }
         }
@@ -56,13 +52,13 @@ final readonly class DnsGetRecordResolver implements ResolverInterface
     {
         $records = @dns_get_record($name, DNS_A);
 
-        if (!is_array($records)) {
+        if (!\is_array($records)) {
             return [];
         }
 
         $values = [];
         foreach ($records as $record) {
-            if (is_array($record) && isset($record['ip']) && is_string($record['ip'])) {
+            if (isset($record['ip']) && \is_string($record['ip'])) {
                 $values[] = $record['ip'];
             }
         }
@@ -77,13 +73,13 @@ final readonly class DnsGetRecordResolver implements ResolverInterface
     {
         $records = @dns_get_record($name, DNS_MX);
 
-        if (!is_array($records)) {
+        if (!\is_array($records)) {
             return [];
         }
 
         $values = [];
         foreach ($records as $record) {
-            if (is_array($record) && isset($record['target']) && is_string($record['target'])) {
+            if (isset($record['target']) && \is_string($record['target'])) {
                 $values[] = strtolower(rtrim($record['target'], '.'));
             }
         }

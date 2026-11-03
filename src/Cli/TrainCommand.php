@@ -6,6 +6,8 @@ namespace FormSpamChecker\Cli;
 
 use FormSpamChecker\Config;
 use FormSpamChecker\SpamChecker;
+use InvalidArgumentException;
+use Throwable;
 
 /**
  * Trains and inspects the Bayesian model from the command line.
@@ -31,7 +33,7 @@ final class TrainCommand
     public function run(array $argv): int
     {
         try {
-            $options = $this->parse(array_slice($argv, 1));
+            $options = $this->parse(\array_slice($argv, 1));
 
             if (($options['help'] ?? false) === true) {
                 fwrite(STDERR, self::usage());
@@ -39,7 +41,12 @@ final class TrainCommand
                 return self::EXIT_OK;
             }
 
-            $configPath = (string) ($options['config'] ?? getenv('SPAM_CHECKER_CONFIG') ?: '');
+            $configOption = $options['config'] ?? null;
+            $configPath = \is_string($configOption) ? $configOption : '';
+            if ($configPath === '') {
+                $environmentPath = getenv('SPAM_CHECKER_CONFIG');
+                $configPath = \is_string($environmentPath) ? $environmentPath : '';
+            }
             $config = $configPath !== '' ? Config::fromFile($configPath) : new Config();
 
             $classifier = SpamChecker::createBayesClassifier($config);
@@ -59,7 +66,7 @@ final class TrainCommand
             $spam = $this->documents($options, 'spam');
 
             if ($ham === [] && $spam === []) {
-                throw new \InvalidArgumentException('Nothing to train: pass --ham=, --spam=, --text-ham= or --text-spam=.');
+                throw new InvalidArgumentException('Nothing to train: pass --ham=, --spam=, --text-ham= or --text-spam=.');
             }
 
             foreach ($ham as $document) {
@@ -73,13 +80,13 @@ final class TrainCommand
             $classifier->persist();
 
             $this->emit([
-                'trained' => ['ham' => count($ham), 'spam' => count($spam)],
+                'trained' => ['ham' => \count($ham), 'spam' => \count($spam)],
                 'stats' => $classifier->stats(),
                 'persisted' => true,
             ]);
 
             return self::EXIT_OK;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $this->emit(['error' => $exception->getMessage()]);
             fwrite(STDERR, 'spam-train: ' . $exception->getMessage() . PHP_EOL);
 
@@ -88,7 +95,7 @@ final class TrainCommand
     }
 
     /**
-     * @param array<string, string|bool> $options
+     * @param  array<string, string|bool> $options
      * @return list<string>
      */
     private function documents(array $options, string $class): array
@@ -96,12 +103,12 @@ final class TrainCommand
         $documents = [];
 
         $text = $options['text-' . $class] ?? null;
-        if (is_string($text) && $text !== '') {
+        if (\is_string($text) && $text !== '') {
             $documents[] = $text;
         }
 
         $files = $options[$class] ?? null;
-        if (!is_string($files) || $files === '') {
+        if (!\is_string($files) || $files === '') {
             return $documents;
         }
 
@@ -112,12 +119,12 @@ final class TrainCommand
             }
 
             if (!is_file($path) || !is_readable($path)) {
-                throw new \InvalidArgumentException(sprintf('Training file is not readable: %s', $path));
+                throw new InvalidArgumentException(\sprintf('Training file is not readable: %s', $path));
             }
 
             $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             if ($lines === false) {
-                throw new \InvalidArgumentException(sprintf('Cannot read training file: %s', $path));
+                throw new InvalidArgumentException(\sprintf('Cannot read training file: %s', $path));
             }
 
             foreach ($lines as $line) {
@@ -133,7 +140,7 @@ final class TrainCommand
     }
 
     /**
-     * @param list<string> $args
+     * @param  list<string>               $args
      * @return array<string, string|bool>
      */
     private function parse(array $args): array
@@ -146,25 +153,25 @@ final class TrainCommand
                 continue;
             }
 
-            if (in_array($arg, ['--reset', '--stats'], true)) {
+            if (\in_array($arg, ['--reset', '--stats'], true)) {
                 $options[substr($arg, 2)] = true;
                 continue;
             }
 
             if (!str_starts_with($arg, '--')) {
-                throw new \InvalidArgumentException(sprintf('Unexpected argument "%s".', $arg));
+                throw new InvalidArgumentException(\sprintf('Unexpected argument "%s".', $arg));
             }
 
             $equals = strpos($arg, '=');
             if ($equals === false) {
-                throw new \InvalidArgumentException(sprintf('Option "%s" requires a value (--name=value).', $arg));
+                throw new InvalidArgumentException(\sprintf('Option "%s" requires a value (--name=value).', $arg));
             }
 
             $name = substr($arg, 2, $equals - 2);
             $value = substr($arg, $equals + 1);
 
-            if (!in_array($name, ['config', 'ham', 'spam', 'text-ham', 'text-spam'], true)) {
-                throw new \InvalidArgumentException(sprintf('Unknown option "--%s".', $name));
+            if (!\in_array($name, ['config', 'ham', 'spam', 'text-ham', 'text-spam'], true)) {
+                throw new InvalidArgumentException(\sprintf('Unknown option "--%s".', $name));
             }
 
             $options[$name] = $value;

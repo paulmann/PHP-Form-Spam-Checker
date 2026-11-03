@@ -20,9 +20,7 @@ use FormSpamChecker\Token\FormToken;
  */
 final readonly class TimeTrapCheck implements SpamCheckInterface
 {
-    public function __construct(private Config $config)
-    {
-    }
+    public function __construct(private Config $config) {}
 
     public function name(): string
     {
@@ -87,7 +85,7 @@ final readonly class TimeTrapCheck implements SpamCheckInterface
                 $this->name(),
                 CheckStatus::SPAM,
                 $this->config->int('time_trap.spam_score', 80),
-                sprintf('form submitted after %d s, minimum is %d s', $age, $minSeconds),
+                \sprintf('form submitted after %d s, minimum is %d s', $age, $minSeconds),
                 ['age' => $age, 'min' => $minSeconds],
             );
         }
@@ -97,11 +95,11 @@ final readonly class TimeTrapCheck implements SpamCheckInterface
             return CheckOutcome::suspicious(
                 $this->name(),
                 $this->config->int('time_trap.suspicious_score', 30),
-                sprintf('time token is %d s old (max %d s), page was probably cached', $age, $maxSeconds),
+                \sprintf('time token is %d s old (max %d s), page was probably cached', $age, $maxSeconds),
                 ['age' => $age, 'max' => $maxSeconds],
             );
         }
 
-        return CheckOutcome::ham($this->name(), sprintf('submitted %d s after render', $age));
+        return CheckOutcome::ham($this->name(), \sprintf('submitted %d s after render', $age));
     }
 }

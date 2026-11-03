@@ -14,9 +14,7 @@ use FormSpamChecker\Support\Patterns;
  */
 final readonly class LinkCheck implements SpamCheckInterface
 {
-    public function __construct(private Config $config)
-    {
-    }
+    public function __construct(private Config $config) {}
 
     public function name(): string
     {
@@ -40,13 +38,14 @@ final readonly class LinkCheck implements SpamCheckInterface
 
         $shorteners = [];
         foreach ($this->config->array('links.shorteners', []) as $shortener) {
-            if (is_string($shortener) && $shortener !== '') {
+            if (\is_string($shortener) && $shortener !== '') {
                 $shorteners[] = mb_strtolower($shortener);
             }
         }
 
         $foundShorteners = [];
-        foreach ($matches[0] ?? [] as $url) {
+        $urls = $count > 0 ? $matches[0] : [];
+        foreach ($urls as $url) {
             $host = $this->host($url);
             if ($host === null) {
                 continue;
@@ -80,18 +79,18 @@ final readonly class LinkCheck implements SpamCheckInterface
         }
 
         if ($score === 0) {
-            return CheckOutcome::ham($this->name(), sprintf('%d link(s), within the limit of %d', $count, $max));
+            return CheckOutcome::ham($this->name(), \sprintf('%d link(s), within the limit of %d', $count, $max));
         }
 
         $reason = [];
         if ($extra > 0) {
-            $reason[] = sprintf('%d links (max %d)', $count, $max);
+            $reason[] = \sprintf('%d links (max %d)', $count, $max);
         }
         if ($foundShorteners !== []) {
             $reason[] = 'URL shortener: ' . implode(', ', array_unique($foundShorteners));
         }
         if ($obfuscated > 0) {
-            $reason[] = sprintf('%d obfuscated link(s)', $obfuscated);
+            $reason[] = \sprintf('%d obfuscated link(s)', $obfuscated);
         }
 
         return CheckOutcome::suspicious(
@@ -112,7 +111,7 @@ final readonly class LinkCheck implements SpamCheckInterface
         $candidate = str_starts_with(mb_strtolower($url), 'www.') ? 'http://' . $url : $url;
         $parts = parse_url($candidate);
 
-        if ($parts === false || !isset($parts['host']) || !is_string($parts['host'])) {
+        if ($parts === false || !isset($parts['host'])) {
             return null;
         }
 

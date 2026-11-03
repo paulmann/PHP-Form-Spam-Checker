@@ -15,6 +15,22 @@ final class CliTest extends TempDirTestCase
     private const string UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
         . '(KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36';
 
+    /**
+     * Each CLI run gets a private process and an in-memory counter store, so the
+     * test is independent of earlier runs and of the machine's temp directory.
+     */
+    private function isolatedConfig(): string
+    {
+        $path = $this->tempDir() . '/run-config.json';
+        file_put_contents($path, json_encode([
+            'storage' => ['driver' => 'memory'],
+            'cache' => ['driver' => 'memory'],
+            'log' => ['enabled' => false],
+        ], JSON_THROW_ON_ERROR));
+
+        return $path;
+    }
+
     public function testCleanPayloadExitsZero(): void
     {
         $payload = json_encode([
@@ -23,7 +39,7 @@ final class CliTest extends TempDirTestCase
             'context' => ['ip' => '203.0.113.1', 'userAgent' => self::UA],
         ], JSON_UNESCAPED_UNICODE);
 
-        $result = $this->runCli(['--json=' . $payload]);
+        $result = $this->runCli(['--json=' . $payload, '--config=' . $this->isolatedConfig()]);
 
         self::assertSame(0, $result['code'], $result['stderr']);
         $decoded = json_decode($result['stdout'], true);
@@ -40,7 +56,7 @@ final class CliTest extends TempDirTestCase
             'context' => ['ip' => '203.0.113.2', 'userAgent' => self::UA],
         ], JSON_UNESCAPED_UNICODE);
 
-        $result = $this->runCli(['--json=' . $payload]);
+        $result = $this->runCli(['--json=' . $payload, '--config=' . $this->isolatedConfig()]);
 
         self::assertSame(2, $result['code'], $result['stderr']);
         self::assertSame('spam', json_decode($result['stdout'], true)['status']);
@@ -54,7 +70,7 @@ final class CliTest extends TempDirTestCase
             'context' => ['ip' => '203.0.113.3', 'userAgent' => self::UA],
         ], JSON_UNESCAPED_UNICODE);
 
-        $result = $this->runCli(['--json=' . $payload]);
+        $result = $this->runCli(['--json=' . $payload, '--config=' . $this->isolatedConfig()]);
 
         self::assertSame(1, $result['code'], $result['stderr']);
         self::assertSame('suspicious', json_decode($result['stdout'], true)['status']);
@@ -65,7 +81,7 @@ final class CliTest extends TempDirTestCase
         $payload = json_encode(['fields' => ['name' => 'Иван'], 'context' => ['userAgent' => self::UA]]);
         $encoded = base64_encode((string) $payload);
 
-        $result = $this->runCli([$encoded, '--form=contact']);
+        $result = $this->runCli([$encoded, '--form=contact', '--config=' . $this->isolatedConfig()]);
 
         self::assertSame(0, $result['code'], $result['stderr']);
         self::assertSame('contact', json_decode($result['stdout'], true)['form']);
@@ -75,7 +91,7 @@ final class CliTest extends TempDirTestCase
     {
         $payload = json_encode(['fields' => ['name' => 'Иван'], 'context' => ['userAgent' => self::UA]]);
 
-        $result = $this->runCli(['--stdin'], (string) $payload);
+        $result = $this->runCli(['--stdin', '--config=' . $this->isolatedConfig()], (string) $payload);
 
         self::assertSame(0, $result['code'], $result['stderr']);
         self::assertSame('clean', json_decode($result['stdout'], true)['status']);
@@ -157,12 +173,12 @@ final class CliTest extends TempDirTestCase
     }
 
     /**
-     * @param list<string> $args
+     * @param  list<string>                                     $args
      * @return array{code: int, stdout: string, stderr: string}
      */
     private function runCli(array $args, string $stdin = ''): array
     {
-        $root = dirname(__DIR__, 2);
+        $root = \dirname(__DIR__, 2);
         $command = [PHP_BINARY, $root . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'spam-check', ...$args];
 
         $descriptors = [

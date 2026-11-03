@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace FormSpamChecker\Tests\Unit;
 
-use FormSpamChecker\Check\SpamCheckInterface;
 use FormSpamChecker\Check\EmailCheck;
 use FormSpamChecker\Check\HoneypotCheck;
 use FormSpamChecker\Check\KeywordCheck;
@@ -13,6 +12,7 @@ use FormSpamChecker\Check\LengthCheck;
 use FormSpamChecker\Check\LinkCheck;
 use FormSpamChecker\Check\RateLimitCheck;
 use FormSpamChecker\Check\RepetitionCheck;
+use FormSpamChecker\Check\SpamCheckInterface;
 use FormSpamChecker\Check\SqlInjectionCheck;
 use FormSpamChecker\Check\TimeTrapCheck;
 use FormSpamChecker\Check\UserAgentCheck;

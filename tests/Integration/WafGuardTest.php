@@ -126,7 +126,7 @@ final class WafGuardTest extends TempDirTestCase
     }
 
     /**
-     * @param array<string, mixed> $overrides
+     * @param  array<string, mixed> $overrides
      * @return array<string, mixed>
      */
     private function wafConfig(array $overrides = []): array
@@ -152,7 +152,7 @@ final class WafGuardTest extends TempDirTestCase
     }
 
     /**
-     * @param array<string, mixed> $overrides
+     * @param  array<string, mixed> $overrides
      * @return array<string, mixed>
      */
     private function server(string $uri = '/contact', string $method = 'GET', array $overrides = []): array
@@ -383,7 +383,7 @@ final class WafGuardTest extends TempDirTestCase
 
     public function testRateLimitBlocksRepeatedRequestsAndWritesOnlyToTheConfiguredStorage(): void
     {
-        $root = dirname(__DIR__, 2);
+        $root = \dirname(__DIR__, 2);
         $configDir = $this->configDir();
         $storageDir = $configDir . '/storage/waf';
         $outside = $root . DIRECTORY_SEPARATOR . 'var' . DIRECTORY_SEPARATOR . 'waf';
@@ -407,7 +407,7 @@ final class WafGuardTest extends TempDirTestCase
 
     public function testDropInEntryPointRunsWithTheDefaultConfiguration(): void
     {
-        $root = dirname(__DIR__, 2);
+        $root = \dirname(__DIR__, 2);
         $script = $this->tempDir() . '/drop-in-runner.php';
         $entryPoint = $root . DIRECTORY_SEPARATOR . 'integrations' . DIRECTORY_SEPARATOR . 'waf.php';
         file_put_contents($script, "<?php\n"
@@ -432,12 +432,12 @@ final class WafGuardTest extends TempDirTestCase
     }
 
     /**
-     * @param array<string, mixed> $server
+     * @param  array<string, mixed>                             $server
      * @return array{code: int, stdout: string, stderr: string}
      */
     private function runGuard(string $configDir, string $site, array $server, ?string $body = null): array
     {
-        $root = dirname(__DIR__, 2);
+        $root = \dirname(__DIR__, 2);
         $script = $this->tempDir() . '/waf-guard-runner.php';
         file_put_contents($script, "<?php\n"
             . "require " . var_export($root . DIRECTORY_SEPARATOR . 'autoload.php', true) . ";\n"

@@ -118,12 +118,12 @@ final class CliBridgesTest extends TempDirTestCase
     }
 
     /**
-     * @param list<string> $args
+     * @param  list<string>                                     $args
      * @return array{code: int, stdout: string, stderr: string}
      */
     private function runBinary(string $binary, array $args): array
     {
-        $root = dirname(__DIR__, 2);
+        $root = \dirname(__DIR__, 2);
         $process = proc_open(
             [PHP_BINARY, $root . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . $binary, ...$args],
             [1 => ['pipe', 'w'], 2 => ['pipe', 'w']],

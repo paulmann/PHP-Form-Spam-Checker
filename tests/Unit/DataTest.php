@@ -10,6 +10,7 @@ use FormSpamChecker\Data\CheckStatus;
 use FormSpamChecker\Data\RequestData;
 use FormSpamChecker\Data\Verdict;
 use FormSpamChecker\Status;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class DataTest extends TestCase
@@ -116,7 +117,7 @@ final class DataTest extends TestCase
 
     public function testCheckOutcomeRejectsInvalidScores(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         new CheckOutcome('x', CheckStatus::HAM, 101);
     }
 
@@ -165,7 +166,7 @@ final class DataTest extends TestCase
 
     public function testVerdictRejectsInvalidScore(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         new Verdict(Status::Clean, 101);
     }
 

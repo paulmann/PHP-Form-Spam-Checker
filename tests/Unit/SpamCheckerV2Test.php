@@ -48,7 +48,7 @@ final class SpamCheckerV2Test extends TempDirTestCase
 
         self::assertTrue($verdict->isClean());
         self::assertSame(Status::Clean, $verdict->status);
-        self::assertSame(12, count($verdict->outcomes));
+        self::assertSame(12, \count($verdict->outcomes));
     }
 
     public function testHoneypotBlocksSubmission(): void
@@ -58,7 +58,7 @@ final class SpamCheckerV2Test extends TempDirTestCase
         $verdict = $checker->checkRequest($this->request(['name' => 'bot', 'website' => 'filled']));
 
         self::assertTrue($verdict->isSpam());
-        self::assertSame(['honeypot'], array_map(static fn ($o): string => $o->check, $verdict->outcomes));
+        self::assertSame(['honeypot'], array_map(static fn($o): string => $o->check, $verdict->outcomes));
     }
 
     public function testLegacyCheckMethodIsKept(): void

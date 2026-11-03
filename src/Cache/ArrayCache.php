@@ -25,7 +25,11 @@ final class ArrayCache implements CacheInterface
     {
         $entry = $this->entries[$key] ?? null;
 
-        if ($entry === null || $entry['expires'] <= $this->now) {
+        if ($entry === null) {
+            return null;
+        }
+
+        if ($entry['expires'] !== 0 && $entry['expires'] <= $this->now) {
             unset($this->entries[$key]);
 
             return null;
@@ -38,7 +42,7 @@ final class ArrayCache implements CacheInterface
     {
         $this->entries[$key] = [
             'value' => $value,
-            'expires' => $this->now + max(1, $ttl),
+            'expires' => $ttl > 0 ? $this->now + $ttl : 0,
         ];
     }
 

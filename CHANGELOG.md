@@ -1,40 +1,144 @@
 # Changelog
 
 All notable changes to this project are documented here.
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and the project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [2.0.0] — 2026-11-03
+
+The 2.0 line rebuilds the internals around an ordered pipeline and explicit
+value objects, and adds four new layers: a behavioural honeypot/JS challenge, IP
+reputation and DNS blocklists, mail-domain authentication, a Bayesian
+classifier, and an HTTP firewall. Every new module is **disabled by default**;
+existing 1.x integrations keep working (see *Backward compatibility*).
 
 ### Added
 
-- Framework-agnostic `SpamChecker` with 12 local checks: honeypot, signed time
-  trap, user-agent, durable rate limit, length/control characters, SQL
-  injection, XSS, links/shorteners/obfuscation, keywords, e-mail quality
-  (syntax + disposable domains), repetition, mixed-script homoglyphs.
-- `Config` with dot-notation access, deep merge, per-form overrides and PHP/JSON
-  file loading.
-- `FormProtector` helper that renders honeypot + HMAC time-trap fields and
-  verifies the current POST request.
-- `Token\FormToken`: HMAC-SHA-256 signed, URL-safe, form-bound tokens.
-- `Storage\FileStorage` (flock, atomic counters, TTL, garbage collection) and
-  `Storage\MemoryStorage` for tests.
-- `Log\VerdictLogger`: JSONL verdict log, IP pseudonymisation and field
-  redaction by default, optional PII mode.
-- CLI bridge `bin/spam-check` (inline JSON, base64 argument or STDIN; exit codes
-  0/1/2/3) and HTTP bridge `public/check.php` with optional shared key.
-- Shared-server integration: `integrations/guard.php` and
-  `integrations/auto-prepend.php`, per-site configs with `off` / `shadow` /
-  `enforce` modes.
-- 180 PHPUnit tests (465 assertions) covering every check, pipeline
-  aggregation, storage, token, logging, CLI and the HTTP endpoint, plus a
-  syntax gate for every PHP file.
-- CI on PHP 8.5.12 and 8.5 with strict warning/risky/deprecation gates.
-- `Config::fromFile()` accepts both a plain pipeline config and a shared-guard
-  site config (unwraps the `config` key), so the CLI bridge, the HTTP endpoint
-  and the guard read the same file.
-- `deploy/init-site-state.sh` initialises per-site counter/log ownership for
-  multi-user hosts.
-- Documentation (EN/RU), integration guide, configuration and check reference,
-  plain-PHP and Node examples, shared-module install script.
+- **Ordered pipeline** — `FormSpamChecker\Pipeline\SpamPipeline` with early exit
+  on the first hard spam (`pipeline.stop_on_spam`) and fail-open handling of
+  throwing checks.
+- **Value objects** — `Data\RequestData`, `Data\CheckOutcome`, `Data\CheckStatus`
+  (`spam|ham|uncertain|error`), `Data\Verdict`.
+- **PSR-shaped abstractions with bundled adapters** — `Http` (Curl client,
+  PSR-18 adapter), `Cache` (file/array/null, PSR-16/PSR-6 adapters), `Log`
+  (PSR-3-shaped interface, error-log/null/PSR-3 adapters), `Dns` (resolver
+  interface, `dns_get_record` implementation, cached resolver).
+- **Behavioural layer** — dynamic honeypot with hourly HMAC-derived field names
+  (`DynamicHoneypotCheck`, `Behavioral\Honeypot`), JS challenge with a signed
+  token and a self-contained inline script (`JsChallengeCheck`,
+  `Behavioral\JsChallenge`, CSP-hash friendly).
+- **IP reputation** — `Check\AbuseIpdbCheck`: AbuseIPDB v2 `check` endpoint,
+  per-IP cache (6 h default), `threshold` (90), `maxAgeInDays`, `429`
+  back-off from `Retry-After`/`X-RateLimit-Reset`, circuit breaker
+  (`failures` 3 / `cooldown` 300 s), `fail_open`, no network for private or
+  invalid addresses.
+- **DNS blocklists** — `Check\DnsblCheck`: IPv4 and IPv6 (nibble) reversal,
+  multiple zones, `127.0.0.0/24` listing detection, hard spam on a hit.
+- **Mail-domain authentication** — `Check\SpfCheck` and `Check\DmarcCheck`
+  (`Support\SpfEvaluator`, `Support\EmailAddress`); domain-level trust signals
+  that only contribute a score, never a hard verdict.
+- **Bayesian classifier** — `Bayes\Classifier`, `Bayes\UnicodeTokenizer`
+  (lower-cased Unicode words + bigrams), `Bayes\Model`,
+  `Bayes\CacheModelStorage`; multinomial naive Bayes with Laplace smoothing,
+  probability clamped to `[0.01, 0.99]`, abstains below `min_documents`.
+  Trained through `bin/spam-train` (`--ham`, `--spam`, `--text-ham`,
+  `--text-spam`, `--stats`, `--reset`).
+- **WAF** — `Waf\Waf`, `Waf\WafRequest`, `Waf\WafVerdict`, `Waf\WafFinding`,
+  `Waf\RuleInterface`, `Waf\AbstractRule` and nine rules: `sql_injection`,
+  `xss`, `path_traversal`, `command_injection`, `scanner`, `header_injection`,
+  `protocol`, optional `ip_reputation`, optional `rate_limit`. Modes
+  `off|monitor|block`, default skip list for admin areas, JSON/HTML/silent
+  responses, fail-open.
+- **WAF drop-in** — `integrations/waf.php` + `Integration\WafGuard` for PHP
+  sites (same per-site config file as the form guard, optional top-level
+  `waf_mode`, `waf_skip`, `waf_match`, `waf_response`).
+- **WAF CLI bridge** — `bin/waf-check` (`--json`, `--base64`, `--stdin`,
+  `--config`); exit codes `0` allow, `2` block, `3` error.
+- **Form verdict CLI bridge** — `bin/spam-check` (1.x contract; per-check
+  statuses now use the 2.0 vocabulary).
+- **Quality gates in CI** — PHP CS Fixer (PSR-12/PER-CS2), PHPStan `level: max`
+  with strict rules and bleeding edge, Psalm taint analysis, PHPUnit with
+  `failOnWarning`/`failOnRisky`/`failOnDeprecation`, 95 % line-coverage gate
+  (`tools/coverage-gate.php`), `php -l` over `src`, `tests`, `bin`,
+  `integrations`, `config`, `public`, `examples`, `tools`.
+- **Configuration sections** — `pipeline`, `http`, `cache`, `abuseipdb`,
+  `dnsbl`, `spf`, `dmarc`, `dkim` (reserved), `bayes`, `behavioral`, `waf`.
+  All disabled by default; unknown keys are preserved.
+- **Documentation** — `README.md` / `README.ru.md` rewritten for 2.0,
+  `docs/WAF.md`, `docs/MIGRATION-1-to-2.md`, updated `docs/CONFIG.md`,
+  `docs/CHECKS.md`, `docs/INTEGRATION.md`, `docs/INTEGRATION.ru.md`,
+  `SECURITY.md`, and new examples (`examples/waf.php`,
+  `examples/abuseipdb.php`, `examples/bayes-train.php`).
+- **Examples** — `examples/plain-form.php` uses the 2.0 configuration;
+  `examples/node/bridge.mjs` documents both the form and the WAF bridge.
 
-[Unreleased]: https://github.com/Paulmann/PHP-Form-Spam-Checker/commits/main
+### Changed
+
+- The default pipeline builds checks through
+  `SpamChecker::defaultChecks($config, $storage, …)`; network and behavioural
+  checks are registered only when enabled and only after the local checks.
+- `SpamChecker` accepts optional `LoggerInterface`, `HttpClientInterface`,
+  `CacheInterface` and `ResolverInterface` collaborators (constructor and
+  `fromConfig()`); a `RequestData` can be passed to `checkRequest()`.
+- `FormProtector::fields()` now renders the dynamic honeypot and the JS
+  challenge when they are configured; static honeypot rendering is unchanged.
+- `FormGuard` keeps the 1.x `off|shadow|enforce` modes and `config/sites`
+  format; it additionally understands the `auto` flag at the top level.
+- Verdict logging stores richer evidence and uses the 2.0 check names.
+- Deployment scripts update code only and never rewrite ownership under
+  `var/` (multi-user hosts); per-site state is initialised by
+  `deploy/init-site-state.sh`.
+- Dependencies are unchanged in the runtime path (`ext-json`, `ext-mbstring`;
+  `ext-curl` is needed only for the bundled HTTP client), and PHP 8.5 remains
+  the requirement (`>=8.5`, as in 1.x).
+
+### Backward compatibility (kept)
+
+- `FormSpamChecker\SpamChecker` — constructor, `check(array $fields,
+  ?Context, string $formId): Verdict`.
+- `FormSpamChecker\FormProtector` — `fields()`, `verify()`, `verifyRequest()`.
+- `FormSpamChecker\Integration\FormGuard` — `boot()`, `run()`, `evaluateFor()`.
+- `bin/spam-check` — options, top-level JSON output and exit codes `0/1/2/3`.
+- `public/check.php` — POST JSON service, `endpoint.key` /
+  `X-Spam-Checker-Key`, status codes 400/403/405/413/500.
+- `config/sites/<host>.php` — the 1.x shared-guard format, including
+  `site`, `mode`, `form`, `response`, `match`, `skip`, `auto`, `config`.
+- `FormSpamChecker\Status` — `clean`, `suspicious`, `spam`.
+- `FormSpamChecker\Config` — array/JSON/PHP-file loading, dot access, deep
+  merge, per-form overrides.
+
+### Breaking
+
+- `FormSpamChecker\CheckInterface`, `CheckResult`, `Submission` and the
+  `FormSpamChecker\Checks\*` classes are removed. Custom checks implement
+  `FormSpamChecker\Check\SpamCheckInterface` and receive
+  `Data\RequestData`, returning `Data\CheckOutcome` (see
+  `docs/MIGRATION-1-to-2.md`).
+- `FormSpamChecker\Verdict` moved to `FormSpamChecker\Data\Verdict`;
+  `FormSpamChecker\Pipeline` moved to `FormSpamChecker\Pipeline\SpamPipeline`.
+  Type hints and imports must be updated.
+- `bin/spam-check` per-check `checks[].status` changed from
+  `clean|suspicious|spam` to `spam|ham|uncertain|error`. The top-level status
+  and exit codes are unchanged.
+- A check's "suspicious" result is expressed as `HAM` **with a positive score**
+  instead of a separate status.
+
+### Planned but not in this release
+
+- `dkim` check: the `dkim` configuration section is accepted and reserved, but
+  no `FormSpamChecker\Check\DkimCheck` ships in 2.0.0 and the pipeline does not
+  register one.
+- `behavioral.js_challenge.min_ms`: accepted in configuration, not enforced
+  yet (the token age is checked through `max_age`).
+
+### Notes
+
+- The 95 % coverage gate in CI replaces the "target 100 %" wording of the
+  architecture contract; environment adapters are excluded through
+  `tools/coverage-gate.php --exclude-env-adapters`. This is a documented
+  deviation, not a reduction of the 1.x suite.
+- The WAF identifies scanners by explicit path and User-Agent markers; it does
+  not score User-Agent entropy (deliberately: entropy is not a reliable signal).
+
+[2.0.0]: https://github.com/Paulmann/PHP-Form-Spam-Checker/compare/v1.0.0...v2.0
+[Unreleased]: https://github.com/Paulmann/PHP-Form-Spam-Checker/compare/v2.0...main

@@ -66,7 +66,7 @@ final class RemoteWiringTest extends TestCase
         );
 
         $verdict = $checker->checkRequest($request);
-        $names = array_map(static fn ($outcome): string => $outcome->check, $verdict->outcomes);
+        $names = array_map(static fn($outcome): string => $outcome->check, $verdict->outcomes);
 
         self::assertContains('abuseipdb', $names);
         self::assertContains('dnsbl', $names);
@@ -76,7 +76,7 @@ final class RemoteWiringTest extends TestCase
 
         $plain = new SpamChecker(new Config(['storage' => ['driver' => 'memory']]), new MemoryStorage());
         $plainNames = array_map(
-            static fn ($outcome): string => $outcome->check,
+            static fn($outcome): string => $outcome->check,
             $plain->checkRequest($request)->outcomes,
         );
 

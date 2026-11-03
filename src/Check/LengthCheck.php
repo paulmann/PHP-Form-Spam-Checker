@@ -15,9 +15,7 @@ use FormSpamChecker\Data\RequestData;
  */
 final readonly class LengthCheck implements SpamCheckInterface
 {
-    public function __construct(private Config $config)
-    {
-    }
+    public function __construct(private Config $config) {}
 
     public function name(): string
     {
@@ -41,7 +39,7 @@ final readonly class LengthCheck implements SpamCheckInterface
                     $this->name(),
                     CheckStatus::SPAM,
                     $this->config->int('length.hard_score', 100),
-                    sprintf('control characters in field "%s"', $field),
+                    \sprintf('control characters in field "%s"', $field),
                     ['field' => $field],
                 );
             }
@@ -53,7 +51,7 @@ final readonly class LengthCheck implements SpamCheckInterface
                     $this->name(),
                     CheckStatus::SPAM,
                     $this->config->int('length.hard_score', 100),
-                    sprintf('field "%s" is %d characters long (hard max %d)', $field, $length, $hardMax),
+                    \sprintf('field "%s" is %d characters long (hard max %d)', $field, $length, $hardMax),
                     ['field' => $field, 'length' => $length, 'hard_max' => $hardMax],
                 );
             }
@@ -71,7 +69,7 @@ final readonly class LengthCheck implements SpamCheckInterface
         return CheckOutcome::suspicious(
             $this->name(),
             min(100, $score),
-            sprintf('field(s) longer than %d characters', $max),
+            \sprintf('field(s) longer than %d characters', $max),
             ['fields' => $evidence],
         );
     }

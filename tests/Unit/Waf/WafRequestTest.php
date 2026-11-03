@@ -67,7 +67,7 @@ final class WafRequestTest extends TestCase
             maxBodyBytes: 10,
         );
 
-        self::assertSame(10, strlen($request->body));
+        self::assertSame(10, \strlen($request->body));
         self::assertSame(10, $request->contentLength);
     }
 

@@ -18,8 +18,7 @@ final class Context
         public readonly string $referer = '',
         public readonly string $page = '',
         public readonly ?int $now = null,
-    ) {
-    }
+    ) {}
 
     public function timestamp(): int
     {
@@ -31,7 +30,10 @@ final class Context
      */
     public static function fromGlobals(): self
     {
-        return self::fromServer($_SERVER);
+        /** @var array<string, mixed> $server */
+        $server = $_SERVER;
+
+        return self::fromServer($server);
     }
 
     /**
@@ -43,7 +45,7 @@ final class Context
     {
         $ip = '';
         foreach (['HTTP_CF_CONNECTING_IP', 'HTTP_X_REAL_IP', 'REMOTE_ADDR'] as $key) {
-            if (isset($server[$key]) && is_string($server[$key]) && trim($server[$key]) !== '') {
+            if (isset($server[$key]) && \is_string($server[$key]) && trim($server[$key]) !== '') {
                 $ip = trim($server[$key]);
                 break;
             }
@@ -51,8 +53,8 @@ final class Context
 
         // X-Forwarded-For: the left-most address is the client, but only trust it
         // when the connecting peer is a local reverse proxy.
-        if (isset($server['HTTP_X_FORWARDED_FOR']) && is_string($server['HTTP_X_FORWARDED_FOR'])) {
-            $remote = (string) ($server['REMOTE_ADDR'] ?? '');
+        if (isset($server['HTTP_X_FORWARDED_FOR']) && \is_string($server['HTTP_X_FORWARDED_FOR'])) {
+            $remote = self::str($server, 'REMOTE_ADDR');
             if (self::isLoopback($remote)) {
                 $first = trim(explode(',', $server['HTTP_X_FORWARDED_FOR'])[0]);
                 if (filter_var($first, FILTER_VALIDATE_IP) !== false) {
@@ -63,13 +65,13 @@ final class Context
 
         return new self(
             ip: $ip,
-            userAgent: isset($server['HTTP_USER_AGENT']) && is_string($server['HTTP_USER_AGENT'])
+            userAgent: isset($server['HTTP_USER_AGENT']) && \is_string($server['HTTP_USER_AGENT'])
                 ? mb_substr($server['HTTP_USER_AGENT'], 0, 512)
                 : '',
-            referer: isset($server['HTTP_REFERER']) && is_string($server['HTTP_REFERER'])
+            referer: isset($server['HTTP_REFERER']) && \is_string($server['HTTP_REFERER'])
                 ? mb_substr($server['HTTP_REFERER'], 0, 1024)
                 : '',
-            page: isset($server['REQUEST_URI']) && is_string($server['REQUEST_URI'])
+            page: isset($server['REQUEST_URI']) && \is_string($server['REQUEST_URI'])
                 ? mb_substr($server['REQUEST_URI'], 0, 512)
                 : '',
         );
@@ -87,7 +89,7 @@ final class Context
             userAgent: self::str($data, 'userAgent', 'user_agent', 'ua'),
             referer: self::str($data, 'referer'),
             page: self::str($data, 'page'),
-            now: is_int($now) || (is_string($now) && ctype_digit($now)) ? (int) $now : null,
+            now: \is_int($now) || (\is_string($now) && ctype_digit($now)) ? (int) $now : null,
         );
     }
 
@@ -97,7 +99,7 @@ final class Context
     private static function str(array $data, string ...$keys): string
     {
         foreach ($keys as $key) {
-            if (isset($data[$key]) && is_string($data[$key])) {
+            if (isset($data[$key]) && \is_string($data[$key])) {
                 return $data[$key];
             }
         }

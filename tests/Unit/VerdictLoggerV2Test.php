@@ -38,7 +38,7 @@ final class VerdictLoggerV2Test extends TempDirTestCase
         $record = json_decode((string) $lines[0], true);
 
         self::assertNotSame('203.0.113.55', $record['ip']);
-        self::assertSame(16, strlen((string) $record['ip']));
+        self::assertSame(16, \strlen((string) $record['ip']));
         self::assertSame('redacted', $record['fields']);
         self::assertSame('spam', $record['status']);
         self::assertSame('filled', $record['checks'][0]['reason']);

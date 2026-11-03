@@ -53,7 +53,7 @@ abstract class WafTestCase extends TestCase
             ip: $ip,
             body: $body,
             contentType: $headers['content-type'],
-            contentLength: strlen($body),
+            contentLength: \strlen($body),
             headers: $headers,
             cookies: $cookies,
             query: $query,
@@ -67,9 +67,9 @@ abstract class WafTestCase extends TestCase
      */
     protected function assertHardFinding(?WafFinding $finding, string $rule): void
     {
-        self::assertNotNull($finding, sprintf('expected rule "%s" to find something', $rule));
+        self::assertNotNull($finding, \sprintf('expected rule "%s" to find something', $rule));
         self::assertSame($rule, $finding->rule);
-        self::assertTrue($finding->hard, sprintf('expected rule "%s" to report a hard finding', $rule));
+        self::assertTrue($finding->hard, \sprintf('expected rule "%s" to report a hard finding', $rule));
         self::assertGreaterThan(0, $finding->severity);
     }
 }

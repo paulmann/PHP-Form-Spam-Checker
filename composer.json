@@ -62,7 +62,8 @@
     },
     "bin": [
         "bin/spam-check",
-        "bin/waf-check"
+        "bin/waf-check",
+        "bin/spam-train"
     ],
     "scripts": {
         "test": "phpunit",

@@ -55,11 +55,11 @@ final class ProtocolRule extends AbstractRule
     {
         $method = strtoupper($request->method);
         $methods = array_map(
-            static fn (string $allowed): string => strtoupper($allowed),
+            static fn(string $allowed): string => strtoupper($allowed),
             $this->listOption('methods', self::METHODS),
         );
 
-        if ($method === '' || !in_array($method, $methods, true)) {
+        if ($method === '' || !\in_array($method, $methods, true)) {
             return $this->finding(
                 'request method is not allowed',
                 'method',
@@ -86,13 +86,13 @@ final class ProtocolRule extends AbstractRule
             );
         }
 
-        if ($contentLength > $maxBodyBytes || strlen($request->body) > $maxBodyBytes) {
+        if ($contentLength > $maxBodyBytes || \strlen($request->body) > $maxBodyBytes) {
             return $this->finding(
                 'request body exceeds the configured limit',
                 'body',
                 [
                     'content_length' => $contentLength,
-                    'body_bytes' => strlen($request->body),
+                    'body_bytes' => \strlen($request->body),
                     'max_body_bytes' => $maxBodyBytes,
                 ],
                 null,
@@ -100,7 +100,7 @@ final class ProtocolRule extends AbstractRule
             );
         }
 
-        if (in_array($method, self::BODY_METHODS, true)) {
+        if (\in_array($method, self::BODY_METHODS, true)) {
             $contentType = strtolower(trim(explode(';', $request->effectiveContentType(), 2)[0]));
             $allowed = $this->listOption('content_types', self::CONTENT_TYPES);
 
@@ -182,7 +182,7 @@ final class ProtocolRule extends AbstractRule
     {
         $value = $this->option($key, $default);
 
-        if (is_bool($value)) {
+        if (\is_bool($value)) {
             return $value;
         }
 

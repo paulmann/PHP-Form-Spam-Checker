@@ -35,6 +35,7 @@ use FormSpamChecker\Pipeline\SpamPipeline;
 use FormSpamChecker\Storage\FileStorage;
 use FormSpamChecker\Storage\MemoryStorage;
 use FormSpamChecker\Storage\StorageInterface;
+use Throwable;
 
 /**
  * Facade used by form integrations: builds the v2 pipeline from configuration
@@ -61,8 +62,7 @@ final class SpamChecker
         private readonly ?HttpClientInterface $http = null,
         private readonly ?CacheInterface $cache = null,
         private readonly ?ResolverInterface $dns = null,
-    ) {
-    }
+    ) {}
 
     /**
      * @param list<SpamCheckInterface>|null $checks
@@ -129,6 +129,7 @@ final class SpamChecker
         ?CacheInterface $cache = null,
         ?ResolverInterface $dns = null,
     ): array {
+        /** @var list<SpamCheckInterface> $checks */
         $checks = [
             new HoneypotCheck($config),
             new TimeTrapCheck($config),
@@ -147,6 +148,7 @@ final class SpamChecker
         $logger ??= new ErrorLogLogger('pipeline');
         $http ??= new CurlClient();
         $cache ??= self::createCache($config);
+        $dnsProvided = $dns !== null;
         $dns ??= self::createDns($config, $cache);
 
         // Behavioural additions (files may be absent during a partial deploy).
@@ -169,7 +171,9 @@ final class SpamChecker
         }
 
         if ($config->bool('dnsbl.enabled', false) && class_exists(Check\DnsblCheck::class)) {
-            $checks[] = new Check\DnsblCheck($dns, $config);
+            // DNSBL has its own cache TTL; SPF/DMARC keep the shared resolver.
+            $dnsblDns = $dnsProvided ? $dns : self::createDns($config, $cache, 'dnsbl.cache_ttl');
+            $checks[] = new Check\DnsblCheck($dnsblDns, $config);
         }
 
         if ($config->bool('spf.enabled', false) && class_exists(Check\SpfCheck::class)) {
@@ -180,7 +184,28 @@ final class SpamChecker
             $checks[] = new Check\DmarcCheck($dns, $config);
         }
 
+        if ($config->bool('bayes.enabled', false)
+            && class_exists(Check\BayesCheck::class)
+            && class_exists(Bayes\Classifier::class)
+        ) {
+            $checks[] = new Check\BayesCheck(self::createBayesClassifier($config, $cache), $config);
+        }
+
         return $checks;
+    }
+
+    /**
+     * Build the Bayesian classifier from configuration (model stored in cache).
+     */
+    public static function createBayesClassifier(Config $config, ?CacheInterface $cache = null): Bayes\Classifier
+    {
+        $cache ??= self::createCache($config);
+
+        return new Bayes\Classifier(
+            new Bayes\CacheModelStorage($cache, 'bayes.model.' . sha1($config->bayesStoragePath())),
+            max(0, $config->int('bayes.min_documents', 20)),
+            $config->float('bayes.threshold', 0.92),
+        );
     }
 
     public static function createStorage(Config $config): StorageInterface
@@ -200,14 +225,14 @@ final class SpamChecker
         };
     }
 
-    public static function createDns(Config $config, ?CacheInterface $cache = null): ResolverInterface
+    public static function createDns(Config $config, ?CacheInterface $cache = null, string $ttlKey = 'spf.dns_ttl'): ResolverInterface
     {
         $cache ??= self::createCache($config);
 
         return new CachedResolver(
             new DnsGetRecordResolver(),
             $cache,
-            max(60, $config->int('spf.dns_ttl', 3600)),
+            max(60, $config->int($ttlKey, 3600)),
         );
     }
 
@@ -257,7 +282,7 @@ final class SpamChecker
                 $config->bool('log.sample_fields', true),
                 $config->excludedFields(),
             ))->log($verdict, $request);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // Logging must never break form processing.
         }
     }

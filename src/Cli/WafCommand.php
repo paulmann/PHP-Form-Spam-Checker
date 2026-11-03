@@ -9,6 +9,9 @@ use FormSpamChecker\Log\ErrorLogLogger;
 use FormSpamChecker\SpamChecker;
 use FormSpamChecker\Waf\Waf;
 use FormSpamChecker\Waf\WafRequest;
+use InvalidArgumentException;
+use JsonException;
+use Throwable;
 
 /**
  * CLI bridge for the WAF (used by non-PHP back ends, e.g. a Node server that
@@ -34,7 +37,7 @@ final class WafCommand
     public function run(array $argv): int
     {
         try {
-            $options = $this->parse(array_slice($argv, 1));
+            $options = $this->parse(\array_slice($argv, 1));
 
             if (($options['help'] ?? false) === true) {
                 fwrite(STDERR, self::usage());
@@ -42,14 +45,19 @@ final class WafCommand
                 return self::EXIT_ALLOW;
             }
 
-            $configPath = (string) ($options['config'] ?? getenv('SPAM_CHECKER_CONFIG') ?: '');
+            $configOption = $options['config'] ?? null;
+            $configPath = \is_string($configOption) ? $configOption : '';
+            if ($configPath === '') {
+                $environmentPath = getenv('SPAM_CHECKER_CONFIG');
+                $configPath = \is_string($environmentPath) ? $environmentPath : '';
+            }
             $baseConfig = $configPath !== '' ? Config::fromFile($configPath) : new Config();
 
             $payload = $this->decode($this->readPayload($options));
-            $formId = isset($payload['form']) && is_string($payload['form']) ? $payload['form'] : 'default';
+            $formId = isset($payload['form']) && \is_string($payload['form']) ? $payload['form'] : 'default';
             $config = $baseConfig->form($formId);
 
-            $request = $this->requestFromPayload($payload, $config);
+            $request = $this->requestFromPayload($payload);
 
             if (!$config->bool('waf.enabled', false)) {
                 $this->emit([
@@ -76,14 +84,14 @@ final class WafCommand
                 'status' => $verdict->status,
                 'score' => $verdict->score,
                 'findings' => array_map(
-                    static fn ($finding): array => $finding->toArray(),
+                    static fn($finding): array => $finding->toArray(),
                     $verdict->findings,
                 ),
                 'reasons' => $verdict->reasons(),
             ]);
 
             return $verdict->isBlocked() ? self::EXIT_BLOCK : self::EXIT_ALLOW;
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $this->emit([
                 'blocked' => false,
                 'status' => 'error',
@@ -100,40 +108,66 @@ final class WafCommand
     /**
      * @param array<string, mixed> $payload
      */
-    private function requestFromPayload(array $payload, Config $config): WafRequest
+    private function requestFromPayload(array $payload): WafRequest
     {
         $headers = [];
-        if (isset($payload['headers']) && is_array($payload['headers'])) {
+        if (isset($payload['headers']) && \is_array($payload['headers'])) {
             foreach ($payload['headers'] as $name => $value) {
-                if (is_string($name) && is_string($value)) {
+                if (\is_string($name) && \is_string($value)) {
                     $headers[strtolower($name)] = $value;
                 }
             }
         }
 
         $cookies = [];
-        if (isset($payload['cookies']) && is_array($payload['cookies'])) {
+        if (isset($payload['cookies']) && \is_array($payload['cookies'])) {
             foreach ($payload['cookies'] as $name => $value) {
-                if (is_string($name) && is_string($value)) {
+                if (\is_string($name) && \is_string($value)) {
                     $cookies[$name] = $value;
                 }
             }
         }
 
-        $query = isset($payload['query']) && is_array($payload['query']) ? $payload['query'] : [];
-        $fields = isset($payload['fields']) && is_array($payload['fields']) ? $payload['fields'] : [];
-        $body = (string) ($payload['body'] ?? '');
+        $query = self::stringKeyed(\is_array($payload['query'] ?? null) ? $payload['query'] : []);
+        $fields = self::stringKeyed(\is_array($payload['fields'] ?? null) ? $payload['fields'] : []);
+
+        $body = $payload['body'] ?? '';
+        if (!\is_string($body)) {
+            $body = '';
+        }
+
         $contentType = $headers['content-type'] ?? '';
-        $contentLength = isset($headers['content-length']) && is_numeric($headers['content-length'])
-            ? (int) $headers['content-length']
-            : strlen($body);
+        $contentLengthSource = $headers['content-length'] ?? null;
+        $contentLength = \is_string($contentLengthSource) && is_numeric($contentLengthSource)
+            ? (int) $contentLengthSource
+            : \strlen($body);
 
         $now = $payload['now'] ?? null;
 
+        $method = $payload['method'] ?? 'GET';
+        if (!\is_string($method) || $method === '') {
+            $method = 'GET';
+        }
+
+        $uri = $payload['uri'] ?? '/';
+        if (!\is_string($uri) || $uri === '') {
+            $uri = '/';
+        }
+
+        $ip = $payload['ip'] ?? '';
+        if (!\is_string($ip)) {
+            $ip = '';
+        }
+
+        $formId = $payload['form'] ?? 'default';
+        if (!\is_string($formId)) {
+            $formId = 'default';
+        }
+
         return new WafRequest(
-            method: strtoupper((string) ($payload['method'] ?? 'GET')),
-            uri: (string) ($payload['uri'] ?? '/'),
-            ip: (string) ($payload['ip'] ?? ''),
+            method: strtoupper($method),
+            uri: $uri,
+            ip: $ip,
             body: $body,
             contentType: $contentType,
             contentLength: $contentLength,
@@ -141,13 +175,29 @@ final class WafCommand
             cookies: $cookies,
             query: $query,
             fields: $fields,
-            now: is_int($now) ? $now : null,
-            formId: (string) ($payload['form'] ?? 'default'),
+            now: \is_int($now) ? $now : null,
+            formId: $formId,
         );
     }
 
     /**
-     * @param list<string> $args
+     * @param  array<mixed>         $values
+     * @return array<string, mixed>
+     */
+    private static function stringKeyed(array $values): array
+    {
+        $typed = [];
+        foreach ($values as $key => $value) {
+            if (\is_string($key)) {
+                $typed[$key] = $value;
+            }
+        }
+
+        return $typed;
+    }
+
+    /**
+     * @param  list<string>               $args
      * @return array<string, string|bool>
      */
     private function parse(array $args): array
@@ -169,14 +219,14 @@ final class WafCommand
             if (str_starts_with($arg, '--')) {
                 $equals = strpos($arg, '=');
                 if ($equals === false) {
-                    throw new \InvalidArgumentException(sprintf('Option "%s" requires a value (--name=value).', $arg));
+                    throw new InvalidArgumentException(\sprintf('Option "%s" requires a value (--name=value).', $arg));
                 }
 
                 $name = substr($arg, 2, $equals - 2);
                 $value = substr($arg, $equals + 1);
 
-                if (!in_array($name, ['config', 'json', 'base64'], true)) {
-                    throw new \InvalidArgumentException(sprintf('Unknown option "--%s".', $name));
+                if (!\in_array($name, ['config', 'json', 'base64'], true)) {
+                    throw new InvalidArgumentException(\sprintf('Unknown option "--%s".', $name));
                 }
 
                 $options[$name] = $value;
@@ -187,8 +237,8 @@ final class WafCommand
         }
 
         if ($positional !== []) {
-            if (count($positional) > 1) {
-                throw new \InvalidArgumentException('Only one positional payload is allowed.');
+            if (\count($positional) > 1) {
+                throw new InvalidArgumentException('Only one positional payload is allowed.');
             }
             $options['positional'] = $positional[0];
         }
@@ -202,14 +252,14 @@ final class WafCommand
     private function readPayload(array $options): string
     {
         foreach (['json', 'base64', 'positional'] as $source) {
-            if (isset($options[$source]) && is_string($options[$source])) {
+            if (isset($options[$source]) && \is_string($options[$source])) {
                 if ($source === 'json') {
                     return $options[$source];
                 }
 
                 $decoded = base64_decode($options[$source], true);
                 if ($decoded === false) {
-                    throw new \InvalidArgumentException(sprintf('Payload in "--%s" is not valid base64.', $source));
+                    throw new InvalidArgumentException(\sprintf('Payload in "--%s" is not valid base64.', $source));
                 }
 
                 return $decoded;
@@ -223,7 +273,7 @@ final class WafCommand
             }
         }
 
-        throw new \InvalidArgumentException('No payload: pass --json=, --base64=, a base64 argument or data on STDIN.');
+        throw new InvalidArgumentException('No payload: pass --json=, --base64=, a base64 argument or data on STDIN.');
     }
 
     /**
@@ -233,15 +283,22 @@ final class WafCommand
     {
         try {
             $data = json_decode(trim($raw), true, 64, JSON_THROW_ON_ERROR);
-        } catch (\JsonException $exception) {
-            throw new \InvalidArgumentException('Payload is not valid JSON: ' . $exception->getMessage());
+        } catch (JsonException $exception) {
+            throw new InvalidArgumentException('Payload is not valid JSON: ' . $exception->getMessage());
         }
 
-        if (!is_array($data)) {
-            throw new \InvalidArgumentException('Payload must be a JSON object.');
+        if (!\is_array($data)) {
+            throw new InvalidArgumentException('Payload must be a JSON object.');
         }
 
-        return $data;
+        $payload = [];
+        foreach ($data as $key => $value) {
+            if (\is_string($key)) {
+                $payload[$key] = $value;
+            }
+        }
+
+        return $payload;
     }
 
     /**

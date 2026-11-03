@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FormSpamChecker\Cache;
 
 use FormSpamChecker\Exception\StorageException;
+use JsonException;
 
 /**
  * File-backed cache for hosts without Redis/APCu.
@@ -44,15 +45,17 @@ final readonly class FileCache implements CacheInterface
 
         try {
             $entry = json_decode($raw, true, 8, JSON_THROW_ON_ERROR);
-        } catch (\JsonException) {
+        } catch (JsonException) {
             return null;
         }
 
-        if (!is_array($entry) || !isset($entry['expires']) || !is_int($entry['expires'])) {
+        if (!\is_array($entry) || !isset($entry['expires']) || !\is_int($entry['expires'])) {
             return null;
         }
 
-        if ($entry['expires'] <= time()) {
+        // TTL 0 means "no expiry" (the Bayesian model and other long-lived
+        // entries rely on it).
+        if ($entry['expires'] !== 0 && $entry['expires'] <= time()) {
             @unlink($path);
 
             return null;
@@ -65,7 +68,7 @@ final readonly class FileCache implements CacheInterface
     {
         $payload = json_encode([
             'value' => $value,
-            'expires' => time() + max(1, $ttl),
+            'expires' => $ttl > 0 ? time() + $ttl : 0,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
 
         $path = $this->path($key);
@@ -78,6 +81,45 @@ final readonly class FileCache implements CacheInterface
         if (!@rename($temporary, $path)) {
             @unlink($temporary);
             throw new StorageException('Cannot replace cache file: ' . $path);
+        }
+
+        if ($this->gcPercent > 0 && random_int(1, 100) <= $this->gcPercent) {
+            $this->gc();
+        }
+    }
+
+    /**
+     * Remove expired entries (TTL 0 entries never expire).
+     */
+    public function gc(): void
+    {
+        $files = glob($this->directory . DIRECTORY_SEPARATOR . '*.json');
+        if ($files === false) {
+            return;
+        }
+
+        $now = time();
+        foreach ($files as $file) {
+            $raw = @file_get_contents($file);
+            if ($raw === false) {
+                continue;
+            }
+
+            try {
+                $entry = json_decode($raw, true, 8, JSON_THROW_ON_ERROR);
+            } catch (JsonException) {
+                @unlink($file);
+                continue;
+            }
+
+            if (!\is_array($entry) || !isset($entry['expires']) || !\is_int($entry['expires'])) {
+                @unlink($file);
+                continue;
+            }
+
+            if ($entry['expires'] !== 0 && $entry['expires'] <= $now) {
+                @unlink($file);
+            }
         }
     }
 

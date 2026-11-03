@@ -6,9 +6,9 @@ namespace FormSpamChecker;
 
 use FormSpamChecker\Behavioral\Honeypot;
 use FormSpamChecker\Behavioral\JsChallenge;
-use FormSpamChecker\Data\RequestData;
 use FormSpamChecker\Data\Verdict;
 use FormSpamChecker\Token\FormToken;
+use Throwable;
 
 /**
  * High-level helper for plain PHP forms: renders the protective fields and
@@ -27,8 +27,7 @@ final class FormProtector
     public function __construct(
         private readonly SpamChecker $checker,
         private readonly Config $config,
-    ) {
-    }
+    ) {}
 
     /**
      * Hidden inputs: honeypot (static or dynamic), signed time-trap token and,
@@ -49,7 +48,7 @@ final class FormProtector
             $tokenField = $options['token_field'] ?? $config->string('time_trap.field', '_fs_ts');
             $token = (new FormToken($config->secret()))->issue($formId);
 
-            $parts[] = sprintf(
+            $parts[] = \sprintf(
                 '<input type="hidden" name="%s" value="%s">',
                 $this->escape($tokenField),
                 $this->escape($token),
@@ -62,7 +61,7 @@ final class FormProtector
             $parts[] = $this->jsChallengeFields($config, $formId);
         }
 
-        return implode("\n", array_filter($parts));
+        return implode("\n", array_filter($parts, static fn(string $part): bool => $part !== ''));
     }
 
     /**
@@ -80,7 +79,10 @@ final class FormProtector
      */
     public function verifyRequest(string $formId = 'default', ?Context $context = null): Verdict
     {
-        return $this->verify($_POST, $formId, $context ?? Context::fromGlobals());
+        /** @var array<string, mixed> $fields */
+        $fields = $_POST;
+
+        return $this->verify($fields, $formId, $context ?? Context::fromGlobals());
     }
 
     public function config(): Config
@@ -89,7 +91,7 @@ final class FormProtector
     }
 
     /**
-     * @param array{container_style?: string} $options
+     * @param array{honeypot?: bool, token?: bool, js?: bool, container_style?: string, token_field?: string} $options
      */
     private function honeypotFields(Config $config, string $formId, array $options): string
     {
@@ -106,7 +108,7 @@ final class FormProtector
         } else {
             $names = [];
             foreach ($config->array('honeypot.fields', []) as $field) {
-                if (is_string($field) && $field !== '') {
+                if (\is_string($field) && $field !== '') {
                     $names[] = $field;
                 }
             }
@@ -118,13 +120,13 @@ final class FormProtector
 
         $inputs = [];
         foreach ($names as $name) {
-            $inputs[] = sprintf(
+            $inputs[] = \sprintf(
                 '<input type="text" name="%s" value="" tabindex="-1" autocomplete="off" aria-hidden="true">',
                 $this->escape($name),
             );
         }
 
-        return sprintf(
+        return \sprintf(
             '<div class="fs-hp" aria-hidden="true" style="%s">%s</div>',
             $this->escape($style),
             implode('', $inputs),
@@ -133,18 +135,28 @@ final class FormProtector
 
     private function jsChallengeFields(Config $config, string $formId): string
     {
-        $challenge = new JsChallenge($config);
-        $issued = $challenge->issue($formId);
-        $field = $config->string('behavioral.js_challenge.field', '_js');
+        try {
+            $challenge = new JsChallenge($config);
 
-        return sprintf(
-            '<input type="hidden" name="%s" value="" data-fs-js="1">'
-            . '<input type="hidden" name="%s_token" value="%s">'
-            . $challenge->inlineScript($formId),
-            $this->escape($field),
-            $this->escape($field),
-            $this->escape((string) ($issued['token'] ?? '')),
-        );
+            if (!$challenge->isConfigured()) {
+                return '';
+            }
+
+            $issued = $challenge->issue($formId);
+            $field = $challenge->field();
+
+            return \sprintf(
+                '<input type="hidden" name="%s" value="" data-fs-js="1">'
+                . '<input type="hidden" name="%s" value="%s">'
+                . $challenge->inlineScript($formId),
+                $this->escape($field),
+                $this->escape($challenge->tokenField()),
+                $this->escape($issued['token']),
+            );
+        } catch (Throwable) {
+            // A misconfigured challenge must never break the rendering of a form.
+            return '';
+        }
     }
 
     private function escape(string $value): string

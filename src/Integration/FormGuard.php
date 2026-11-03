@@ -8,6 +8,8 @@ use FormSpamChecker\Config;
 use FormSpamChecker\Data\RequestData;
 use FormSpamChecker\Data\Verdict;
 use FormSpamChecker\SpamChecker;
+use RuntimeException;
+use Throwable;
 
 /**
  * Drop-in guard for existing PHP sites, loaded from the shared module
@@ -49,12 +51,11 @@ final class FormGuard
         private readonly string $responseType,
         private readonly SpamChecker $checker,
         private readonly Config $config,
-    ) {
-    }
+    ) {}
 
     public static function boot(?string $site = null, ?string $configDir = null): self
     {
-        $configDir ??= dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'sites';
+        $configDir ??= \dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'sites';
         $site ??= self::detectSite();
 
         $file = $configDir . DIRECTORY_SEPARATOR . self::slug($site) . '.php';
@@ -69,29 +70,42 @@ final class FormGuard
 
         try {
             $raw = self::loadConfigFile($file);
-        } catch (\Throwable $exception) {
-            error_log(sprintf('[spam-guard] cannot load config %s: %s', $file, $exception->getMessage()));
+        } catch (Throwable $exception) {
+            error_log(\sprintf('[spam-guard] cannot load config %s: %s', $file, $exception->getMessage()));
 
             return self::disabled($site);
         }
 
-        if (!is_array($raw)) {
-            error_log(sprintf('[spam-guard] config %s must return an array', $file));
+        if (!\is_array($raw)) {
+            error_log(\sprintf('[spam-guard] config %s must return an array', $file));
 
             return self::disabled($site);
         }
 
-        $mode = strtolower((string) ($raw['mode'] ?? self::MODE_OFF));
-        if (!in_array($mode, [self::MODE_OFF, self::MODE_SHADOW, self::MODE_ENFORCE], true)) {
+        $modeValue = $raw['mode'] ?? self::MODE_OFF;
+        $mode = \is_string($modeValue) ? strtolower($modeValue) : self::MODE_OFF;
+        if (!\in_array($mode, [self::MODE_OFF, self::MODE_SHADOW, self::MODE_ENFORCE], true)) {
             $mode = self::MODE_OFF;
         }
 
-        $values = is_array($raw['config'] ?? null) ? $raw['config'] : [];
+        $values = [];
+        $rawValues = $raw['config'] ?? null;
+        if (\is_array($rawValues)) {
+            foreach ($rawValues as $key => $value) {
+                if (\is_string($key)) {
+                    $values[$key] = $value;
+                }
+            }
+        }
 
-        $values['auto'] = (bool) ($raw['auto'] ?? $values['auto'] ?? false);
+        $auto = $raw['auto'] ?? $values['auto'] ?? false;
+        $values['auto'] = \is_bool($auto) ? $auto : filter_var($auto, FILTER_VALIDATE_BOOL) === true;
 
-        $varDir = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'var';
-        $slug = self::slug((string) ($raw['site'] ?? $site));
+        $rawSite = $raw['site'] ?? $site;
+        $resolvedSite = \is_string($rawSite) ? $rawSite : $site;
+
+        $varDir = \dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'var';
+        $slug = self::slug($resolvedSite);
 
         $values['storage'] ??= [
             'driver' => 'file',
@@ -106,13 +120,16 @@ final class FormGuard
 
         $config = new Config($values);
 
+        $formValue = $raw['form'] ?? 'default';
+        $responseValue = $raw['response'] ?? 'auto';
+
         return new self(
-            site: (string) ($raw['site'] ?? $site),
+            site: $resolvedSite,
             mode: $mode,
             match: self::stringList($raw['match'] ?? []),
             skip: self::stringList($raw['skip'] ?? []),
-            formId: (string) ($raw['form'] ?? 'default'),
-            responseType: (string) ($raw['response'] ?? 'auto'),
+            formId: \is_string($formValue) ? $formValue : 'default',
+            responseType: \is_string($responseValue) ? $responseValue : 'auto',
             checker: new SpamChecker($config),
             config: $config,
         );
@@ -148,7 +165,8 @@ final class FormGuard
             return false;
         }
 
-        if (strtoupper((string) ($server['REQUEST_METHOD'] ?? 'GET')) !== 'POST') {
+        $requestMethod = $server['REQUEST_METHOD'] ?? 'GET';
+        if (!\is_string($requestMethod) || strtoupper($requestMethod) !== 'POST') {
             return false;
         }
 
@@ -156,12 +174,20 @@ final class FormGuard
             return false;
         }
 
-        $length = isset($server['CONTENT_LENGTH']) ? (int) $server['CONTENT_LENGTH'] : 0;
+        $contentLength = $server['CONTENT_LENGTH'] ?? null;
+        $length = 0;
+        if (\is_int($contentLength)) {
+            $length = $contentLength;
+        } elseif (\is_string($contentLength) && is_numeric($contentLength)) {
+            $length = (int) $contentLength;
+        }
+
         if ($length > 8 * 1024 * 1024) {
             return false;
         }
 
-        $uri = (string) ($server['REQUEST_URI'] ?? '');
+        $uriValue = $server['REQUEST_URI'] ?? '';
+        $uri = \is_string($uriValue) ? $uriValue : '';
 
         foreach ($this->skip as $pattern) {
             if ($this->matches($pattern, $uri)) {
@@ -197,10 +223,17 @@ final class FormGuard
      * @param array<string, mixed>|null $server
      * @param array<string, mixed>|null $fields
      */
-    public function run(?array $server = null, ?array $fields = null): bool
+    public function run(?array $server = null, ?array $fields = null): false
     {
-        $server ??= $_SERVER;
-        $fields ??= $_POST;
+        if ($server === null) {
+            /** @var array<string, mixed> $server */
+            $server = $_SERVER;
+        }
+
+        if ($fields === null) {
+            /** @var array<string, mixed> $fields */
+            $fields = $_POST;
+        }
 
         if (!$this->shouldHandle($server, $fields)) {
             return false;
@@ -208,7 +241,7 @@ final class FormGuard
 
         try {
             $verdict = $this->evaluate($server, $fields);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             error_log('[spam-guard] evaluation failed: ' . $exception->getMessage());
 
             return false;
@@ -219,8 +252,6 @@ final class FormGuard
         }
 
         $this->reject($verdict, $server);
-
-        return true;
     }
 
     /**
@@ -230,11 +261,21 @@ final class FormGuard
      */
     public function reject(Verdict $verdict, array $server = []): never
     {
-        error_log(sprintf(
+        $requestUri = $server['REQUEST_URI'] ?? $_SERVER['REQUEST_URI'] ?? '';
+        if (!\is_string($requestUri)) {
+            $requestUri = '';
+        }
+
+        $remoteAddress = $server['REMOTE_ADDR'] ?? $_SERVER['REMOTE_ADDR'] ?? '';
+        if (!\is_string($remoteAddress)) {
+            $remoteAddress = '';
+        }
+
+        error_log(\sprintf(
             '[spam-guard] blocked %s %s from %s: score=%d %s',
             $this->site,
-            (string) ($server['REQUEST_URI'] ?? $_SERVER['REQUEST_URI'] ?? ''),
-            (string) ($server['REMOTE_ADDR'] ?? $_SERVER['REMOTE_ADDR'] ?? ''),
+            $requestUri,
+            $remoteAddress,
             $verdict->score,
             implode('; ', $verdict->reasons()),
         ));
@@ -248,8 +289,11 @@ final class FormGuard
         $type = $this->responseType;
 
         if ($type === 'auto') {
-            $accept = (string) ($server['HTTP_ACCEPT'] ?? $_SERVER['HTTP_ACCEPT'] ?? '');
-            $uri = (string) ($server['REQUEST_URI'] ?? $_SERVER['REQUEST_URI'] ?? '');
+            $acceptValue = $server['HTTP_ACCEPT'] ?? $_SERVER['HTTP_ACCEPT'] ?? '';
+            $accept = \is_string($acceptValue) ? $acceptValue : '';
+
+            $uriValue = $server['REQUEST_URI'] ?? $_SERVER['REQUEST_URI'] ?? '';
+            $uri = \is_string($uriValue) ? $uriValue : '';
             $type = str_contains($accept, 'application/json') || preg_match('#/(api|ajax|json)(/|\.|$)#i', $uri) === 1
                 ? 'json'
                 : 'html';
@@ -326,7 +370,8 @@ final class FormGuard
 
     private static function detectSite(): string
     {
-        $host = (string) ($_SERVER['HTTP_HOST'] ?? '');
+        $hostValue = $_SERVER['HTTP_HOST'] ?? '';
+        $host = \is_string($hostValue) ? $hostValue : '';
 
         if ($host === '') {
             return 'default';
@@ -336,27 +381,34 @@ final class FormGuard
     }
 
     /**
-     * @return array<string, mixed>
+     * The file may return anything; the caller validates the shape.
      */
     private static function loadConfigFile(string $file): mixed
     {
         $mtime = @filemtime($file);
 
         if ($mtime === false) {
-            throw new \RuntimeException('configuration file is not readable');
+            throw new RuntimeException('configuration file is not readable');
         }
 
         $cached = self::$cache[$file] ?? null;
 
-        if (is_array($cached) && $cached['mtime'] === $mtime) {
+        if (\is_array($cached) && $cached['mtime'] === $mtime) {
             return $cached['data'];
         }
 
         /** @psalm-suppress UnresolvableInclude */
         $data = require $file;
 
-        if (is_array($data)) {
-            self::$cache[$file] = ['mtime' => $mtime, 'data' => $data];
+        if (\is_array($data)) {
+            $typedData = [];
+            foreach ($data as $key => $value) {
+                if (\is_string($key)) {
+                    $typedData[$key] = $value;
+                }
+            }
+
+            self::$cache[$file] = ['mtime' => $mtime, 'data' => $typedData];
         }
 
         return $data;
@@ -367,22 +419,27 @@ final class FormGuard
         $site = strtolower(trim($site));
         $site = preg_replace('#^www\.#', '', $site) ?? $site;
 
-        return preg_replace('/[^a-z0-9._-]+/', '_', $site) ?: 'default';
+        $slugValue = preg_replace('/[^a-z0-9._-]+/', '_', $site);
+        if ($slugValue === null || $slugValue === '') {
+            return 'default';
+        }
+
+        return $slugValue;
     }
 
     /**
-     * @param mixed $value
+     * @param  mixed        $value
      * @return list<string>
      */
     private static function stringList(mixed $value): array
     {
-        if (!is_array($value)) {
+        if (!\is_array($value)) {
             return [];
         }
 
         $result = [];
         foreach ($value as $item) {
-            if (is_string($item) && $item !== '') {
+            if (\is_string($item) && $item !== '') {
                 $result[] = $item;
             }
         }

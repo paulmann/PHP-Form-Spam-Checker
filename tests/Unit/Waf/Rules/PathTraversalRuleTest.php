@@ -114,8 +114,9 @@ final class PathTraversalRuleTest extends WafTestCase
         self::assertNull((new PathTraversalRule(new Config([
             'waf' => ['rules' => ['path_traversal' => false]],
         ])))->inspect($request));
-        self::assertNull((new PathTraversalRule(new Config([
-            'waf' => ['rules' => ['path_traversal' => ['enabled' => false]]]],
+        self::assertNull((new PathTraversalRule(new Config(
+            [
+                'waf' => ['rules' => ['path_traversal' => ['enabled' => false]]]],
         )))->inspect($request));
     }
 

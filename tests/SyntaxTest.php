@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace FormSpamChecker\Tests;
 
+use FilesystemIterator;
+use ParseError;
 use PHPUnit\Framework\TestCase;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 
 /**
  * Parses every PHP file in the repository with TOKEN_PARSE, which is the
@@ -14,7 +18,7 @@ final class SyntaxTest extends TestCase
 {
     public function testEveryPhpFileParses(): void
     {
-        $root = dirname(__DIR__);
+        $root = \dirname(__DIR__);
         $files = [];
 
         foreach (['src', 'tests', 'examples', 'config', 'public'] as $dir) {
@@ -32,8 +36,8 @@ final class SyntaxTest extends TestCase
 
             try {
                 token_get_all($code, TOKEN_PARSE);
-            } catch (\ParseError $exception) {
-                self::fail(sprintf('Syntax error in %s: %s', $file, $exception->getMessage()));
+            } catch (ParseError $exception) {
+                self::fail(\sprintf('Syntax error in %s: %s', $file, $exception->getMessage()));
             }
         }
     }
@@ -48,8 +52,8 @@ final class SyntaxTest extends TestCase
         }
 
         $result = [];
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+        $iterator = new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($dir, FilesystemIterator::SKIP_DOTS),
         );
 
         foreach ($iterator as $file) {

@@ -110,8 +110,9 @@ final class SqlInjectionRuleTest extends WafTestCase
         self::assertNull((new SqlInjectionRule(new Config([
             'waf' => ['rules' => ['sql_injection' => false]],
         ])))->inspect($request));
-        self::assertNull((new SqlInjectionRule(new Config([
-            'waf' => ['rules' => ['sql_injection' => ['enabled' => false]]]],
+        self::assertNull((new SqlInjectionRule(new Config(
+            [
+                'waf' => ['rules' => ['sql_injection' => ['enabled' => false]]]],
         )))->inspect($request));
     }
 

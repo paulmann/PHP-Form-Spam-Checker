@@ -10,6 +10,8 @@ use FormSpamChecker\Data\CheckOutcome;
 use FormSpamChecker\Data\CheckStatus;
 use FormSpamChecker\Data\RequestData;
 use FormSpamChecker\Data\Verdict;
+use NoDiscard;
+use Throwable;
 
 /**
  * Ordered chain of checks (Chain of Responsibility).
@@ -25,14 +27,12 @@ final readonly class SpamPipeline
     /**
      * @param list<SpamCheckInterface> $checks
      */
-    public function __construct(public array $checks = [])
-    {
-    }
+    public function __construct(public array $checks = []) {}
 
     /**
      * Immutable append: returns a new pipeline with the check added.
      */
-    #[\NoDiscard]
+    #[NoDiscard]
     public function add(SpamCheckInterface $check): self
     {
         $checks = $this->checks;
@@ -51,7 +51,7 @@ final readonly class SpamPipeline
         foreach ($this->checks as $check) {
             try {
                 $outcome = $check->check($data);
-            } catch (\Throwable $exception) {
+            } catch (Throwable $exception) {
                 $outcome = CheckOutcome::error($check->name(), $exception->getMessage());
             }
 

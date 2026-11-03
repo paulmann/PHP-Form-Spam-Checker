@@ -16,9 +16,7 @@ use FormSpamChecker\Support\Patterns;
  */
 final readonly class XssCheck implements SpamCheckInterface
 {
-    public function __construct(private Config $config)
-    {
-    }
+    public function __construct(private Config $config) {}
 
     public function name(): string
     {
@@ -44,7 +42,7 @@ final readonly class XssCheck implements SpamCheckInterface
                     CheckStatus::SPAM,
                     $this->config->int('xss.spam_score', 100),
                     'XSS signature detected',
-                    ['pattern' => $pattern, 'match' => mb_substr((string) ($matches[0] ?? ''), 0, 120)],
+                    ['pattern' => $pattern, 'match' => mb_substr($matches[0] ?? '', 0, 120)],
                 );
             }
         }
@@ -55,7 +53,7 @@ final readonly class XssCheck implements SpamCheckInterface
                     $this->name(),
                     $this->config->int('xss.suspicious_score', 45),
                     'possible encoded XSS payload',
-                    ['pattern' => $pattern, 'match' => mb_substr((string) ($matches[0] ?? ''), 0, 120)],
+                    ['pattern' => $pattern, 'match' => mb_substr($matches[0] ?? '', 0, 120)],
                 );
             }
         }

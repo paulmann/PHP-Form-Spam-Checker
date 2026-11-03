@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FormSpamChecker\Data;
 
+use InvalidArgumentException;
+
 /**
  * Rich result of a single check: status + score + human-readable reason and
  * structured evidence that explains the decision.
@@ -21,7 +23,7 @@ final readonly class CheckOutcome
         public array $evidence = [],
     ) {
         if ($score < 0 || $score > 100) {
-            throw new \InvalidArgumentException(sprintf(
+            throw new InvalidArgumentException(\sprintf(
                 'Check score must be between 0 and 100, %d given for "%s".',
                 $score,
                 $check,

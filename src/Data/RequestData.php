@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FormSpamChecker\Data;
 
+use NoDiscard;
+
 /**
  * Immutable snapshot of one request as the checks see it.
  *
@@ -30,12 +32,11 @@ final readonly class RequestData
         public string $body = '',
         public ?int $now = null,
         public string $formId = 'default',
-    ) {
-    }
+    ) {}
 
     public function hasField(string $name): bool
     {
-        return array_key_exists($name, $this->fields);
+        return \array_key_exists($name, $this->fields);
     }
 
     /**
@@ -43,22 +44,22 @@ final readonly class RequestData
      */
     public function field(string $name): string
     {
-        if (!array_key_exists($name, $this->fields)) {
+        if (!\array_key_exists($name, $this->fields)) {
             return '';
         }
 
         $value = $this->fields[$name];
 
         return match (true) {
-            is_string($value) => trim($value),
-            is_int($value), is_float($value) => (string) $value,
-            is_bool($value) => $value ? '1' : '',
+            \is_string($value) => trim($value),
+            \is_int($value), \is_float($value) => (string) $value,
+            \is_bool($value) => $value ? '1' : '',
             default => '',
         };
     }
 
     /**
-     * @param list<string> $exclude
+     * @param  list<string>          $exclude
      * @return array<string, string>
      */
     public function content(array $exclude = []): array
@@ -71,7 +72,7 @@ final readonly class RequestData
                 continue;
             }
 
-            if (is_string($value)) {
+            if (\is_string($value)) {
                 $trimmed = trim($value);
                 if ($trimmed !== '') {
                     $result[$name] = $trimmed;
@@ -79,7 +80,7 @@ final readonly class RequestData
                 continue;
             }
 
-            if (is_int($value) || is_float($value)) {
+            if (\is_int($value) || \is_float($value)) {
                 $result[$name] = (string) $value;
             }
         }
@@ -136,7 +137,7 @@ final readonly class RequestData
     /**
      * Truncated, single-line field samples for privacy-aware logs.
      *
-     * @param list<string> $exclude
+     * @param  list<string>          $exclude
      * @return array<string, string>
      */
     public function sample(array $exclude = [], int $limit = 120): array
@@ -163,7 +164,7 @@ final readonly class RequestData
     /**
      * @param array<string, mixed> $fields
      */
-    #[\NoDiscard]
+    #[NoDiscard]
     public function withFields(array $fields): self
     {
         return new self(
@@ -180,7 +181,7 @@ final readonly class RequestData
         );
     }
 
-    #[\NoDiscard]
+    #[NoDiscard]
     public function withFormId(string $formId): self
     {
         return new self(
@@ -205,32 +206,42 @@ final readonly class RequestData
      */
     public static function fromGlobals(?array $server = null, ?array $post = null, string $formId = 'default'): self
     {
-        $server ??= $_SERVER;
-        $post ??= $_POST;
+        if ($server === null) {
+            /** @var array<string, mixed> $server */
+            $server = $_SERVER;
+        }
+
+        if ($post === null) {
+            /** @var array<string, mixed> $post */
+            $post = $_POST;
+        }
 
         $headers = [];
         foreach ($server as $key => $value) {
-            if (!is_string($key) || !is_string($value)) {
+            if (!\is_string($value)) {
                 continue;
             }
 
             if (str_starts_with($key, 'HTTP_')) {
                 $headers[strtolower(str_replace('_', '-', substr($key, 5)))] = $value;
-            } elseif (in_array($key, ['CONTENT_TYPE', 'CONTENT_LENGTH'], true)) {
+            } elseif (\in_array($key, ['CONTENT_TYPE', 'CONTENT_LENGTH'], true)) {
                 $headers[strtolower(str_replace('_', '-', $key))] = $value;
             }
         }
 
         $ip = '';
         foreach (['HTTP_CF_CONNECTING_IP', 'HTTP_X_REAL_IP', 'REMOTE_ADDR'] as $key) {
-            if (isset($server[$key]) && is_string($server[$key]) && trim($server[$key]) !== '') {
+            if (isset($server[$key]) && \is_string($server[$key]) && trim($server[$key]) !== '') {
                 $ip = trim($server[$key]);
                 break;
             }
         }
 
-        if (isset($server['HTTP_X_FORWARDED_FOR']) && is_string($server['HTTP_X_FORWARDED_FOR'])) {
-            $remote = (string) ($server['REMOTE_ADDR'] ?? '');
+        if (isset($server['HTTP_X_FORWARDED_FOR']) && \is_string($server['HTTP_X_FORWARDED_FOR'])) {
+            $remote = $server['REMOTE_ADDR'] ?? '';
+            if (!\is_string($remote)) {
+                $remote = '';
+            }
             if (self::isLoopback($remote)) {
                 $first = trim(explode(',', $server['HTTP_X_FORWARDED_FOR'])[0]);
                 if (filter_var($first, FILTER_VALIDATE_IP) !== false) {
@@ -240,18 +251,41 @@ final readonly class RequestData
         }
 
         $query = [];
-        if (isset($server['QUERY_STRING']) && is_string($server['QUERY_STRING']) && $server['QUERY_STRING'] !== '') {
-            parse_str($server['QUERY_STRING'], $query);
+        if (isset($server['QUERY_STRING']) && \is_string($server['QUERY_STRING']) && $server['QUERY_STRING'] !== '') {
+            $parsedQuery = [];
+            parse_str($server['QUERY_STRING'], $parsedQuery);
+            foreach ($parsedQuery as $queryKey => $queryValue) {
+                if (\is_string($queryKey)) {
+                    $query[$queryKey] = $queryValue;
+                }
+            }
+        }
+
+        $cookies = [];
+        foreach ($_COOKIE as $cookieName => $cookieValue) {
+            if (\is_string($cookieName) && \is_string($cookieValue)) {
+                $cookies[$cookieName] = $cookieValue;
+            }
+        }
+
+        $method = $server['REQUEST_METHOD'] ?? 'POST';
+        if (!\is_string($method) || $method === '') {
+            $method = 'POST';
+        }
+
+        $uri = $server['REQUEST_URI'] ?? '';
+        if (!\is_string($uri)) {
+            $uri = '';
         }
 
         return new self(
             fields: $post,
             ip: $ip,
             headers: $headers,
-            cookies: $_COOKIE,
+            cookies: $cookies,
             query: $query,
-            method: strtoupper((string) ($server['REQUEST_METHOD'] ?? 'POST')),
-            uri: (string) ($server['REQUEST_URI'] ?? ''),
+            method: strtoupper($method),
+            uri: $uri,
             body: '',
             formId: $formId,
         );

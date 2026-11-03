@@ -17,6 +17,8 @@ use FormSpamChecker\Waf\Rules\RateLimitRule;
 use FormSpamChecker\Waf\Rules\ScannerRule;
 use FormSpamChecker\Waf\Rules\SqlInjectionRule;
 use FormSpamChecker\Waf\Rules\XssRule;
+use NoDiscard;
+use Throwable;
 
 /**
  * Aggregating HTTP firewall.
@@ -39,8 +41,7 @@ final class Waf
         private readonly Config $config,
         private readonly array $rules,
         private readonly ?LoggerInterface $logger = null,
-    ) {
-    }
+    ) {}
 
     /**
      * @return list<RuleInterface>
@@ -58,7 +59,7 @@ final class Waf
     /**
      * Inspect one request and aggregate the rule findings.
      */
-    #[\NoDiscard]
+    #[NoDiscard]
     public function inspect(WafRequest $request): WafVerdict
     {
         $findings = [];
@@ -66,7 +67,7 @@ final class Waf
         foreach ($this->rules as $rule) {
             try {
                 $finding = $rule->inspect($request);
-            } catch (\Throwable $exception) {
+            } catch (Throwable $exception) {
                 $this->logger?->error(
                     'WAF rule {rule} failed, failing open: {message}',
                     ['rule' => $rule->name(), 'message' => $exception->getMessage()],

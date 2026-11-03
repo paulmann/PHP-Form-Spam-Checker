@@ -16,9 +16,7 @@ use FormSpamChecker\Support\Patterns;
  */
 final readonly class SqlInjectionCheck implements SpamCheckInterface
 {
-    public function __construct(private Config $config)
-    {
-    }
+    public function __construct(private Config $config) {}
 
     public function name(): string
     {
@@ -45,7 +43,7 @@ final readonly class SqlInjectionCheck implements SpamCheckInterface
                     CheckStatus::SPAM,
                     $this->config->int('sql_injection.spam_score', 100),
                     'SQL-injection signature detected',
-                    ['pattern' => $pattern, 'match' => mb_substr((string) ($matches[0] ?? ''), 0, 120)],
+                    ['pattern' => $pattern, 'match' => mb_substr($matches[0] ?? '', 0, 120)],
                 );
             }
         }
@@ -57,7 +55,7 @@ final readonly class SqlInjectionCheck implements SpamCheckInterface
                     $this->name(),
                     $this->config->int('sql_injection.suspicious_score', 40),
                     'possible SQL fragment in text',
-                    ['pattern' => $pattern, 'match' => mb_substr((string) ($matches[0] ?? ''), 0, 120)],
+                    ['pattern' => $pattern, 'match' => mb_substr($matches[0] ?? '', 0, 120)],
                 );
             }
         }

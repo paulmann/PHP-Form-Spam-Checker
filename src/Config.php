@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace FormSpamChecker;
 
 use FormSpamChecker\Exception\InvalidConfigException;
+use JsonException;
 
 /**
  * Immutable configuration tree with dot-notation access and per-form overrides.
@@ -49,7 +50,7 @@ final class Config
     public static function fromFile(string $path): self
     {
         if (!is_file($path) || !is_readable($path)) {
-            throw new InvalidConfigException(sprintf('Configuration file is not readable: %s', $path));
+            throw new InvalidConfigException(\sprintf('Configuration file is not readable: %s', $path));
         }
 
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
@@ -60,22 +61,22 @@ final class Config
         } else {
             $raw = file_get_contents($path);
             if ($raw === false) {
-                throw new InvalidConfigException(sprintf('Cannot read configuration file: %s', $path));
+                throw new InvalidConfigException(\sprintf('Cannot read configuration file: %s', $path));
             }
 
             try {
                 $data = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
-            } catch (\JsonException $exception) {
+            } catch (JsonException $exception) {
                 throw new InvalidConfigException(
-                    sprintf('Configuration file is not valid JSON: %s (%s)', $path, $exception->getMessage()),
+                    \sprintf('Configuration file is not valid JSON: %s (%s)', $path, $exception->getMessage()),
                     0,
                     $exception,
                 );
             }
         }
 
-        if (!is_array($data)) {
-            throw new InvalidConfigException(sprintf('Configuration file must return an array: %s', $path));
+        if (!\is_array($data)) {
+            throw new InvalidConfigException(\sprintf('Configuration file must return an array: %s', $path));
         }
 
         // A shared-guard site configuration wraps the pipeline configuration in
@@ -84,13 +85,13 @@ final class Config
         // and the HTTP endpoint receive exactly the path the guard uses.
         if (
             isset($data['config'])
-            && is_array($data['config'])
+            && \is_array($data['config'])
             && (isset($data['mode']) || isset($data['site']) || isset($data['match']) || isset($data['skip']))
         ) {
             $data = $data['config'];
         }
 
-        return new self($data);
+        return new self(self::stringKeyed($data));
     }
 
     public function get(string $path, mixed $default = null): mixed
@@ -98,7 +99,7 @@ final class Config
         $node = $this->values;
 
         foreach (explode('.', $path) as $segment) {
-            if (!is_array($node) || !array_key_exists($segment, $node)) {
+            if (!\is_array($node) || !\array_key_exists($segment, $node)) {
                 return $default;
             }
             $node = $node[$segment];
@@ -111,11 +112,11 @@ final class Config
     {
         $value = $this->get($path, $default);
 
-        if (is_bool($value)) {
+        if (\is_bool($value)) {
             return $value;
         }
 
-        if (is_int($value) || is_string($value)) {
+        if (\is_int($value) || \is_string($value)) {
             return filter_var($value, FILTER_VALIDATE_BOOL) === true;
         }
 
@@ -126,15 +127,15 @@ final class Config
     {
         $value = $this->get($path, $default);
 
-        if (is_int($value)) {
+        if (\is_int($value)) {
             return $value;
         }
 
-        if (is_float($value)) {
+        if (\is_float($value)) {
             return (int) $value;
         }
 
-        if (is_string($value) && is_numeric($value)) {
+        if (\is_string($value) && is_numeric($value)) {
             return (int) $value;
         }
 
@@ -145,11 +146,11 @@ final class Config
     {
         $value = $this->get($path, $default);
 
-        if (is_float($value) || is_int($value)) {
+        if (\is_float($value) || \is_int($value)) {
             return (float) $value;
         }
 
-        if (is_string($value) && is_numeric($value)) {
+        if (\is_string($value) && is_numeric($value)) {
             return (float) $value;
         }
 
@@ -160,17 +161,18 @@ final class Config
     {
         $value = $this->get($path, $default);
 
-        return is_scalar($value) ? (string) $value : $default;
+        return \is_scalar($value) ? (string) $value : $default;
     }
 
     /**
+     * @param  array<mixed> $default
      * @return array<mixed>
      */
     public function array(string $path, array $default = []): array
     {
         $value = $this->get($path, $default);
 
-        return is_array($value) ? $value : $default;
+        return \is_array($value) ? $value : $default;
     }
 
     /**
@@ -180,11 +182,30 @@ final class Config
     {
         $override = $this->get('forms.' . $formId, []);
 
-        if (!is_array($override)) {
+        if (!\is_array($override)) {
             return $this;
         }
 
-        return new self(self::deepMerge($this->values, $override));
+        return new self(self::deepMerge($this->values, self::stringKeyed($override)));
+    }
+
+    /**
+     * Configuration arrays are keyed by string; PHP may hand back integer keys
+     * from JSON/list structures, so normalise before merging.
+     *
+     * @param  array<mixed>         $values
+     * @return array<string, mixed>
+     */
+    private static function stringKeyed(array $values): array
+    {
+        $typed = [];
+        foreach ($values as $key => $value) {
+            if (\is_string($key)) {
+                $typed[$key] = $value;
+            }
+        }
+
+        return $typed;
     }
 
     /**
@@ -262,7 +283,7 @@ final class Config
 
         $fields = [];
         foreach ([...$default, ...$configured] as $field) {
-            if (is_string($field) && $field !== '') {
+            if (\is_string($field) && $field !== '') {
                 $fields[] = $field;
             }
         }
@@ -503,21 +524,21 @@ final class Config
      * Lists (numeric keys) are replaced as a whole: a form that redefines
      * `honeypot.fields` expects exactly its list, not a union with the default.
      *
-     * @param array<string, mixed> $base
-     * @param array<string, mixed> $override
+     * @param  array<string, mixed> $base
+     * @param  array<string, mixed> $override
      * @return array<string, mixed>
      */
     private static function deepMerge(array $base, array $override): array
     {
         foreach ($override as $key => $value) {
             if (
-                is_array($value)
+                \is_array($value)
                 && isset($base[$key])
-                && is_array($base[$key])
+                && \is_array($base[$key])
                 && !array_is_list($value)
                 && !array_is_list($base[$key])
             ) {
-                $base[$key] = self::deepMerge($base[$key], $value);
+                $base[$key] = self::deepMerge(self::stringKeyed($base[$key]), self::stringKeyed($value));
                 continue;
             }
 

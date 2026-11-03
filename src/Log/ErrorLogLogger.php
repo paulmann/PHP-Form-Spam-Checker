@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FormSpamChecker\Log;
 
+use Stringable;
+
 /**
  * Fallback logger writing to the PHP error log.
  *
@@ -14,16 +16,14 @@ final readonly class ErrorLogLogger implements LoggerInterface
 {
     private const string PREFIX = '[php-form-spam-checker]';
 
-    public function __construct(private string $channel = 'default')
-    {
-    }
+    public function __construct(private string $channel = 'default') {}
 
     /**
      * @param array<string, mixed> $context
      */
     public function log(string $level, string $message, array $context = []): void
     {
-        $line = sprintf(
+        $line = \sprintf(
             '%s %s.%s: %s',
             self::PREFIX,
             $this->channel,
@@ -73,8 +73,9 @@ final readonly class ErrorLogLogger implements LoggerInterface
     {
         $replace = [];
         foreach ($context as $key => $value) {
-            if (!is_scalar($value) && !$value instanceof \Stringable) {
-                $value = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '';
+            if (!\is_scalar($value) && !$value instanceof Stringable) {
+                $encoded = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                $value = $encoded === false ? '' : $encoded;
             }
             $replace['{' . $key . '}'] = (string) $value;
         }

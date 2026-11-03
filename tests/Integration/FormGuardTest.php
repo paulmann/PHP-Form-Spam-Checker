@@ -212,12 +212,12 @@ final class FormGuardTest extends TempDirTestCase
     }
 
     /**
-     * @param array<string, mixed> $fields
+     * @param  array<string, mixed>                             $fields
      * @return array{code: int, stdout: string, stderr: string}
      */
     private function runGuardSubprocess(string $site, array $fields): array
     {
-        $root = dirname(__DIR__, 2);
+        $root = \dirname(__DIR__, 2);
         $configDir = $this->configDir();
 
         $script = $this->tempDir() . '/guard-runner.php';

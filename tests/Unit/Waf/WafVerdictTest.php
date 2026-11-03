@@ -6,6 +6,7 @@ namespace FormSpamChecker\Tests\Unit\Waf;
 
 use FormSpamChecker\Waf\WafFinding;
 use FormSpamChecker\Waf\WafVerdict;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class WafVerdictTest extends TestCase
@@ -67,21 +68,21 @@ final class WafVerdictTest extends TestCase
 
     public function testScoreOutOfRangeIsRejected(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         new WafVerdict(true, 101, [], WafVerdict::STATUS_BLOCKED);
     }
 
     public function testUnknownStatusIsRejected(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         new WafVerdict(false, 0, [], 'unknown');
     }
 
     public function testFindingSeverityOutOfRangeIsRejected(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         new WafFinding('xss', 101, true, 'too severe');
     }

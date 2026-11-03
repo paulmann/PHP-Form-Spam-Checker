@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace FormSpamChecker\Waf;
 
+use InvalidArgumentException;
+
 /**
  * Aggregated result of a WAF inspection.
  *
@@ -31,11 +33,11 @@ final readonly class WafVerdict
         public string $status,
     ) {
         if ($score < 0 || $score > 100) {
-            throw new \InvalidArgumentException(sprintf('WAF score must be between 0 and 100, %d given.', $score));
+            throw new InvalidArgumentException(\sprintf('WAF score must be between 0 and 100, %d given.', $score));
         }
 
-        if (!in_array($status, self::STATUSES, true)) {
-            throw new \InvalidArgumentException(sprintf('Unknown WAF verdict status "%s".', $status));
+        if (!\in_array($status, self::STATUSES, true)) {
+            throw new InvalidArgumentException(\sprintf('Unknown WAF verdict status "%s".', $status));
         }
     }
 
@@ -102,7 +104,7 @@ final readonly class WafVerdict
             'score' => $this->score,
             'reasons' => $this->reasons(),
             'findings' => array_map(
-                static fn (WafFinding $finding): array => $finding->toArray(),
+                static fn(WafFinding $finding): array => $finding->toArray(),
                 $this->findings,
             ),
         ];

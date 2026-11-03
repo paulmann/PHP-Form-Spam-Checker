@@ -13,6 +13,8 @@ use FormSpamChecker\Storage\StorageInterface;
 use FormSpamChecker\Waf\Waf;
 use FormSpamChecker\Waf\WafRequest;
 use FormSpamChecker\Waf\WafVerdict;
+use RuntimeException;
+use Throwable;
 
 /**
  * Drop-in HTTP firewall for existing PHP sites, loaded from the shared module
@@ -83,15 +85,14 @@ final class WafGuard
         private readonly Waf $waf,
         private readonly Config $config,
         private readonly bool $enabled,
-    ) {
-    }
+    ) {}
 
     /**
      * Load the firewall for a site.
      *
-     * @param string|null $site           host name; auto-detected from HTTP_HOST when null
-     * @param string|null $configDir      directory with <site>.php files
-     * @param SpamCheckInterface|null $ipReputation optional network collaborator
+     * @param string|null             $site             host name; auto-detected from HTTP_HOST when null
+     * @param string|null             $configDir        directory with <site>.php files
+     * @param SpamCheckInterface|null $ipReputation     optional network collaborator
      * @param StorageInterface|null   $rateLimitStorage optional counter storage
      */
     public static function boot(
@@ -100,7 +101,7 @@ final class WafGuard
         ?SpamCheckInterface $ipReputation = null,
         ?StorageInterface $rateLimitStorage = null,
     ): self {
-        $configDir ??= dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'sites';
+        $configDir ??= \dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'sites';
         $site ??= self::detectSite();
 
         $file = $configDir . DIRECTORY_SEPARATOR . self::slug($site) . '.php';
@@ -115,20 +116,20 @@ final class WafGuard
 
         try {
             $raw = self::loadConfigFile($file);
-        } catch (\Throwable $exception) {
-            error_log(sprintf('[waf] cannot load config %s: %s', $file, $exception->getMessage()));
+        } catch (Throwable $exception) {
+            error_log(\sprintf('[waf] cannot load config %s: %s', $file, $exception->getMessage()));
 
             return self::disabled($site);
         }
 
-        if (!is_array($raw)) {
-            error_log(sprintf('[waf] config %s must return an array', $file));
+        if (!\is_array($raw)) {
+            error_log(\sprintf('[waf] config %s must return an array', $file));
 
             return self::disabled($site);
         }
 
         $values = $raw['config'] ?? [];
-        if (!is_array($values)) {
+        if (!\is_array($values)) {
             $values = [];
         }
         /** @var array<string, mixed> $values */
@@ -138,7 +139,7 @@ final class WafGuard
         if ($mode === '') {
             $mode = strtolower($config->string('waf.mode', self::MODE_MONITOR));
         }
-        if (!in_array($mode, [self::MODE_OFF, self::MODE_MONITOR, self::MODE_BLOCK], true)) {
+        if (!\in_array($mode, [self::MODE_OFF, self::MODE_MONITOR, self::MODE_BLOCK], true)) {
             $mode = self::MODE_OFF;
         }
 
@@ -146,7 +147,7 @@ final class WafGuard
         if ($responseType === '') {
             $responseType = strtolower($config->string('waf.response', 'auto'));
         }
-        if (!in_array($responseType, ['auto', 'json', 'html', 'silent'], true)) {
+        if (!\in_array($responseType, ['auto', 'json', 'html', 'silent'], true)) {
             $responseType = 'auto';
         }
 
@@ -170,7 +171,7 @@ final class WafGuard
 
         try {
             $waf = Waf::withDefaultRules($config, $ipReputation, $rateLimitStorage, $logger);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             error_log('[waf] cannot build the rule set, failing open: ' . $exception->getMessage());
 
             return self::disabled($site);
@@ -268,9 +269,11 @@ final class WafGuard
     /**
      * Main entry point for the drop-in include.
      *
-     * Returns true when the request was answered as blocked; in block mode a
-     * blocked request terminates the script. In monitor mode this method only
-     * logs and always returns false.
+     * Always returns false: a request that must be blocked is answered by
+     * reject(), which terminates the script. In monitor mode the method only
+     * logs. The return value stays `false` (instead of `void`) so a drop-in
+     * `if ($waf->run()) { ... }` keeps compiling, but the true branch is never
+     * taken.
      *
      * @param array<mixed>|null $server
      * @param array<mixed>|null $get
@@ -283,7 +286,7 @@ final class WafGuard
         ?array $post = null,
         ?array $cookie = null,
         ?string $body = null,
-    ): bool {
+    ): false {
         try {
             $server ??= $_SERVER;
 
@@ -301,7 +304,7 @@ final class WafGuard
             }
 
             $verdict = $this->waf->inspect($request);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             // A firewall must never take a site down.
             error_log('[waf] evaluation failed, failing open: ' . $exception->getMessage());
 
@@ -323,7 +326,7 @@ final class WafGuard
      */
     public function reject(WafRequest $request, WafVerdict $verdict): never
     {
-        error_log(sprintf(
+        error_log(\sprintf(
             '[waf] blocked %s %s %s from %s: mode=block score=%d reasons=%s',
             $this->site,
             $request->method,
@@ -387,7 +390,7 @@ final class WafGuard
             return;
         }
 
-        error_log(sprintf(
+        error_log(\sprintf(
             '[waf] verdict %s %s %s from %s: mode=%s status=%s score=%d reasons=%s',
             $this->site,
             $request->method,
@@ -439,7 +442,7 @@ final class WafGuard
                 'file' => new FileStorage(rtrim($config->storagePath(), '/\\') . DIRECTORY_SEPARATOR . 'waf'),
                 default => null,
             };
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             error_log('[waf] rate-limit storage unavailable, rule disabled: ' . $exception->getMessage());
 
             return null;
@@ -450,12 +453,12 @@ final class WafGuard
     {
         $raw = $config->get('waf.rules.' . $rule, false);
 
-        if (is_bool($raw)) {
+        if (\is_bool($raw)) {
             return $raw;
         }
 
-        if (is_array($raw)) {
-            if (!array_key_exists('enabled', $raw)) {
+        if (\is_array($raw)) {
+            if (!\array_key_exists('enabled', $raw)) {
                 return false;
             }
 
@@ -484,12 +487,12 @@ final class WafGuard
         $mtime = @filemtime($file);
 
         if ($mtime === false) {
-            throw new \RuntimeException('configuration file is not readable');
+            throw new RuntimeException('configuration file is not readable');
         }
 
         $cached = self::$cache[$file] ?? null;
 
-        if (is_array($cached) && $cached['mtime'] === $mtime) {
+        if (\is_array($cached) && $cached['mtime'] === $mtime) {
             return $cached['data'];
         }
 
@@ -512,23 +515,23 @@ final class WafGuard
 
     private static function scalarString(mixed $value): string
     {
-        return is_scalar($value) ? (string) $value : '';
+        return \is_scalar($value) ? (string) $value : '';
     }
 
     /**
-     * @param mixed $value
+     * @param  mixed        $value
      * @return list<string>
      */
     private static function stringList(mixed $value): array
     {
-        if (!is_array($value)) {
+        if (!\is_array($value)) {
             return [];
         }
 
         $result = [];
 
         foreach ($value as $item) {
-            if (is_string($item) && $item !== '') {
+            if (\is_string($item) && $item !== '') {
                 $result[] = $item;
             }
         }

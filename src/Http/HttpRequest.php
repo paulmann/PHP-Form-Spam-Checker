@@ -18,6 +18,5 @@ final readonly class HttpRequest
         public array $headers = [],
         public string $body = '',
         public float $timeout = 2.0,
-    ) {
-    }
+    ) {}
 }
