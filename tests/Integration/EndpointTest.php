@@ -24,7 +24,7 @@ final class EndpointTest extends TempDirTestCase
 
         $response = $endpoint->process([
             'form' => 'contact',
-            'fields' => ['name' => 'Иван', 'email' => 'ivan@example.ru', 'message' => 'Нужен отчёт.'],
+            'fields' => ['name' => 'Иван', 'email' => 'ivan@example.com', 'message' => 'Нужен отчёт.'],
             'context' => ['ip' => '203.0.113.1', 'userAgent' => self::UA],
         ]);
 
@@ -52,7 +52,7 @@ final class EndpointTest extends TempDirTestCase
 
         $response = $endpoint->process([
             'name' => 'Иван',
-            'email' => 'ivan@example.ru',
+            'email' => 'ivan@example.com',
             'context' => ['ip' => '203.0.113.7', 'userAgent' => self::UA],
         ]);
 
@@ -110,7 +110,7 @@ final class EndpointTest extends TempDirTestCase
 
             $payload = json_encode([
                 'form' => 'contact',
-                'fields' => ['name' => 'Иван', 'email' => 'ivan@example.ru'],
+                'fields' => ['name' => 'Иван', 'email' => 'ivan@example.com'],
                 'context' => ['ip' => '203.0.113.9', 'userAgent' => self::UA],
             ]);
 

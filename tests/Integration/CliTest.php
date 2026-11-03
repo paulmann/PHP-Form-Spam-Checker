@@ -35,7 +35,7 @@ final class CliTest extends TempDirTestCase
     {
         $payload = json_encode([
             'form' => 'contact',
-            'fields' => ['name' => 'Иван', 'email' => 'ivan@example.ru', 'message' => 'Нужен отчёт.'],
+            'fields' => ['name' => 'Иван', 'email' => 'ivan@example.com', 'message' => 'Нужен отчёт.'],
             'context' => ['ip' => '203.0.113.1', 'userAgent' => self::UA],
         ], JSON_UNESCAPED_UNICODE);
 
@@ -52,7 +52,7 @@ final class CliTest extends TempDirTestCase
     {
         $payload = json_encode([
             'form' => 'contact',
-            'fields' => ['name' => 'bot', 'email' => 'bot@example.ru', 'website' => 'filled'],
+            'fields' => ['name' => 'bot', 'email' => 'bot@example.com', 'website' => 'filled'],
             'context' => ['ip' => '203.0.113.2', 'userAgent' => self::UA],
         ], JSON_UNESCAPED_UNICODE);
 

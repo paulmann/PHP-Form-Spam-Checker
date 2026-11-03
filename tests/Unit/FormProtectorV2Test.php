@@ -96,7 +96,7 @@ final class FormProtectorV2Test extends TestCase
         $config = new Config(['storage' => ['driver' => 'memory']]);
 
         $verdict = $this->protector($config)->verify(
-            ['name' => 'Иван', 'email' => 'ivan@example.ru'],
+            ['name' => 'Иван', 'email' => 'ivan@example.com'],
             'contact',
             new Context('203.0.113.51', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/140.0'),
         );

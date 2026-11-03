@@ -71,7 +71,7 @@ final class CliCommandsTest extends TempDirTestCase
         [$command, $state] = $this->checkCommand();
         $config = $this->memoryConfig();
 
-        self::assertSame(0, $command->run(['spam-check', '--json=' . $this->payload(['name' => 'Иван', 'email' => 'ivan@example.ru']), '--config=' . $config]));
+        self::assertSame(0, $command->run(['spam-check', '--json=' . $this->payload(['name' => 'Иван', 'email' => 'ivan@example.com']), '--config=' . $config]));
         self::assertStringContainsString('"status":"clean"', $state->out);
 
         $state->out = '';

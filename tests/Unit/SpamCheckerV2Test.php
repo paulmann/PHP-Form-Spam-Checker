@@ -41,7 +41,7 @@ final class SpamCheckerV2Test extends TempDirTestCase
         $verdict = $checker->checkRequest($this->request([
             'name' => 'Иван Петров',
             'company' => 'ООО Энергосервис',
-            'email' => 'ivan@example.ru',
+            'email' => 'ivan@example.com',
             'phone' => '+7 999 000-00-00',
             'message' => 'Нужен отчёт по протоколу испытаний за октябрь.',
         ]));
@@ -65,7 +65,7 @@ final class SpamCheckerV2Test extends TempDirTestCase
     {
         $checker = new SpamChecker($this->config(), new MemoryStorage());
 
-        $verdict = $checker->check(['name' => 'Иван', 'email' => 'ivan@example.ru'], new \FormSpamChecker\Context('203.0.113.1', self::UA), 'contact');
+        $verdict = $checker->check(['name' => 'Иван', 'email' => 'ivan@example.com'], new \FormSpamChecker\Context('203.0.113.1', self::UA), 'contact');
 
         self::assertTrue($verdict->isClean());
     }

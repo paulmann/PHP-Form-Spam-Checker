@@ -59,7 +59,7 @@ final class SecurityIntegrationTest extends TempDirTestCase
         self::assertStringContainsString('PHPFSC BAN ip=203.0.113.50', $line);
         self::assertStringContainsString('reason=spam:', $line);
 
-        $second = $checker->checkRequest($this->request(['name' => 'Иван', 'email' => 'ivan@example.ru']));
+        $second = $checker->checkRequest($this->request(['name' => 'Иван', 'email' => 'ivan@example.com']));
         self::assertTrue($second->isSpam());
         self::assertStringContainsString('autoban', implode(' ', $second->reasons()));
     }
@@ -69,7 +69,7 @@ final class SecurityIntegrationTest extends TempDirTestCase
         $log = $this->tempDir() . '/f2b.log';
         $checker = new SpamChecker($this->config($log), new MemoryStorage());
 
-        $verdict = $checker->checkRequest($this->request(['name' => 'Иван', 'email' => 'ivan@example.ru', 'message' => 'Нужен отчёт.']));
+        $verdict = $checker->checkRequest($this->request(['name' => 'Иван', 'email' => 'ivan@example.com', 'message' => 'Нужен отчёт.']));
 
         self::assertFalse($verdict->isSpam());
         self::assertFileDoesNotExist($log);

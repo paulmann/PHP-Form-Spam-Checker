@@ -175,7 +175,7 @@ final class FormGuardTest extends TempDirTestCase
     {
         $verdict = FormGuard::evaluateFor(
             'shadow',
-            ['name' => 'Иван', 'email' => 'ivan@example.ru'],
+            ['name' => 'Иван', 'email' => 'ivan@example.com'],
             $this->server(),
             'lead',
             $this->configDir(),
@@ -196,7 +196,7 @@ final class FormGuardTest extends TempDirTestCase
     {
         $result = $this->runGuardSubprocess('enforce', [
             'name' => 'Иван Петров',
-            'email' => 'ivan@example.ru',
+            'email' => 'ivan@example.com',
             'message' => 'Нужен отчёт за октябрь.',
         ]);
 

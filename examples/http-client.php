@@ -22,7 +22,7 @@ $payload = [
     'form' => 'contact',
     'fields' => [
         'name' => 'Иван Петров',
-        'email' => 'ivan@example.ru',
+        'email' => 'ivan@example.com',
         'message' => 'Прошу перезвонить по поводу поверки прибора.',
     ],
     'context' => [

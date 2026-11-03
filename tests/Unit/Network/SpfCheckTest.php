@@ -130,19 +130,20 @@ final class SpfCheckTest extends NetworkTestCase
 
     public function testEachMissingDomainAddsTheMissingScore(): void
     {
-        $this->dns->txtRecords['valid.example'] = ['v=spf1 -all'];
+        // Two distinct reserved domains: one without an SPF record, one with a valid record.
+        $this->dns->txtRecords['example.net'] = ['v=spf1 -all'];
 
         $outcome = $this->check($this->enabled())->check($this->request(fields: [
-            'email' => 'a@missing.example',
-            'personalEmail' => 'b@valid.example',
+            'email' => 'a@example.org',
+            'personalEmail' => 'b@example.net',
         ]));
 
         self::assertSame(10, $outcome->score);
-        self::assertSame(['missing.example' => 'none', 'valid.example' => 'fail'], [
-            'missing.example' => $outcome->evidence['missing.example']['result'],
-            'valid.example' => $outcome->evidence['valid.example']['result'],
+        self::assertSame(['example.org' => 'none', 'example.net' => 'fail'], [
+            'example.org' => $outcome->evidence['example.org']['result'],
+            'example.net' => $outcome->evidence['example.net']['result'],
         ]);
-        self::assertStringContainsString('missing.example', $outcome->reason);
+        self::assertStringContainsString('example.org', $outcome->reason);
     }
 
     public function testConfiguredMissingScoreIsUsed(): void
@@ -159,8 +160,8 @@ final class SpfCheckTest extends NetworkTestCase
         $config = $this->enabled(['spf' => ['missing_score' => 80]]);
 
         $outcome = $this->check($config)->check($this->request(fields: [
-            'email' => 'a@one.example',
-            'personalEmail' => 'b@two.example',
+            'email' => 'a@example.org',
+            'personalEmail' => 'b@example.net',
         ]));
 
         self::assertSame(100, $outcome->score);

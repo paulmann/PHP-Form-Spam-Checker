@@ -150,7 +150,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
         formId,
         {
             name: "Иван Петров",
-            email: "ivan@example.ru",
+            email: "ivan@example.com",
             message: "Нужен отчёт по протоколу CONBAT, 48 В.",
         },
         {

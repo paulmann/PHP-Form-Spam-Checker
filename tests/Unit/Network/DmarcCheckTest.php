@@ -124,17 +124,18 @@ final class DmarcCheckTest extends NetworkTestCase
 
     public function testConfiguredScoresAreAggregatedPerDomain(): void
     {
+        // Two distinct reserved domains: one with no DMARC record, one with p=none.
         $config = $this->enabled(['dmarc' => ['missing_score' => 20, 'weak_policy_score' => 7]]);
-        $this->dns->txtRecords['_dmarc.weak.example'] = ['v=DMARC1; p=none'];
+        $this->dns->txtRecords['_dmarc.example.net'] = ['v=DMARC1; p=none'];
 
         $outcome = $this->check($config)->check($this->request(fields: [
-            'email' => 'a@missing.example',
-            'personalEmail' => 'b@weak.example',
+            'email' => 'a@example.org',
+            'personalEmail' => 'b@example.net',
         ]));
 
         self::assertSame(27, $outcome->score);
-        self::assertSame('missing', $outcome->evidence['missing.example']['result']);
-        self::assertSame('weak', $outcome->evidence['weak.example']['result']);
+        self::assertSame('missing', $outcome->evidence['example.org']['result']);
+        self::assertSame('weak', $outcome->evidence['example.net']['result']);
     }
 
     public function testDomainIsTakenFromADisplayNameAddress(): void

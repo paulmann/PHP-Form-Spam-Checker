@@ -6,7 +6,9 @@
 - **Server:** `bs535` = 176.99.5.35, shared module `/var/www/lib/PHP-Form-Spam-Checker`
 - **Local toolchain:** PHP 8.5.12 (`C:\tools\php8512\php.exe`), composer (`C:\tools\composer.phar`), git 2.56
 
-> **Scope caveat (important):** the verification was cut short by the "final call". Everything below marked **PASS/FAIL** was actually executed and its output is quoted. Everything marked **NOT RUN / UNVERIFIED** was **not** executed — it is not a pass. In particular the whole live-attack matrix (v2 WAF 403, form-guard 400) and the library black-box suite were **not run**; code was read but not exercised.
+> **Scope caveat (important):** the verification was cut short by the "final call". Everything below marked **PASS/FAIL** was actually executed and its output
+> is quoted. Everything marked **NOT RUN / UNVERIFIED** was **not** executed — it is not a pass. In particular the whole live-attack matrix (v2 WAF 403,
+> form-guard 400) and the library black-box suite were **not run**; code was read but not exercised.
 
 ## 1. Verdict summary
 
@@ -34,14 +36,14 @@
 | 1.19 | Live v2 spam/WAF probes (400+`X-Spam-Guard`, 403+`X-WAF`, 200 `{"ok":true}`) | **NOT RUN** | stopped by "final call"; **must not be reported as green** |
 | 1.20 | Library black-box (pipeline, AbuseIPDB, DNSBL/SPF/DMARC, Bayes, behavioral, v1 compat) | **NOT RUN** | code read only |
 | 1.21 | nginx error-log 2 h diff for the v2 deployment window | **NOT RUN** | v1-window check only (see 4.2) |
-| 1.22 | No `bw@conbat.ru` mail during blocked tests | **N/A yet** | baseline only: 0 such mails in the 25 min before writing (no blocked tests were sent) |
+| 1.22 | No `bw@<redacted>` mail during blocked tests | **N/A yet** | baseline only: 0 such mails in the 25 min before writing (no blocked tests were sent) |
 
 ## 2. Repository verification (executed)
 
 Clone: `git clone --branch v2.0 --single-branch https://github.com/Paulmann/PHP-Form-Spam-Checker.git`
 → `HEAD = c21bfb31dfc5c30ca2dd6f5162c70e04edba62dd`, branch `v2.0`, 3 commits visible at clone time.
 
-```
+```text
 $ php C:\tools\composer.phar validate --strict
 ./composer.json is valid                                  (exit 0)
 
@@ -68,7 +70,7 @@ Refs: `git ls-remote --tags` → empty. `gh api repos/…/releases --jq length` 
 
 `gh run list --branch v2.0`:
 
-```
+```text
 41692943607  success    docs: align coverage wording …        f7babd9  2026-11-03T18:20:59Z  (latest)
 41692397933  cancelled  v2.0: in-process CLI/guard tests …    4b337b5  2026-11-03T18:17:37Z  (concurrency)
 41692399712  success    CI (workflow_dispatch)                 4b337b5  2026-11-03T18:17:37Z
@@ -78,7 +80,7 @@ Refs: `git ls-remote --tags` → empty. `gh api repos/…/releases --jq length` 
 
 Failure log of step **"Coverage gate (95% lines / 90% methods …)"** in run 41687281061 (job `Quality gates (PHP 8.5.12)`):
 
-```
+```text
 files   : 70 analysed, excluded: FileCache, Psr16CacheAdapter, Psr6CacheAdapter,
           DnsGetRecordResolver, CurlClient, Psr18ClientAdapter, Psr3LoggerAdapter (7)
 lines   : 3146/4096  76.81%  (threshold 95.00%)
@@ -87,11 +89,13 @@ result  : FAIL - line coverage 76.81% < 95.00%; method coverage 65.31% < 90.00%
 ##[error]Process completed with exit code 1.
 ```
 
-Steps 1–12 of that job (cs-fixer, PHPStan, Psalm, strict tests, coverage report) were `success`; step 13 failed; step 14 (lint) `skipped`; the PHP 8.5 job was `success`. The earlier `c21bfb3` push run was `cancelled` by the workflow's `cancel-in-progress` concurrency, which is why only the dispatch run exposes the failure.
+Steps 1–12 of that job (cs-fixer, PHPStan, Psalm, strict tests, coverage report) were `success`; step 13 failed; step 14 (lint) `skipped`; the PHP 8.5 job was
+`success`. The earlier `c21bfb3` push run was `cancelled` by the workflow's `cancel-in-progress` concurrency, which is why only the dispatch run exposes the
+failure.
 
 The branch then moved twice while I was verifying:
 
-```
+```text
 4b337b5  v2.0: in-process CLI/guard/endpoint tests (534 tests), 89.5% line coverage,
          coverage ratchet 88/72 in CI, request-data XFF priority fix
 f7babd9  docs: align coverage wording with the measured gate (88/72, measured 89.5/73.4)
@@ -102,13 +106,14 @@ At `f7babd9` run 41692943607 is `success` with both matrix jobs
 
 `main` at the same commit is green as well: run 41692949307 (2026-11-03T18:21:01Z) = `success`.
 
-**Interpretation:** "CI green" is true for `f7babd9`/`4b337b5`, false for the HEAD named in the brief (`c21bfb3`). Note also that the gate was **relaxed** from 95/90 to 88/72 (measured 89.5/73.4) rather than coverage being raised to the documented 95 % — a documentation-vs-reality gap worth a decision, not a code bug.
+**Interpretation:** "CI green" is true for `f7babd9`/`4b337b5`, false for the HEAD named in the brief (`c21bfb3`). Note also that the gate was **relaxed** from
+95/90 to 88/72 (measured 89.5/73.4) rather than coverage being raised to the documented 95 % — a documentation-vs-reality gap worth a decision, not a code bug.
 
 ## 4. Server deployment (executed, read-only)
 
 ### 4.1 Inventory (`ssh bs535`)
 
-```
+```text
 2026-11-03T21:26:37+03:00
 bin/:      spam-check (15:47), waf-check (19:43, 390 B), spam-train (19:59, 365 B)
 src/:      Bayes Behavioral Cache Check Cli Config Context Data Dns Exception FormProtector
@@ -137,7 +142,7 @@ FormSpamChecker\Integration\FormGuard::boot()->run();
 
 The deployed file equals the **`c21bfb3`** version, i.e. the server is **one commit behind** for this file and lacks the "request-data XFF priority fix":
 
-```
+```text
 line 240  GitHub v2.0 (f7babd9): if (!isset($server['HTTP_CF_CONNECTING_IP']) && isset($server['HTTP_X_FORWARDED_FOR']) && …)
 line 240  deployed (c21bfb3)   : if (isset($server['HTTP_X_FORWARDED_FOR']) && …)
 ```
@@ -161,17 +166,21 @@ Compared sha256 for every pair present on both sides (server files 20:58; local 
 
 Line-by-line diff of two samples shows **exactly one differing line** in each, and the same in all six:
 
-```
+```text
 conbat.ru.php line 49         server: 'mode' => 'block',      local: 'mode' => 'monitor',
 batterywizard.ru.php line 41  server: 'mode' => 'block',      local: 'mode' => 'monitor',
 ```
 
-So: `waf.enabled = true` and **`waf.mode = block`** on the server for 6 of 7 sites, while the source-of-truth integration config set says `monitor`. `bs12v.ru` and `default.php` have no `waf` section. This contradicts the documented rollout ("start in `monitor`, review `var/log`, then switch") — may be intentional, but it is a real divergence between the reference configs and production.
+So: `waf.enabled = true` and **`waf.mode = block`** on the server for 6 of 7 sites, while the source-of-truth integration config set says `monitor`. `bs12v.ru`
+and `default.php` have no `waf` section. This contradicts the documented rollout ("start in `monitor`, review `var/log`, then switch") — may be intentional, but
+it is a real divergence between the reference configs and production.
 
 ### 4.4 WAF wiring
 
 - PHP sites: `integrations/guard.php` → `WafGuard` first, then `FormGuard`; `waf.enabled=true` in the 6 site configs.
-- Node/batterywizard: `bwo-src/src/lib/spam-guard.ts` has `checkWaf()` → `bin/waf-check`; `api/lead.ts` calls it and answers `403` when `waf.blocked`; `/var/www/bwo/.env` has `WAF_SCRIPT=/var/www/lib/PHP-Form-Spam-Checker/bin/waf-check` and `WAF_MODE=block`; rebuilt `dist` references `waf-check`; service restarted 20:59:31.
+- Node/batterywizard: `bwo-src/src/lib/spam-guard.ts` has `checkWaf()` → `bin/waf-check`; `api/lead.ts` calls it and answers `403` when `waf.blocked`;
+  `/var/www/bwo/.env` has `WAF_SCRIPT=/var/www/lib/PHP-Form-Spam-Checker/bin/waf-check` and `WAF_MODE=block`; rebuilt `dist` references `waf-check`; service
+  restarted 20:59:31.
 - This is **wiring proof only** — no attack request was sent (see 1.19).
 
 ## 5. Live checks actually performed
@@ -191,11 +200,13 @@ So: `waf.enabled = true` and **`waf.mode = block`** on the server for 6 of 7 sit
 `/contacts/` contains exactly one support iframe:
 `<iframe class="zbs-support-embed" src="/support/form.php?token=<public site token>&embed_origin=https%3A%2F%2Fbatterywizard.ru" …>`.
 
-Note: `batterypassport.ru` initially timed out because the **local Windows resolver** returned a stale `176.99.2.35`; `8.8.8.8`, `1.1.1.1` and the server's own resolver return `176.99.5.35`, and `curl --resolve batterypassport.ru:443:176.99.5.35` gives `200` in 50 ms. Test-side artifact, not a site fault.
+Note: `batterypassport.ru` initially timed out because the **local Windows resolver** returned a stale `176.99.2.35`; `8.8.8.8`, `1.1.1.1` and the server's own
+resolver return `176.99.5.35`, and `curl --resolve batterypassport.ru:443:176.99.5.35` gives `200` in 50 ms. Test-side artifact, not a site fault.
 
 ### 5.2 Baseline for the mail check
 
-`grep bw@conbat.ru /var/log/exim4/mainlog`: **0** entries in the last 25 minutes (last ones 01:51/01:59). No blocked-test traffic was produced, so there is nothing to compare — the "no mail for blocked tests" assertion is **not verified**.
+`grep bw@<redacted> /var/log/exim4/mainlog`: **0** entries in the last 25 minutes (last ones 01:51/01:59). No blocked-test traffic was produced, so there is
+nothing to compare — the "no mail for blocked tests" assertion is **not verified**.
 
 ### 5.3 Not executed (explicit)
 

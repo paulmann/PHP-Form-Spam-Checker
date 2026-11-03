@@ -46,7 +46,7 @@ final class EmailAddressTest extends NetworkTestCase
         $data = $this->request(fields: [
             'email' => 'John <user@Example.com>',
             'personalEmail' => 'not-an-address',
-            'other' => 'someone@other.example',
+            'other' => 'someone@example.org',
         ]);
 
         $domains = EmailAddress::domainsForFields($data, ['email', 'personalEmail', 'missing', 42]);
@@ -57,12 +57,12 @@ final class EmailAddressTest extends NetworkTestCase
     public function testDomainsForFieldsKeepsOneEntryPerField(): void
     {
         $data = $this->request(fields: [
-            'email' => 'a@one.example',
-            'second' => 'b@one.example',
+            'email' => 'a@example.org',
+            'second' => 'b@example.org',
         ]);
 
         $domains = EmailAddress::domainsForFields($data, ['email', 'second']);
 
-        self::assertSame(['email' => 'one.example', 'second' => 'one.example'], $domains);
+        self::assertSame(['email' => 'example.org', 'second' => 'example.org'], $domains);
     }
 }

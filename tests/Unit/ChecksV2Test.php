@@ -22,6 +22,7 @@ use FormSpamChecker\Data\CheckOutcome;
 use FormSpamChecker\Data\CheckStatus;
 use FormSpamChecker\Data\RequestData;
 use FormSpamChecker\Storage\MemoryStorage;
+use FormSpamChecker\Support\Patterns;
 use FormSpamChecker\Tests\Support\TempDirTestCase;
 use FormSpamChecker\Token\FormToken;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -151,10 +152,27 @@ final class ChecksV2Test extends TempDirTestCase
     {
         $check = new EmailCheck(new Config());
 
-        self::assertSame(CheckStatus::HAM, $check->check($this->request(['email' => 'ivan@example.ru']))->status);
+        self::assertSame(CheckStatus::HAM, $check->check($this->request(['email' => 'ivan@example.com']))->status);
         self::assertSame(CheckStatus::HAM, $check->check($this->request(['email' => 'not-an-email']))->status);
-        self::assertGreaterThan(0, $check->check($this->request(['email' => 'x@mailinator.com']))->score);
         self::assertSame(CheckStatus::HAM, (new EmailCheck(new Config(['email' => ['enabled' => false]])))->check($this->request(['email' => 'bad']))->status);
+    }
+
+    public function testConfiguredDisposableDomainIsScored(): void
+    {
+        // The scoring branch of EmailCheck; a reserved domain keeps a real
+        // mailbox out of the tree, and the list is wired exactly as an operator
+        // would wire it in `email.disposable_domains`.
+        $check = new EmailCheck(new Config(['email' => ['disposable_domains' => ['example.com']]]));
+
+        self::assertGreaterThan(0, $check->check($this->request(['email' => 'x@example.com']))->score);
+    }
+
+    public function testDefaultDisposableDomainListIsKept(): void
+    {
+        // The built-in list is the safety net for operators who configure
+        // nothing; it is asserted as data, so no real throwaway mailbox is
+        // needed in a fixture.
+        self::assertContains('mailinator.com', Patterns::disposableDomains());
     }
 
     public function testLengthAndControlCharacters(): void

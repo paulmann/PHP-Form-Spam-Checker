@@ -53,7 +53,7 @@ final class RemoteWiringTest extends TestCase
 
         $checker = new SpamChecker($config, new MemoryStorage(), null, null, null, null, $resolver);
         $request = new \FormSpamChecker\Data\RequestData(
-            ['name' => 'Иван', 'email' => 'ivan@example.ru'],
+            ['name' => 'Иван', 'email' => 'ivan@example.com'],
             '203.0.113.10',
             ['user-agent' => self::UA],
             [],
