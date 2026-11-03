@@ -34,7 +34,7 @@
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-strict-rules": "^2.0",
-        "phpunit/phpunit": "^12.3",
+        "phpunit/phpunit": "^12.3 || ^13.0",
         "psr/cache": "^3.0",
         "psr/http-client": "^1.0",
         "psr/http-factory": "^1.1",
