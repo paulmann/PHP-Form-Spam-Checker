@@ -29,7 +29,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   aggregation, storage, token, logging, CLI and the HTTP endpoint, plus a
   syntax gate for every PHP file.
 - CI on PHP 8.5.12 and 8.5 with strict warning/risky/deprecation gates.
-- - `Config::fromFile()` accepts both a plain pipeline config and a shared-guard site config (unwraps the `config` key), so the CLI bridge, the HTTP endpoint and the guard read the same file.\n- `deploy/init-site-state.sh` initialises per-site counter/log ownership for multi-user hosts.\n- Documentation (EN/RU), integration guide, configuration and check reference,
+- `Config::fromFile()` accepts both a plain pipeline config and a shared-guard
+  site config (unwraps the `config` key), so the CLI bridge, the HTTP endpoint
+  and the guard read the same file.
+- `deploy/init-site-state.sh` initialises per-site counter/log ownership for
+  multi-user hosts.
+- Documentation (EN/RU), integration guide, configuration and check reference,
   plain-PHP and Node examples, shared-module install script.
 
 [Unreleased]: https://github.com/Paulmann/PHP-Form-Spam-Checker/commits/main
