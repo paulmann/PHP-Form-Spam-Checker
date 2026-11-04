@@ -23,7 +23,11 @@ final class CliBridgesTest extends TempDirTestCase
         file_put_contents($spam, "casino bitcoin bonus\nviagra cialis pharmacy\n");
         $config = $dir . '/config.json';
         file_put_contents($config, json_encode([
-            'cache' => ['driver' => 'file', 'path' => $dir],
+            // The cache lives in its own directory: FileCache::gc() deletes every
+            // *.json it cannot read as a cache entry, so a cache pointed at the
+            // directory that also holds config.json/ham/spam deleted the test's
+            // own config whenever gc happened to run (a ~2 % flake per write).
+            'cache' => ['driver' => 'file', 'path' => $dir . '/cache'],
             'bayes' => ['enabled' => true, 'min_documents' => 1, 'threshold' => 0.9],
         ], JSON_THROW_ON_ERROR));
 
@@ -34,7 +38,7 @@ final class CliBridgesTest extends TempDirTestCase
         self::assertTrue($trained['persisted']);
 
         $stats = $this->runBinary('spam-train', ['--config=' . $config, '--stats']);
-        self::assertSame(0, $stats['code']);
+        self::assertSame(0, $stats['code'], $stats['stderr']);
         self::assertStringContainsString('"trained":true', $stats['stdout']);
 
         $verdict = $this->runBinary('spam-check', [
