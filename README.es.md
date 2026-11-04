@@ -1,4 +1,4 @@
-# PHP Form Spam Checker 2.1
+# PHP Form Spam Checker 2.1.2
 
 > **Leer en:** [English](README.md) · [Русский](README.ru.md) · Español · [Deutsch](README.de.md) · [中文](README.zh.md) · [हिन्दी](README.hi.md)
 
@@ -19,7 +19,7 @@ comprobaciones se activaron, con qué puntuaciones y por qué.
 [**Wiki**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**Documentación**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**Versiones**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**Registro de cambios**](CHANGELOG.md) · [**Incidencias**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**Seguridad**](SECURITY.md) · [**Para agentes**](AGENTS.md) · [**Versión en ruso**](README.ru.md)
 
 > **Estado de la documentación.** Las cifras de este README se midieron a partir del
-> árbol del repositorio el 2026-11-03 (versión 2.1.0); el comando que produjo cada
+> árbol del repositorio el 2026-11-03 (versión 2.1.2); el comando que produjo cada
 > cifra se indica junto a ella. Las guías extensas están en la
 > [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) y en `docs/`;
 > el contrato no interactivo para agentes es [`AGENTS.md`](AGENTS.md).
@@ -28,6 +28,7 @@ comprobaciones se activaron, con qué puntuaciones y por qué.
 
 ## Contenido
 
+- [Qué cambió en 2.1.2](#what-changed-in-212)
 - [Qué cambió en 2.1](#what-changed-in-21)
 - [Qué cambió en 2.0](#what-changed-in-20)
 - [El ciclo de protección](#the-protection-cycle)
@@ -54,6 +55,27 @@ comprobaciones se activaron, con qué puntuaciones y por qué.
 
 ---
 
+## Qué cambió en 2.1.2
+
+2.1.2 añade una comprobación regional **opt-in** para formularios en ruso:
+está desactivada por defecto y se activa por sitio solo donde se necesita:
+
+- **Requisito de cirílico para nombres** (`language.require_cyrillic`): los
+  campos de nombre configurados (`name`, `fio`, `first_name`, `last_name`,
+  `surname`, `имя`, `фамилия`, `фио`, …; comparados sin distinguir mayúsculas ni
+  separadores) deben contener al menos una letra cirílica. Un valor con letras
+  pero sin cirílico añade puntos de `language.missing_score`: `40` por defecto,
+  `60` cuando un nombre solo en latín debe alcanzar por sí solo el umbral de
+  spam; `missing_score = 40` lo mantiene en «sospechoso». Los campos de correo,
+  empresa y texto libre nunca se comprueban; `language.fields` / `min_letters` /
+  `max_score` ajustan la regla.
+- **Desactivado por defecto:** `language.enabled` y `language.require_cyrillic`
+  son `false`, y las configuraciones de ejemplo incluidas los mantienen
+  desactivados. Active la regla en la configuración de cada sitio, no en los
+  valores predeterminados de la biblioteca.
+
+Véase [CHANGELOG.md](CHANGELOG.md) y las claves `language.*` en
+[docs/CONFIG.md](docs/CONFIG.md).
 ## Qué cambió en 2.1
 
 2.1 añade el puente del cortafuegos y el endurecimiento del despliegue sobre 2.0:
@@ -66,9 +88,6 @@ comprobaciones se activaron, con qué puntuaciones y por qué.
   en el cortafuegos (solo HTTP/HTTPS) con `maxretry = 1`.
 - **Autobaneo de la aplicación** — comprobación `autoban`: tras N eventos firmes dentro de
   una ventana, la IP se rechaza antes de cualquier otra comprobación durante el TTL configurado.
-- **Comprobación de nombres rusos** — `language.require_cyrillic`: un nombre/apellido con
-  letras pero sin cirílico puntúa 60 (umbral de spam) en los despliegues de referencia;
-  los campos de correo electrónico, empresa y mensaje nunca se penalizan.
 - `CurlClient` ya no usa el obsoleto `curl_close()` (PHP 8.5).
 
 Véase [CHANGELOG.md](CHANGELOG.md) y [docs/WAF.md#fail2ban](docs/WAF.md#fail2ban).
@@ -139,7 +158,7 @@ Todas las puntuaciones son 0–100; `spam` es un veredicto firme que ignora el t
 | Contenido | `keywords` | activado | 12 por acierto, máximo 90 |
 | Contacto | `email` | activado | no válido 40; desechable 70 |
 | Contenido | `repetition` | activado | secuencias o repeticiones → 25, máximo 60 |
-| Contenido | `language` | desactivado (despliegues de referencia: activado) | escrituras mezcladas → 20, máximo 40; `require_cyrillic` → nombre solo en latín 60 (spam) |
+| Contenido | `language` | desactivado (opt-in por sitio) | escrituras mezcladas → 20, máximo 40; `require_cyrillic` → sin cirílico en un nombre suma `missing_score` (40; 60 = spam) |
 | Red | `abuseipdb` | desactivado | confianza ≥ 90 → **spam** (puntuación = confianza) |
 | Red | `dnsbl` | desactivado | aparición en lista → **spam** 100 |
 | Dominio | `spf` | desactivado | sin política utilizable → 10 |

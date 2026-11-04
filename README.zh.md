@@ -1,4 +1,4 @@
-# PHP Form Spam Checker 2.1
+# PHP Form Spam Checker 2.1.2
 
 > **阅读语言：** [English](README.md) · [Русский](README.ru.md) · [Español](README.es.md) · [Deutsch](README.de.md) · 中文 · [हिन्दी](README.hi.md)
 
@@ -18,7 +18,7 @@
 [**Wiki**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**文档**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**发布**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**更新日志**](CHANGELOG.md) · [**问题**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**安全**](SECURITY.md) · [**面向 Agent**](AGENTS.md) · [**俄语版**](README.ru.md)
 
 > **文档状态。** 本 README 中的统计数字取自 2026-11-03 的仓库树
-> （版本 2.1.0）；每项数字旁边都注明了生成它的命令。长篇指南位于
+> （版本 2.1.2）；每项数字旁边都注明了生成它的命令。长篇指南位于
 > [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) 和 `docs/`；
 > 面向 Agent 的非交互式契约见 [`AGENTS.md`](AGENTS.md)。
 
@@ -26,6 +26,7 @@
 
 ## 目录
 
+- [2.1.2 有哪些变化](#what-changed-in-212)
 - [2.1 有哪些变化](#what-changed-in-21)
 - [2.0 有哪些变化](#what-changed-in-20)
 - [防护流程](#the-protection-cycle)
@@ -52,6 +53,21 @@
 
 ---
 
+## 2.1.2 有哪些变化
+
+2.1.2 为俄语表单新增了**可选**的区域检查；它默认关闭，仅在需要的站点上启用：
+
+- **姓名西里尔字母要求**（`language.require_cyrillic`）：配置的姓名类字段
+  （`name`、`fio`、`first_name`、`last_name`、`surname`、`имя`、`фамилия`、`фио`、…；
+  比较时忽略大小写和分隔符）必须至少包含一个西里尔字母。含有字母但没有西里尔字母的
+  值会加上 `language.missing_score` 分——默认 `40`，当纯拉丁字母姓名本身应达到垃圾
+  阈值时为 `60`；`missing_score = 40` 则保持为“可疑”。电子邮件、公司和自由文本字段
+  从不检查；`language.fields` / `min_letters` / `max_score` 可调整规则。
+- **默认关闭：** `language.enabled` 和 `language.require_cyrillic` 均为 `false`，
+  随附的示例配置也保持关闭。请在站点自己的配置中启用该规则，而不是库默认值。
+
+参见 [CHANGELOG.md](CHANGELOG.md) 以及 [docs/CONFIG.md](docs/CONFIG.md) 中的
+`language.*` 键。
 ## 2.1 有哪些变化
 
 2.1 在 2.0 基础上增加了防火墙桥接和部署加固：
@@ -64,9 +80,6 @@
   在防火墙上封禁该 IP（仅 HTTP/HTTPS）。
 - **应用层自动封禁**——`autoban` 检查：在窗口期内发生 N 次硬性事件后，
   该 IP 会在配置的 TTL 内先于其他所有检查被拒绝。
-- **俄语姓名检查**——`language.require_cyrillic`：在参考部署中，
-  姓名/姓氏含字母但不含西里尔字母会得 60 分（达到垃圾阈值）；
-  电子邮件、公司和消息字段永远不会因此受罚。
 - `CurlClient` 不再使用已弃用的 `curl_close()`（PHP 8.5）。
 
 见 [CHANGELOG.md](CHANGELOG.md) 和 [docs/WAF.md#fail2ban](docs/WAF.md#fail2ban)。
@@ -135,7 +148,7 @@ flowchart TD
 | 内容 | `keywords` | 开启 | 每命中一次 12，上限 90 |
 | 联系方式 | `email` | 开启 | 无效 40；一次性邮箱 70 |
 | 内容 | `repetition` | 开启 | 连续重复字符/词语 → 25，上限 60 |
-| 内容 | `language` | 关闭（参考部署：开启） | 混合文字系统 → 20，上限 40；`require_cyrillic` → 仅拉丁字母的姓名 60（spam） |
+| 内容 | `language` | 关闭（按站点 opt-in） | 混合文字系统 → 20，上限 40；`require_cyrillic` → 姓名中没有西里尔字母会加 `missing_score`（40；60 = spam） |
 | 网络 | `abuseipdb` | 关闭 | 置信度 ≥ 90 → **spam**（分数 = 置信度） |
 | 网络 | `dnsbl` | 关闭 | 被列入黑名单 → **spam** 100 |
 | 域名 | `spf` | 关闭 | 没有可用策略 → 10 |

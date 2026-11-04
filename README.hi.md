@@ -1,33 +1,34 @@
-# PHP Form Spam Checker 2.1
+# PHP Form Spam Checker 2.1.2
 
 > **पढ़ें:** [English](README.md) · [Русский](README.ru.md) · [Español](README.es.md) · [Deutsch](README.de.md) · [中文](README.zh.md) · हिन्दी
 
-**किसी भी PHP फ़ॉर्म के लिए स्तरित, निर्भरता-मुक्त anti-spam pipeline और HTTP firewall।**
-यह पहले स्थानीय heuristics चलाता है, फिर behavioural signals, IP reputation,
-DNS blocklists, mail-domain authentication और एक Bayesian classifier — और
-वैकल्पिक रूप से पूरे HTTP request का WAF से निरीक्षण करता है। कोई captcha नहीं, कोई runtime
-Composer निर्भरता नहीं, और हर verdict के साथ evidence रहता है: कौन-सी जाँचें चलीं,
-किन scores के साथ, और क्यों।
+**किसी भी PHP फ़ॉर्म के लिए स्तरित, निर्भरता-मुक्त anti-spam पाइपलाइन और HTTP
+फ़ायरवॉल।** यह पहले स्थानीय heuristics चलाता है, फिर व्यवहार-आधारित संकेत, IP
+प्रतिष्ठा, DNS ब्लॉकलिस्ट, मेल-डोमेन प्रमाणीकरण और Bayesian क्लासिफ़ायर — और
+वैकल्पिक रूप से WAF के साथ पूरे HTTP अनुरोध का निरीक्षण करता है। कोई captcha नहीं,
+कोई रनटाइम Composer निर्भरता नहीं, और हर निर्णय के साथ प्रमाण: कौन-सी जाँचें चलीं,
+किन स्कोर के साथ, और क्यों।
 
 [![CI](https://github.com/paulmann/PHP-Form-Spam-Checker/actions/workflows/ci.yml/badge.svg)](https://github.com/paulmann/PHP-Form-Spam-Checker/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/paulmann/PHP-Form-Spam-Checker?label=release&sort=semver)](https://github.com/paulmann/PHP-Form-Spam-Checker/releases)
 [![PHP](https://img.shields.io/badge/PHP-8.5-8892bf.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-<img src="https://github.com/paulmann/PHP-Form-Spam-Checker/raw/main/assets/social-preview.png" alt="PHP Form Spam Checker - PHP फ़ॉर्म के लिए स्तरित anti-spam pipeline और HTTP firewall" width="100%">
+<img src="https://github.com/paulmann/PHP-Form-Spam-Checker/raw/main/assets/social-preview.png" alt="PHP Form Spam Checker - layered anti-spam pipeline and HTTP firewall for PHP forms" width="100%">
 
-[**विकी**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**दस्तावेज़**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**रिलीज़**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**चेंजलॉग**](CHANGELOG.md) · [**इश्यूज़**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**सुरक्षा**](SECURITY.md) · [**एजेंट्स के लिए**](AGENTS.md) · [**रूसी संस्करण**](README.ru.md)
+[**Wiki**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**दस्तावेज़**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**रिलीज़**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**चेंजलॉग**](CHANGELOG.md) · [**Issues**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**सुरक्षा**](SECURITY.md) · [**एजेंट के लिए**](AGENTS.md) · [**Русская версия**](README.ru.md)
 
-> **दस्तावेज़ीकरण की स्थिति।** इस README के आँकड़े
-> 2026-11-03 (संस्करण 2.1.0) को repository tree से मापे गए थे; हर
-> आँकड़े के पास वह command नामित है जिसने उसे बनाया। विस्तृत गाइड
-> [विकी](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) और `docs/` में हैं;
-> एजेंट्स के लिए non-interactive अनुबंध [`AGENTS.md`](AGENTS.md) है।
+> **दस्तावेज़ीकरण की स्थिति।** इस README के आँकड़े 2026-11-03 (संस्करण 2.1.2) को
+> रिपॉज़िटरी ट्री से मापे गए थे; हर आँकड़े के पास वह कमांड लिखी है जिसने उसे
+> निकाला। विस्तृत मार्गदर्शिकाएँ
+> [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) और `docs/` में हैं;
+> एजेंट के लिए गैर-इंटरैक्टिव अनुबंध [`AGENTS.md`](AGENTS.md) है।
 
 ---
 
 ## विषय-सूची
 
+- [2.1.2 में क्या बदला](#what-changed-in-212)
 - [2.1 में क्या बदला](#what-changed-in-21)
 - [2.0 में क्या बदला](#what-changed-in-20)
 - [सुरक्षा चक्र](#the-protection-cycle)
@@ -38,138 +39,155 @@ Composer निर्भरता नहीं, और हर verdict के स
 - [त्वरित शुरुआत: सादा PHP फ़ॉर्म](#quick-start-plain-php-form)
 - [WAF (HTTP फ़ायरवॉल)](#waf-http-firewall)
 - [AbuseIPDB सेटअप](#abuseipdb-setup)
-- [Fail2Ban और auto-ban](#fail2ban-and-auto-ban)
+- [Fail2Ban और ऑटो-बैन](#fail2ban-and-auto-ban)
 - [DNSBL, SPF, DMARC, DKIM](#dnsbl-spf-dmarc-dkim)
-- [Bayesian classifier](#bayesian-classifier)
-- [व्यवहार-आधारित परत](#behavioural-layer)
-- [एकीकरण मोड](#integration-modes)
+- [Bayesian क्लासिफ़ायर](#bayesian-classifier)
+- [व्यवहार परत](#behavioural-layer)
+- [इंटीग्रेशन मोड](#integration-modes)
 - [कॉन्फ़िगरेशन त्वरित संदर्भ](#configuration-quick-reference)
-- [गुणवत्ता गेट्स](#quality-gates)
+- [गुणवत्ता गेट](#quality-gates)
 - [परीक्षण](#testing)
 - [माइग्रेशन और संगतता](#migration-and-compatibility)
 - [सुरक्षा](#security)
-- [दस्तावेज़ीकरण सूचकांक](#documentation-index)
-- [परियोजना की सहायता करें — प्रमाण के आधार पर, एंगेजमेंट के आधार पर नहीं](#help-the-project--through-evidence-not-engagement)
+- [दस्तावेज़ सूची](#documentation-index)
+- [प्रोजेक्ट की मदद करें — engagement से नहीं, प्रमाण से](#help-the-project--through-evidence-not-engagement)
 - [लाइसेंस](#license)
 
 ---
 
+## 2.1.2 में क्या बदला
+
+2.1.2 रूसी-भाषा वाले फ़ॉर्म के लिए एक **opt-in** locale जाँच जोड़ता है; यह
+डिफ़ॉल्ट रूप से बंद है और केवल वहीं प्रति साइट चालू होती है जहाँ चाहिए:
+
+- **नामों के लिए सिरिलिक अनिवार्यता** (`language.require_cyrillic`): कॉन्फ़िगर किए
+  गए नाम-जैसे फ़ील्ड (`name`, `fio`, `first_name`, `last_name`, `surname`, `имя`,
+  `фамилия`, `фио`, …; केस और विभाजक के प्रति असंवेदी रूप से मिलान) में कम से कम
+  एक सिरिलिक अक्षर होना चाहिए। ऐसा मान जिसमें अक्षर तो हैं पर सिरिलिक नहीं, वह
+  `language.missing_score` अंक जोड़ता है — डिफ़ॉल्ट रूप से `40`, और `60` वहाँ जहाँ
+  केवल-लैटिन नाम अकेले ही spam थ्रेशोल्ड तक पहुँचना चाहिए; `missing_score = 40`
+  उसे "संदिग्ध" पर बनाए रखता है। ई-मेल, कंपनी और मुक्त-पाठ फ़ील्ड की जाँच कभी नहीं
+  होती, और `language.fields` / `min_letters` / `max_score` नियम को ट्यून करते हैं।
+- **डिफ़ॉल्ट रूप से बंद:** `language.enabled` और `language.require_cyrillic`
+  `false` हैं, और भेजे गए उदाहरण कॉन्फ़िग उन्हें बंद ही रखते हैं। नियम को साइट के
+  अपने कॉन्फ़िगरेशन में चालू करें, लाइब्रेरी डिफ़ॉल्ट में नहीं।
+
+[CHANGELOG.md](CHANGELOG.md) और `language.*` कुंजियाँ
+[docs/CONFIG.md](docs/CONFIG.md) में देखें।
+
 ## 2.1 में क्या बदला
 
-2.1, 2.0 के ऊपर firewall bridge और deployment hardening जोड़ता है:
+2.1, 2.0 के ऊपर फ़ायरवॉल bridge और deployment सख़्ती जोड़ता है:
 
-- **AbuseIPDB** reference deployment configs में `threshold = 100` के साथ
-  (केवल वे IPs block होते हैं जिनका confidence ठीक 100 है); 6 h cache, fail open,
-  circuit breaker, quota evidence में दिखाया जाता है।
-- **Fail2Ban bridge** — हर hard-spam verdict और हर WAF block प्रति-साइट log में
-  timestamped `PHPFSC BAN ip=…` पंक्ति जोड़ता है; jail IP को firewall पर
-  (केवल HTTP/HTTPS) `maxretry = 1` के साथ ban करता है।
-- **Application auto-ban** — `autoban` check: window के भीतर N hard events के बाद
-  IP को configured TTL के लिए किसी भी अन्य check से पहले अस्वीकार कर दिया जाता है।
-- **Russian name check** — `language.require_cyrillic`: reference deployments पर
-  अक्षरों वाला लेकिन Cyrillic रहित name/surname 60 (spam threshold) स्कोर करता है;
-  e-mail, company और message फ़ील्ड को कभी दंडित नहीं किया जाता।
-- `CurlClient` अब deprecated `curl_close()` का उपयोग नहीं करता (PHP 8.5).
+- **AbuseIPDB**, संदर्भ deployment कॉन्फ़िग में `threshold = 100` के साथ
+  (केवल वे IP ब्लॉक होते हैं जिनका confidence ठीक 100 है); 6 घंटे कैश, fail open,
+  circuit breaker, कोटा प्रमाण में दिखाया जाता है।
+- **Fail2Ban bridge** — हर hard-spam निर्णय और हर WAF ब्लॉक प्रति-साइट लॉग में
+  समय-चिह्नित `PHPFSC BAN ip=…` पंक्ति जोड़ता है; jail IP को फ़ायरवॉल पर
+  (केवल HTTP/HTTPS) `maxretry = 1` के साथ बैन कर देता है।
+- **एप्लिकेशन ऑटो-बैन** — `autoban` जाँच: विंडो के भीतर N hard घटनाओं के बाद IP
+  कॉन्फ़िगर किए गए TTL तक किसी भी अन्य जाँच से पहले अस्वीकार कर दिया जाता है।
+- `CurlClient` अब पदावनत `curl_close()` का उपयोग नहीं करता (PHP 8.5)।
 
 [CHANGELOG.md](CHANGELOG.md) और [docs/WAF.md#fail2ban](docs/WAF.md#fail2ban) देखें।
 
 ## 2.0 में क्या बदला
 
-2.0 आंतरिक भागों का rewrite है, जिसमें स्पष्ट pipeline, चार नई सुरक्षा
-परतें और एक WAF है। 1.x साइटों द्वारा उपयोग किया जाने वाला integration surface बना रहता है —
-`SpamChecker`, `FormProtector`, `FormGuard`, `bin/spam-check`, `public/check.php`
-और `config/sites/<host>.php` अपने contracts बनाए रखते हैं। अधिकांश installations के लिए
-upgrade code नहीं, configuration है।
+2.0 आंतरिक भागों का पुनर्लेखन है, जिसमें स्पष्ट पाइपलाइन, चार नई सुरक्षा परतें
+और एक WAF है। जिन 1.x साइटों को तैनात किया गया है, उनके लिए एकीकरण की सतह
+अपरिवर्तित रखी गई है — `SpamChecker`, `FormProtector`, `FormGuard`,
+`bin/spam-check`, `public/check.php` और `config/sites/<host>.php` अपने अनुबंध बनाए
+रखते हैं। अधिकांश इंस्टॉलेशन के लिए अपग्रेड कोड नहीं, कॉन्फ़िगरेशन है।
 
 | | 1.x | 2.0 |
 |---|---|---|
-| Pipeline | 12 checks को aggregate करने वाला एक checker | क्रमबद्ध `SpamPipeline`, hard spam पर early exit |
-| Behavioural | static honeypot + time trap | + **dynamic honeypot** (hourly HMAC names) और **JS challenge** |
-| Network | कोई नहीं | **AbuseIPDB**, **DNSBL** (opt-in, fail open) |
-| Mail domains | syntactic e-mail check | + **SPF**, **DMARC** domain trust signals |
-| Machine learning | कोई नहीं | **Bayesian classifier** `bin/spam-train` के साथ |
-| HTTP firewall | कोई नहीं | **WAF**: 9 rules, `off`/`monitor`/`block`, drop-in `auto_prepend` |
-| Evidence | reason list | प्रति-check `status`, `score`, `reason`, structured `evidence` |
+| पाइपलाइन | 12 जाँचें जोड़ने वाला एक checker | क्रमबद्ध `SpamPipeline`, hard spam पर तुरंत बाहर निकलना |
+| व्यवहार | स्थिर honeypot + time trap | + **dynamic honeypot** (हर घंटे बदलते HMAC नाम) और **JS challenge** |
+| नेटवर्क | कोई नहीं | **AbuseIPDB**, **DNSBL** (opt-in, fail open) |
+| मेल डोमेन | वाक्यविन्यास-आधारित ई-मेल जाँच | + **SPF**, **DMARC** डोमेन-विश्वास संकेत |
+| मशीन लर्निंग | कोई नहीं | `bin/spam-train` के साथ **Bayesian क्लासिफ़ायर** |
+| HTTP फ़ायरवॉल | कोई नहीं | **WAF**: 9 नियम, `off`/`monitor`/`block`, drop-in `auto_prepend` |
+| प्रमाण | कारणों की सूची | प्रति-जाँच `status`, `score`, `reason`, संरचित `evidence` |
 | CLI | `bin/spam-check` | + `bin/waf-check`, + `bin/spam-train` |
-| Quality gates | PHPUnit + `php -l` | CS Fixer, PHPStan `max`, Psalm taint, coverage gate, CI |
+| गुणवत्ता गेट | PHPUnit + `php -l` | CS Fixer, PHPStan `max`, Psalm taint, coverage gate, CI |
 
-पूरा विवरण और breaking changes (हटाए गए internal classes, प्रति-check
-status vocabulary): [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md).
+पूरा विवरण और breaking changes (हटाए गए आंतरिक classes, प्रति-जाँच status
+शब्दावली): [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md)।
 
 ## सुरक्षा चक्र
 
 ```mermaid
 flowchart TD
-    A[HTTP अनुरोध] --> B{WAF सक्षम है?}
-    B -- हाँ --> C[WAF नियम: method, URI,<br/>query, fields, cookies,<br/>headers, body]
-    C -- अवरुद्ध --> Z[403 / monitor: केवल लॉग]
-    C -- पास --> D[फ़ॉर्म सबमिशन]
+    A[HTTP अनुरोध] --> B{WAF सक्षम?}
+    B -- हाँ --> C[WAF नियम: method, URI,<br/>query, फ़ील्ड, cookies,<br/>headers, body]
+    C -- blocked --> Z[403 / monitor: केवल लॉग]
+    C -- pass --> D[फ़ॉर्म सबमिशन]
     B -- नहीं --> D
-    D --> E[Behavioural:<br/>dynamic honeypot · time trap · JS challenge]
-    E --> F[स्थानीय heuristics:<br/>UA · rate limit · length · SQLi ·<br/>XSS · links · keywords · email ·<br/>repetition · language]
+    D --> E[व्यवहार:<br/>dynamic honeypot · time trap · JS challenge]
+    E --> F[स्थानीय heuristics:<br/>UA · rate limit · लंबाई · SQLi ·<br/>XSS · लिंक · keywords · ई-मेल ·<br/>पुनरावृत्ति · भाषा]
     F --> G[नेटवर्क प्रतिष्ठा:<br/>AbuseIPDB · DNSBL]
     G --> H[मेल-डोमेन प्रमाणीकरण:<br/>SPF · DMARC]
-    H --> I[Bayesian classifier]
-    I --> J[एकत्रित करें: hard verdicts +<br/>सीमित score बनाम thresholds]
-    J --> K{स्वच्छ / संदिग्ध / स्पैम}
+    H --> I[Bayesian क्लासिफ़ायर]
+    I --> J[संयोजन: hard निर्णय +<br/>सीमित स्कोर बनाम थ्रेशोल्ड]
+    J --> K{स्वच्छ / संदिग्ध / Spam}
 ```
 
-सस्ते checks पहले चलते हैं। `pipeline.stop_on_spam` (डिफ़ॉल्ट `true`) पहले hard spam verdict पर
-run रोक देता है, जिससे AbuseIPDB quota और DNS lookups बचते हैं। जो check throw करता है, वह `error`
-के रूप में दर्ज होता है और fail open करता है।
+सस्ती जाँचें पहले चलती हैं। `pipeline.stop_on_spam` (डिफ़ॉल्ट `true`) पहले hard
+spam निर्णय पर रन रोक देता है, जिससे AbuseIPDB कोटा और DNS lookups बचते हैं। जो
+जाँच अपवाद फेंकती है, वह `error` के रूप में दर्ज होती है और fail open करती है।
 
 ## जाँच मॉड्यूल और डिफ़ॉल्ट
 
-सभी scores 0–100 हैं; `spam` एक hard verdict है जो कुल योग को अनदेखा करता है।
+सभी स्कोर 0–100 हैं; `spam` एक hard निर्णय है जो कुल योग को अनदेखा करता है।
 
 | परत | जाँच | डिफ़ॉल्ट | स्कोर / प्रभाव |
 |---|---|---|---|
 | व्यवहार | `honeypot` | चालू | भरा हुआ छिपा फ़ील्ड → **spam** 100 |
-| व्यवहार | `dynamic_honeypot` | ≥16 अक्षरों का secret सेट होने पर चालू | भरा गया → **spam** 100; दोनों में से कोई अपेक्षित फ़ील्ड पोस्ट नहीं → 10 |
-| व्यवहार | `time_trap` | बंद (rendered secret आवश्यक) | बहुत तेज़ / forged → spam 80; अनुपस्थित / समाप्त → 30 |
+| व्यवहार | `dynamic_honeypot` | ≥16 अक्षरों का secret सेट होने पर चालू | भरा गया → **spam** 100; दोनों में से कोई भी अपेक्षित फ़ील्ड पोस्ट नहीं → 10 |
+| व्यवहार | `time_trap` | बंद (rendered secret चाहिए) | बहुत तेज़ / forged → spam 80; अनुपस्थित / समाप्त → 30 |
 | व्यवहार | `js_challenge` | बंद | उत्तर अनुपस्थित/अमान्य → 15 (कभी hard नहीं) |
 | पहचान | `user_agent` | चालू | खाली UA → 40; tool/marker UA → **spam** 100 |
 | मात्रा | `rate_limit` | चालू, 8 / 900 s | सीमा पार → **spam** 100 |
-| फ़ायरवॉल | `autoban` | बंद (reference deployments: चालू) | banned IP → **spam** 100, किसी भी अन्य जाँच से पहले |
+| फ़ायरवॉल | `autoban` | बंद (संदर्भ deployments: चालू) | banned IP → **spam** 100, किसी भी अन्य जाँच से पहले |
 | पेलोड | `length` | चालू, अधिकतम 5000 | लंबा → 30; > 20000 या control chars → **spam** 100 |
 | इंजेक्शन | `sql_injection` | चालू | मज़बूत signature → **spam** 100; कमज़ोर → 40 |
 | इंजेक्शन | `xss` | चालू | script/handler → **spam** 100; encoded → 45 |
 | सामग्री | `links` | चालू, अधिकतम 2 | अतिरिक्त लिंक 15; shortener 35; obfuscated 25 |
 | सामग्री | `keywords` | चालू | प्रति hit 12, अधिकतम 90 |
 | संपर्क | `email` | चालू | अमान्य 40; disposable 70 |
-| सामग्री | `repetition` | चालू | runs/repeats → 25, अधिकतम 60 |
-| सामग्री | `language` | बंद (reference deployments: चालू) | मिश्रित scripts → 20, अधिकतम 40; `require_cyrillic` → केवल-Latin name 60 (spam) |
-| नेटवर्क | `abuseipdb` | बंद | confidence ≥ 90 → **spam** (score = confidence) |
-| नेटवर्क | `dnsbl` | बंद | listing → **spam** 100 |
+| सामग्री | `repetition` | चालू | दोहराव → 25, अधिकतम 60 |
+| सामग्री | `language` | बंद (प्रति साइट opt-in) | मिश्रित लिपियाँ → 20, अधिकतम 40; `require_cyrillic` → नाम में सिरिलिक न हो तो `missing_score` जुड़ता है (40; 60 = spam) |
+| नेटवर्क | `abuseipdb` | बंद | confidence ≥ 90 → **spam** (स्कोर = confidence) |
+| नेटवर्क | `dnsbl` | बंद | सूचीबद्ध → **spam** 100 |
 | डोमेन | `spf` | बंद | कोई उपयोगी policy नहीं → 10 |
 | डोमेन | `dmarc` | बंद | अनुपस्थित → 10; `p=none` → 5 |
-| मॉडल | `bayes` | बंद | `P(spam) ≥ 0.92` → score = `P × 100` (डिफ़ॉल्ट रूप से suspicious) |
+| मॉडल | `bayes` | बंद | `P(spam) ≥ 0.92` → स्कोर = `P × 100` (डिफ़ॉल्ट रूप से संदिग्ध) |
 
-`dkim` कॉन्फ़िगरेशन बाद की जाँच के लिए आरक्षित है और अभी pipeline में नहीं है —
-देखें [docs/CHECKS.md](docs/CHECKS.md#dkim).
+`dkim` कॉन्फ़िगरेशन बाद की जाँच के लिए आरक्षित है और अभी पाइपलाइन में नहीं है —
+[docs/CHECKS.md](docs/CHECKS.md#dkim) देखें।
 
 ## आँकड़ों में
 
-2026-11-04 को commit `3757563` पर repository tree से मापा गया; हर आँकड़े के साथ
-वह command नामित है जिसने उसे बनाया।
+2026-11-03 को कमिट `eed037b` पर रिपॉज़िटरी ट्री से मापा गया; हर आँकड़े के साथ वह
+कमांड लिखी है जिसने उसे निकाला।
 
-| क्षेत्र | संख्या | किससे मापा गया |
+| सतह | संख्या | किससे मापा गया |
 |---|---|---|
 | PHP स्रोत फ़ाइलें / पंक्तियाँ | 93 / 10,295 | `find src -name '*.php'` और `src/` पर `wc -l` |
-| Pipeline जाँचें | 20 | `src/Check/` की फ़ाइलें घटाकर `SpamCheckInterface.php` |
+| पाइपलाइन जाँचें | 20 | `src/Check/` की फ़ाइलें घटाकर `SpamCheckInterface.php` |
 | WAF नियम | 9 | `src/Waf/Rules/` की फ़ाइलें |
-| टेस्ट methods | 555 | `tests/` के अंतर्गत `public function test` declarations |
-| टेस्ट सूट | 559 tests / 2,015 assertions | 2026-11-03 को `php vendor/bin/phpunit` |
-| अंग्रेज़ी दस्तावेज़ पृष्ठ | 6 | `docs/*.md`, `*.ru.md` को छोड़कर |
-| Runtime Composer निर्भरताएँ | 0 | `composer.json` में `require` (केवल PHP extensions) |
-| समर्थित PHP | 8.5+ | `composer.json` में `require.php`; CI matrix `8.5.12` और `8.5` |
+| टेस्ट मेथड | 555 | `tests/` के अंतर्गत `public function test` घोषणाएँ |
+| टेस्ट सूट | 559 टेस्ट / 2,015 assertions | 2026-11-03 को `php vendor/bin/phpunit` (PHPUnit 13.4.5) |
+| अंग्रेज़ी दस्तावेज़ पृष्ठ | 6 | `docs/*.md` घटाकर `*.ru.md` |
+| रनटाइम Composer निर्भरताएँ | 0 | `composer.json` में `require` (केवल PHP एक्सटेंशन) |
+| समर्थित PHP | 8.5+ | `composer.json` में `require.php`; CI मैट्रिक्स `8.5.12` और `8.5` |
 
 ## आवश्यकताएँ
 
 - PHP **8.5** (`>=8.5`; CI 8.5.12 और 8.5 चलाता है)
-- `ext-mbstring`, `ext-json`; `ext-curl` केवल तब जब bundled HTTP client
+- `ext-mbstring`, `ext-json`; `ext-curl` केवल तब जब बंडल किया गया HTTP क्लाइंट
   उपयोग हो (AbuseIPDB)
-- कोई runtime Composer निर्भरता नहीं
+- कोई रनटाइम Composer निर्भरता नहीं
 
 ## इंस्टॉलेशन
 
@@ -179,15 +197,15 @@ run रोक देता है, जिससे AbuseIPDB quota और DNS lo
 composer require paulmann/php-form-spam-checker
 ```
 
-### सादी प्रतिलिपि
+### सादी प्रति
 
-Repository को ऐसी जगह कॉपी करें जहाँ से PHP पढ़ सके, और `autoload.php` शामिल करें:
+रिपॉज़िटरी को कहीं ऐसी जगह कॉपी करें जहाँ PHP पढ़ सके, और `autoload.php` शामिल करें:
 
 ```php
 require '/var/www/lib/PHP-Form-Spam-Checker/autoload.php';
 ```
 
-Bundled `autoload.php` `vendor/` के साथ और उसके बिना दोनों तरह काम करता है।
+बंडल किया गया `autoload.php` `vendor/` के साथ और उसके बिना दोनों में काम करता है।
 
 ## त्वरित शुरुआत: सादा PHP फ़ॉर्म
 
@@ -218,7 +236,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 }
 ?>
 <form method="post">
-    <?= $protector->fields('contact') /* honeypot + signed token + JS challenge */ ?>
+    <?= $protector->fields('contact') /* honeypot + हस्ताक्षरित टोकन + JS challenge */ ?>
     <input name="email" type="email" required>
     <textarea name="message" required></textarea>
     <button type="submit">Отправить</button>
@@ -226,18 +244,18 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
 ```
 
 डेमो चलाएँ: `php -S 127.0.0.1:8080 examples/plain-form.php`
-([examples/plain-form.php](examples/plain-form.php)).
+([examples/plain-form.php](examples/plain-form.php))।
 
 ## WAF (HTTP फ़ायरवॉल)
 
-WAF application से पहले हर HTTP request का निरीक्षण करता है: method, URI, query,
-form fields, cookies, headers और raw body. यह **डिफ़ॉल्ट रूप से बंद** है।
+WAF एप्लिकेशन से पहले हर HTTP अनुरोध की जाँच करता है: method, URI, query,
+फ़ॉर्म फ़ील्ड, cookies, headers और कच्चा body। यह **डिफ़ॉल्ट रूप से बंद** है।
 
 | मोड | व्यवहार |
 |---|---|
-| `off` | कुछ भी निरीक्षण नहीं होता |
-| `monitor` | verdict निकाला और लॉग किया जाता है; हर request पास होती है |
-| `block` | blocked request का उत्तर दिया जाता है (`403` डिफ़ॉल्ट, `X-WAF: blocked`) |
+| `off` | कुछ भी जाँचा नहीं जाता |
+| `monitor` | निर्णय गणना और लॉग होता है; हर अनुरोध पास होता है |
+| `block` | ब्लॉक किए गए अनुरोध का उत्तर दिया जाता है (`403` डिफ़ॉल्ट, `X-WAF: blocked`) |
 
 ```php
 // config/spam.php
@@ -254,49 +272,48 @@ form fields, cookies, headers और raw body. यह **डिफ़ॉल्ट
         'scanner' => true,
         'header_injection' => true,
         'protocol' => true,
-        'ip_reputation' => false, // injected reputation check आवश्यक
-        'rate_limit' => false,    // injected storage आवश्यक
+        'ip_reputation' => false, // इंजेक्ट की गई reputation जाँच चाहिए
+        'rate_limit' => false,    // इंजेक्ट किया गया storage चाहिए
     ],
 ],
 ```
 
-Drop-in के रूप में install करें। साइट से मेल खाता include चुनें — जब `waf.enabled` सेट हो
-तो `guard.php` पहले से WAF चलाता है, इसलिए दोनों लोड न करें:
+drop-in के रूप में इंस्टॉल करें। वह include चुनें जो साइट से मेल खाता है —
+`waf.enabled` सेट होने पर `guard.php` पहले ही WAF चला देता है, इसलिए दोनों लोड न करें:
 
 ```php
-// form guard वाली साइट: पहले WAF, फिर form pipeline
+// फ़ॉर्म guard वाली साइट: पहले WAF, फिर फ़ॉर्म पाइपलाइन
 require '/var/www/lib/PHP-Form-Spam-Checker/integrations/guard.php';
 
-// form guard के बिना साइट: केवल firewall
+// फ़ॉर्म guard के बिना साइट: केवल फ़ायरवॉल
 require '/var/www/lib/PHP-Form-Spam-Checker/integrations/waf.php';
 ```
 
-…या PHP-FPM pool के लिए वैश्विक रूप से:
+…या किसी PHP-FPM pool के लिए वैश्विक रूप से:
 
 ```ini
-; केवल firewall
+; केवल फ़ायरवॉल
 php_admin_value[auto_prepend_file] = /var/www/lib/PHP-Form-Spam-Checker/integrations/waf.php
 ```
 
-जिस pool में form guard भी उपयोग होता है, वहाँ `auto_prepend_file` को इसके बजाय
-`integrations/auto-prepend.php` पर सेट करें: यह WAF परत को legacy `auto` flag से स्वतंत्र रूप से चलाता है
-और उसी flag से form pipeline को gate करता है।
+जिस pool में फ़ॉर्म guard भी उपयोग होता है, वहाँ `auto_prepend_file` को इसके बजाय
+`integrations/auto-prepend.php` पर इंगित करें: यह WAF परत को लीगेसी `auto` फ़्लैग से
+स्वतंत्र रूप से चलाता है और फ़ॉर्म पाइपलाइन को उसी फ़्लैग से नियंत्रित करता है।
 
-प्रति-साइट कॉन्फ़िगरेशन वही `config/sites/<host>.php` फ़ाइल है जो form
-guard उपयोग करता है (`config` के अंदर `waf` section, वैकल्पिक top-level `waf_mode`,
-`waf_skip`, `waf_match`, `waf_response`). डिफ़ॉल्ट skip सूची
-`/admin`, `/login`, `/auth`, `/wp-admin`, `/bitrix/admin`, `/cpanel` की रक्षा करती है; एक स्पष्ट
-`waf_skip` उसे बदल देता है। Response codes और bodies: `Accept: application/json` या `/api` URIs के लिए `403` + JSON,
-अन्यथा HTML, `silent` = HTTP 200
-खाली body के साथ।
+प्रति-साइट कॉन्फ़िगरेशन वही `config/sites/<host>.php` फ़ाइल है जो फ़ॉर्म guard
+उपयोग करता है (`config` के अंदर `waf` अनुभाग, वैकल्पिक शीर्ष-स्तरीय `waf_mode`,
+`waf_skip`, `waf_match`, `waf_response`)। डिफ़ॉल्ट skip सूची `/admin`, `/login`,
+`/auth`, `/wp-admin`, `/bitrix/admin`, `/cpanel` की रक्षा करती है; स्पष्ट रूप से दिया
+गया `waf_skip` उसे बदल देता है। उत्तर कोड और body: `Accept: application/json` या
+`/api` URI के लिए `403` + JSON, अन्यथा HTML, `silent` = HTTP 200 खाली body के साथ।
 
-गैर-PHP back ends के लिए: `bin/waf-check` (`0` allow, `2` block, `3` error).
-पूरी गाइड: [docs/WAF.md](docs/WAF.md).
+गैर-PHP back end के लिए: `bin/waf-check` (`0` allow, `2` block, `3` error)।
+पूरी मार्गदर्शिका: [docs/WAF.md](docs/WAF.md)।
 
 ## AbuseIPDB सेटअप
 
-1. <https://www.abuseipdb.com> → *API* पर एक key बनाएँ।
-2. इसे export करें, कभी commit न करें:
+1. <https://www.abuseipdb.com> → *API* पर एक कुंजी बनाएँ।
+2. उसे export करें, कभी commit न करें:
 
 ```bash
 export ABUSEIPDB_KEY='…'
@@ -308,38 +325,38 @@ export ABUSEIPDB_KEY='…'
 'abuseipdb' => [
     'enabled' => true,
     'api_key' => getenv('ABUSEIPDB_KEY') ?: '',
-    'threshold' => 90,       // वह abuseConfidenceScore जो hard spam बनता है
-    'cache_ttl' => 21600,    // 6 h प्रति-IP cache: burst में एक ही query लगती है
+    'threshold' => 90,       // abuseConfidenceScore जो hard spam बन जाता है
+    'cache_ttl' => 21600,    // प्रति-IP 6 घंटे कैश: एक बर्स्ट में एक ही query
     'timeout' => 2.0,
-    'max_age_days' => 30,    // 30 दिनों से नए reports
-    'fail_open' => true,     // lookup विफलता कुछ योगदान नहीं देती
+    'max_age_days' => 30,    // 30 दिनों से नई रिपोर्टें
+    'fail_open' => true,     // lookup विफलता कुछ नहीं जोड़ती
     'circuit_breaker' => ['failures' => 3, 'cooldown' => 300],
 ],
 ```
 
-व्यवहार: private/loopback पते और अनुपलब्ध keys कभी network
-call नहीं करते (`uncertain`); `threshold` पर या उससे ऊपर score एक hard spam verdict है
-और confidence उसका score होता है; `HTTP 429` `Retry-After` संग्रहीत करता है और बिना retry
-पीछे हटता है; लगातार तीन transport/`5xx` विफलताएँ 5 मिनट के लिए circuit
-breaker खोलती हैं; पहला सफल HTTP response उसे बंद करता है। Client
-IP AbuseIPDB को भेजा जाता है — देखें [SECURITY.md](SECURITY.md#network-egress).
+व्यवहार: private/loopback पते और अनुपस्थित कुंजियाँ कभी नेटवर्क कॉल नहीं करते
+(`uncertain`); `threshold` के बराबर या उससे ऊपर स्कोर एक hard spam निर्णय है जिसका
+स्कोर वही confidence होता है; `HTTP 429` में `Retry-After` सहेजा जाता है और बिना पुनः
+प्रयास के बैक-ऑफ़ होता है; लगातार तीन transport/`5xx` विफलताएँ circuit breaker को
+5 मिनट के लिए खोल देती हैं; पहला सफल HTTP उत्तर उसे बंद कर देता है। क्लाइंट IP
+AbuseIPDB को भेजा जाता है — [SECURITY.md](SECURITY.md#network-egress) देखें।
 
-चलाने योग्य wiring उदाहरण: [examples/abuseipdb.php](examples/abuseipdb.php).
+चलाया जा सकने वाला वायरिंग उदाहरण: [examples/abuseipdb.php](examples/abuseipdb.php)।
 
-## Fail2Ban और auto-ban
+## Fail2Ban और ऑटो-बैन
 
-Hard-spam verdicts और WAF blocks firewall को सौंपे जा सकते हैं:
+hard-spam निर्णय और WAF ब्लॉक फ़ायरवॉल को सौंपे जा सकते हैं:
 
-- `fail2ban.enabled` प्रति event एक पंक्ति `fail2ban.log_path` में जोड़ता है:
+- `fail2ban.enabled` प्रति घटना एक पंक्ति `fail2ban.log_path` में जोड़ता है:
   `PHPFSC BAN ip=<ip> site=<host> form=<form> score=<n> reason=<token>`;
-- एक Fail2Ban filter/jail ([docs/WAF.md](docs/WAF.md#fail2ban)) उन
-  पंक्तियों को firewall ban में बदल देता है (केवल http/https);
-- `autoban.enabled` application-level fallback है: `autoban.window` के भीतर
-  `autoban.threshold` events के बाद IP को `autoban.ttl` के लिए banned
-  संग्रहीत किया जाता है, और पहला pipeline check (`autoban`) किसी भी अन्य check से पहले hard SPAM
-  लौटाता है।
+- एक Fail2Ban filter/jail ([docs/WAF.md](docs/WAF.md#fail2ban)) उन पंक्तियों को
+  फ़ायरवॉल ban (केवल http/https) में बदल देता है;
+- `autoban.enabled` एप्लिकेशन-स्तरीय fallback है: `autoban.window` के भीतर
+  `autoban.threshold` घटनाओं के बाद IP को `autoban.ttl` के लिए banned रूप में सहेजा
+  जाता है, और पहली पाइपलाइन जाँच (`autoban`) किसी भी अन्य जाँच से पहले hard SPAM
+  लौटाती है।
 
-दोनों परतें वैकल्पिक और fail-open हैं। उदाहरण:
+दोनों परतें वैकल्पिक हैं और fail-open हैं। उदाहरण:
 
 ```php
 'autoban' => ['enabled' => true, 'threshold' => 5, 'window' => 3600, 'ttl' => 86400],
@@ -351,9 +368,9 @@ Hard-spam verdicts और WAF blocks firewall को सौंपे जा स�
     'min_score' => 60,
 ],
 ```
-रूढ़िवादी deployment के लिए `'threshold' => 100` सेट करें: केवल वे IPs spam माने जाते हैं
-जिनका AbuseIPDB confidence score ठीक 100 है (library का डिफ़ॉल्ट 90 है)।
-Deployment reference config 100 का उपयोग करता है।
+रूढ़िवादी deployment के लिए `'threshold' => 100` सेट करें: केवल वे IP जिनका AbuseIPDB
+confidence स्कोर ठीक 100 है, spam माने जाते हैं (लाइब्रेरी डिफ़ॉल्ट 90 है)।
+deployment संदर्भ कॉन्फ़िग 100 का उपयोग करता है।
 ## DNSBL, SPF, DMARC, DKIM
 
 ```php
@@ -362,26 +379,27 @@ Deployment reference config 100 का उपयोग करता है।
     'zones' => ['zen.spamhaus.org', 'bl.spamcop.net'],
     'cache_ttl' => 3600,
     'timeout' => 2,
-    'hit_score' => 100,      // listing एक hard verdict है
+    'hit_score' => 100,      // सूचीबद्धता एक hard निर्णय है
 ],
 'spf'   => ['enabled' => true],   // अनुपस्थित/अनुपयोगी policy: 10
 'dmarc' => ['enabled' => true],   // अनुपस्थित: 10, p=none: 5
 'dkim'  => ['enabled' => false],  // आरक्षित: 2.0.0 में कोई checker नहीं
 ```
 
-`dnsbl` client IP को उलटता है (IPv4 और IPv6 nibble format) और कॉन्फ़िगर किए गए
-zones से query करता है; पहला listing जीतता है। `spf`/`dmarc` एक **domain-level**
-प्रश्न पूछते हैं ("क्या claimed e-mail domain कोई उपयोगी policy प्रकाशित करता है"),
-sender प्रश्न नहीं: visitor का IP भेजने वाला MTA नहीं है, इसलिए किसी
-वैध `gmail.com` पते के लिए `fail` सामान्य है। दोनों केवल score जोड़ते हैं और कभी
-hard verdict नहीं देते। Listing resolver द्वारा cache की जाती है।
+`dnsbl` क्लाइंट IP को उलटता है (IPv4 और IPv6 nibble प्रारूप) और कॉन्फ़िगर किए गए
+zones से पूछता है; पहली सूचीबद्धता जीतती है। `spf`/`dmarc` **डोमेन-स्तरीय** प्रश्न
+पूछते हैं ("क्या दावा किया गया ई-मेल डोमेन उपयोगी policy प्रकाशित करता है"), प्रेषक
+का प्रश्न नहीं: आगंतुक का IP भेजने वाला MTA नहीं होता, इसलिए किसी वैध `gmail.com` पते
+के लिए `fail` सामान्य है। दोनों केवल स्कोर जोड़ते हैं और कभी hard निर्णय नहीं देते।
+कोई सूचीबद्धता resolver द्वारा कैश की जाती है।
 
-## Bayesian classifier
+## Bayesian क्लासिफ़ायर
 
-डिफ़ॉल्ट रूप से बंद; model के पास `min_documents` (20) documents होने तक abstain करता है।
+डिफ़ॉल्ट रूप से बंद; जब तक मॉडल के पास `min_documents` (20) दस्तावेज़ न हों, यह
+मत नहीं देता (abstain करता है)।
 
 ```bash
-# फ़ाइलों से train करें: प्रति पंक्ति एक document, खाली पंक्तियाँ और "#" comments छोड़े जाते हैं
+# फ़ाइलों से प्रशिक्षण: प्रति पंक्ति एक दस्तावेज़, खाली पंक्तियाँ और "#" टिप्पणियाँ छोड़ी जाती हैं
 php bin/spam-train --config=/etc/spam.php \
     --ham=/etc/spam/ham.txt --spam=/etc/spam/spam.txt
 
@@ -398,28 +416,28 @@ php bin/spam-train --config=/etc/spam.php --reset
 'bayes' => [
     'enabled' => true,
     'storage_path' => '/var/lib/php-form-spam-checker/bayes',
-    'threshold' => 0.92,     // वह P(spam) जो score देता है
-    'min_documents' => 20,   // इससे नीचे model abstain करता है
-    'score_scale' => 100,    // score = round(P * scale)
-    // 'hard' => false,      // true: match hard spam verdict बनता है
+    'threshold' => 0.92,     // P(spam) जिस पर स्कोर मिलता है
+    'min_documents' => 20,   // इससे कम पर मॉडल abstain करता है
+    'score_scale' => 100,    // स्कोर = round(P * scale)
+    // 'hard' => false,      // true: मिलान hard spam निर्णय बन जाता है
 ],
 ```
 
-Model **केवल token counts** रखता है — training documents कभी नहीं — और
-configured cache के माध्यम से संग्रहीत होता है; `bayes.storage_path` model
-key का namespace तय करता है। File cache के साथ यह
-`<storage.path>/cache/<hash>.json` के अंतर्गत रहता है। Training offline है; कुछ भी
-मशीन से बाहर नहीं जाता। चलाने योग्य demo: [examples/bayes-train.php](examples/bayes-train.php).
+मॉडल **केवल token counts** रखता है — प्रशिक्षण दस्तावेज़ कभी नहीं — और कॉन्फ़िगर किए
+गए cache के माध्यम से संग्रहीत होता है; `bayes.storage_path` मॉडल कुंजी का namespace
+तय करता है। file cache के साथ यह `<storage.path>/cache/<hash>.json` के अंतर्गत रहता
+है। प्रशिक्षण ऑफ़लाइन है; कुछ भी मशीन से बाहर नहीं जाता। चलाया जा सकने वाला डेमो:
+[examples/bayes-train.php](examples/bayes-train.php)।
 
-## व्यवहार-आधारित परत
+## व्यवहार परत
 
 ```php
 'behavioral' => [
     'honeypot' => [
-        'dynamic' => true,                 // फ़ील्ड नाम हर घंटे बदलता है
+        'dynamic' => true,                 // फ़ील्ड का नाम हर घंटे बदलता है
         'field_prefix' => '_hp_',
         'secret' => getenv('SPAM_CHECKER_SECRET') ?: '',   // >= 16 अक्षर
-        'missing_score' => 10,             // कोई भी अपेक्षित फ़ील्ड पोस्ट नहीं हुआ
+        'missing_score' => 10,             // दोनों में से कोई अपेक्षित फ़ील्ड पोस्ट नहीं
     ],
     'js_challenge' => [
         'enabled' => false,
@@ -429,68 +447,68 @@ key का namespace तय करता है। File cache के साथ �
 ],
 ```
 
-- **Dynamic honeypot** — फ़ील्ड नाम
-  `_hp_ + substr(hmac_sha256(secret, "formId|hourBucket"), 0, 12)` है; वर्तमान
-  और पिछला घंटा स्वीकार किए जाते हैं। भरा हुआ फ़ील्ड hard spam है; बिना किसी
-  फ़ील्ड के सबमिशन संदिग्ध है।
-- **JS challenge** — signed token + inline script एक छोटा challenge गणना करता है;
-  JavaScript न चलाने वाला bot खाली उत्तर सबमिट करता है और संदिग्ध होता है,
-  कभी hard-spam नहीं। Script CSP-hash अनुकूल है:
+- **Dynamic honeypot** — फ़ील्ड का नाम
+  `_hp_ + substr(hmac_sha256(secret, "formId|hourBucket"), 0, 12)` है; वर्तमान और
+  पिछला घंटा स्वीकार किए जाते हैं। भरा हुआ फ़ील्ड hard spam है; बिना किसी फ़ील्ड के
+  सबमिशन संदिग्ध है।
+- **JS challenge** — एक हस्ताक्षरित टोकन + inline स्क्रिप्ट एक छोटी चुनौती गणना
+  करती है; जो bot JavaScript नहीं चलाता वह खाली उत्तर भेजता है और संदिग्ध होता है,
+  कभी hard-spam नहीं। स्क्रिप्ट CSP-hash अनुकूल है:
   `JsChallenge::inlineScriptHash($formId)` → `sha256-…`.
-- `FormProtector::fields()` सक्षम होने पर दोनों को स्वतः render करता है।
+- चालू होने पर `FormProtector::fields()` दोनों को स्वतः रेंडर करता है।
 
-## एकीकरण मोड
+## इंटीग्रेशन मोड
 
 | मोड | कैसे |
 |---|---|
 | PHP में | `new SpamChecker($config)` या `FormProtector` (ऊपर देखें) |
-| साझा module | `require '/var/www/lib/PHP-Form-Spam-Checker/integrations/guard.php'` + `config/sites/<host>.php`, मोड `off`/`shadow`/`enforce` |
+| साझा मॉड्यूल | `require '/var/www/lib/PHP-Form-Spam-Checker/integrations/guard.php'` + `config/sites/<host>.php`, मोड `off`/`shadow`/`enforce` |
 | WAF drop-in | `require '…/integrations/waf.php'`, मोड `off`/`monitor`/`block` |
-| गैर-PHP (form) | `php bin/spam-check --config=… --form=… --base64=…`, exit `0/1/2/3` |
+| गैर-PHP (फ़ॉर्म) | `php bin/spam-check --config=… --form=… --base64=…`, exit `0/1/2/3` |
 | गैर-PHP (WAF) | `php bin/waf-check --config=… --json=…`, exit `0` allow / `2` block / `3` error |
 | HTTP सेवा | `public/check.php`, POST JSON, वैकल्पिक `X-Spam-Checker-Key` |
 
-सर्वर layout, guard rollout और Node bridge: [docs/INTEGRATION.md](docs/INTEGRATION.md)
-([रूसी में](docs/INTEGRATION.ru.md)). Node उदाहरण:
-[examples/node/bridge.mjs](examples/node/bridge.mjs).
+सर्वर लेआउट, guard rollout और Node bridge: [docs/INTEGRATION.md](docs/INTEGRATION.md)
+([по-русски](docs/INTEGRATION.ru.md))। Node उदाहरण:
+[examples/node/bridge.mjs](examples/node/bridge.mjs)।
 
 ## कॉन्फ़िगरेशन त्वरित संदर्भ
 
-एक PHP array (फ़ाइल से लौटाया गया), JSON, या `Config::fromArray()`। हर key
-वैकल्पिक है; डिफ़ॉल्ट सुरक्षित हैं। अज्ञात keys संरक्षित और अनदेखा किए जाते हैं।
+एक PHP array (फ़ाइल से लौटाया गया), JSON, या `Config::fromArray()`। हर कुंजी
+वैकल्पिक है; डिफ़ॉल्ट सुरक्षित हैं। अज्ञात कुंजियाँ सुरक्षित रखी और अनदेखी की जाती हैं।
 
-| Key | Default | Meaning |
+| कुंजी | डिफ़ॉल्ट | अर्थ |
 |---|---|---|
-| `thresholds.spam` / `suspicious` | `60` / `30` | वह score जिस पर verdict spam / suspicious बनता है |
-| `pipeline.stop_on_spam` | `true` | पहले hard spam verdict के बाद रोकें |
-| `time_trap.secret` | — | HMAC secret (time trap सक्षम होने पर आवश्यक) |
-| `rate_limit.max` / `window` | `8` / `900` | प्रति IP प्रति window requests |
+| `thresholds.spam` / `suspicious` | `60` / `30` | वह स्कोर जिस पर निर्णय spam / संदिग्ध हो जाता है |
+| `pipeline.stop_on_spam` | `true` | पहले hard spam निर्णय के बाद रुक जाएँ |
+| `time_trap.secret` | — | HMAC secret (time trap चालू होने पर आवश्यक) |
+| `rate_limit.max` / `window` | `8` / `900` | प्रति IP प्रति विंडो अनुरोध |
 | `keywords.words` | RU+EN प्रारंभिक सूची | spam शब्दावली |
-| `links.max` | `2` | पूरे message में अनुमत लिंक |
-| `email.disposable_domains` | ~70 domains | अतिरिक्त throwaway domains |
-| `storage.path` | temp dir | counters |
+| `links.max` | `2` | पूरे संदेश में अनुमत लिंक |
+| `email.disposable_domains` | ~70 डोमेन | अतिरिक्त थ्रोअवे डोमेन |
+| `storage.path` | temp dir | काउंटर |
 | `cache.driver` | `file` | `file` / `memory` / `none` |
-| `log.path`, `log.pii` | — / `false` | JSONL verdict log, raw PII |
+| `log.path`, `log.pii` | — / `false` | JSONL निर्णय लॉग, कच्चा PII |
 | `abuseipdb.*`, `dnsbl.*`, `spf.*`, `dmarc.*` | बंद | नेटवर्क जाँचें |
-| `bayes.*` | बंद | Bayesian classifier |
-| `behavioral.*` | secret सेट होने पर honeypot dynamic चालू | व्यवहार-आधारित परत |
-| `waf.enabled` / `mode` | `false` / `monitor` | HTTP firewall |
-| `forms.<id>` | — | प्रति-form overrides |
+| `bayes.*` | बंद | Bayesian क्लासिफ़ायर |
+| `behavioral.*` | secret सेट होने पर honeypot dynamic चालू | व्यवहार परत |
+| `waf.enabled` / `mode` | `false` / `monitor` | HTTP फ़ायरवॉल |
+| `forms.<id>` | — | प्रति-फ़ॉर्म ओवरराइड |
 
-पूरा संदर्भ: [docs/CONFIG.md](docs/CONFIG.md). Check semantics और false
-positives: [docs/CHECKS.md](docs/CHECKS.md).
+पूरा संदर्भ: [docs/CONFIG.md](docs/CONFIG.md)। जाँच का अर्थ और false positives:
+[docs/CHECKS.md](docs/CHECKS.md)।
 
-## गुणवत्ता गेट्स
+## गुणवत्ता गेट
 
 ये सभी CI (`.github/workflows/ci.yml`) में PHP 8.5.12 और 8.5 पर चलते हैं और
-merges रोकते हैं:
+merge रोकते हैं:
 
 ```bash
-composer cs:check        # PHP CS Fixer, PSR-12/PER-CS2, शून्य diffs
-composer phpstan         # level: max + strict rules + bleeding edge, शून्य errors
-composer psalm           # taint analysis, शून्य errors
-composer test:strict     # PHPUnit, warning/risky/deprecation पर fail
-composer test:coverage   # pcov + clover; 88 % line / 72 % method gate (मापा गया 89.5/73.4)
+composer cs:check        # PHP CS Fixer, PSR-12/PER-CS2, शून्य diff
+composer phpstan         # स्तर: max + strict नियम + bleeding edge, शून्य त्रुटि
+composer psalm           # taint विश्लेषण, शून्य त्रुटि
+composer test:strict     # PHPUnit, warning/risky/deprecation पर विफल
+composer test:coverage   # pcov + clover; 88 % line / 72 % method गेट (मापा 89.5/73.4)
 composer lint            # src, tests, bin पर php -l
 composer qa              # ऊपर के सभी क्रम में
 ```
@@ -499,77 +517,78 @@ composer qa              # ऊपर के सभी क्रम में
 
 ```bash
 composer install
-composer test            # PHPUnit सूट (unit + integration, नेटवर्क नहीं)
-composer test:strict     # strict mode, जैसे CI में
+composer test            # PHPUnit सूट (unit + integration, बिना नेटवर्क)
+composer test:strict     # strict मोड, CI की तरह
 composer lint
 ```
 
-उदाहरण CI में भी lint होते हैं (`php -l`), इसलिए वे `vendor/` के बिना चलने योग्य रहते हैं —
-सिवाय `examples/abuseipdb.php`, जिसे live lookups के लिए ही `ext-curl` और key चाहिए।
-उदाहरणों को **local या staging** प्रति पर चलाएँ: demos system temp directory में
-लिखते हैं और उन्हें production साइट के config या
-state पर नहीं लगाया जाना चाहिए।
+उदाहरण भी CI में lint होते हैं (`php -l`), इसलिए वे `vendor/` के बिना भी चलने योग्य
+रहते हैं — सिवाय `examples/abuseipdb.php`, जिसे `ext-curl` और केवल live lookups के
+लिए एक कुंजी चाहिए। उदाहरण **स्थानीय या staging** प्रति पर चलाएँ: डेमो सिस्टम temp
+निर्देशिका में लिखते हैं और उन्हें किसी production साइट के कॉन्फ़िग या state की ओर
+इंगित नहीं करना चाहिए।
 
 ## माइग्रेशन और संगतता
 
 - `SpamChecker`, `FormProtector`, `FormGuard`, `bin/spam-check`,
-  `public/check.php`, `config/sites/<host>.php` — बरकरार।
-- हटाए गए internals (`CheckInterface`, `CheckResult`, `Submission`,
-  `Checks\*`) और प्रति-check status vocabulary — before/
-  after code के साथ [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) में प्रलेखित।
-- हर नया module डिफ़ॉल्ट रूप से बंद है; rollback पहले configuration परिवर्तन है
-  (WAF बंद, guard वापस `shadow`, नए sections बंद)।
+  `public/check.php`, `config/sites/<host>.php` — यथावत रखे गए।
+- हटाए गए आंतरिक भाग (`CheckInterface`, `CheckResult`, `Submission`,
+  `Checks\*`) और प्रति-जाँच status शब्दावली — पहले/बाद के कोड के साथ
+  [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) में प्रलेखित।
+- हर नया मॉड्यूल डिफ़ॉल्ट रूप से बंद है; रोलबैक पहले एक कॉन्फ़िगरेशन परिवर्तन है
+  (WAF बंद, guard वापस `shadow` पर, नए अनुभाग बंद)।
 
 ## सुरक्षा
 
-- कोई network calls, `eval`, shell या deserialisation नहीं, जब तक आप स्पष्ट रूप से
-  network check सक्षम न करें; हर egress destination
+- जब तक आप स्पष्ट रूप से कोई नेटवर्क जाँच चालू न करें, कोई नेटवर्क कॉल, `eval`,
+  shell या deserialisation नहीं; हर egress गंतव्य
   [SECURITY.md](SECURITY.md#network-egress) में सूचीबद्ध है।
-- HMAC-SHA-256 tokens, `hash_equals`, form binding; ≥16-अक्षरों वाले secrets।
-- File storage `flock`, hashed file names और JSON encoding का उपयोग करता है — key कभी
-  path नहीं बनती।
-- Verdict logs client IP का pseudonymisation करते हैं और field values redact करते हैं, जब तक
-  `log.pii` सक्षम न हो।
-- Throw करने वाला check या rule **open** fail करता है: टूटा हुआ check कभी form नहीं रोकता,
-  टूटा हुआ WAF rule कभी request नहीं रोकता।
-- भेद्यताओं की रिपोर्ट [SECURITY.md](SECURITY.md) के अनुसार करें।
+- HMAC-SHA-256 टोकन, `hash_equals`, फ़ॉर्म बाइंडिंग; ≥16 अक्षरों के secret।
+- फ़ाइल संग्रहण `flock`, हैश किए गए फ़ाइल नाम और JSON एन्कोडिंग उपयोग करता है — एक
+  कुंजी कभी पथ नहीं बनती।
+- जब तक `log.pii` चालू न हो, निर्णय लॉग क्लाइंट IP का छद्मीकरण करते हैं और फ़ील्ड
+  मानों को छिपाते हैं।
+- अपवाद फेंकने वाली जाँच या नियम **fail open** करता है: टूटी जाँच कभी फ़ॉर्म नहीं
+  रोकती, टूटा WAF नियम कभी अनुरोध नहीं रोकता।
+- भेद्यताएँ [SECURITY.md](SECURITY.md) के अनुसार रिपोर्ट करें।
 
-## दस्तावेज़ीकरण सूचकांक
+## दस्तावेज़ सूची
 
-| दस्तावेज़ | विषय-वस्तु |
+| दस्तावेज़ | सामग्री |
 |---|---|
 | [README.md](README.md) / [README.ru.md](README.ru.md) | यह अवलोकन |
-| [AGENTS.md](AGENTS.md) | एजेंट्स के लिए non-interactive अनुबंध: install, verify, use, report |
-| [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) | installation, configuration, checks, WAF, Fail2Ban, integration, migration |
+| [AGENTS.md](AGENTS.md) | एजेंट के लिए गैर-इंटरैक्टिव अनुबंध: इंस्टॉल, सत्यापन, उपयोग, रिपोर्ट |
+| [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) | इंस्टॉलेशन, कॉन्फ़िगरेशन, जाँचें, WAF, Fail2Ban, इंटीग्रेशन, माइग्रेशन |
 | [docs/ARCHITECTURE-V2.md](docs/ARCHITECTURE-V2.md) | 2.0 अनुबंध: namespaces, value objects, signatures |
-| [docs/CONFIG.md](docs/CONFIG.md) | पूरा configuration tree, per-form overrides, env vars |
-| [docs/CHECKS.md](docs/CHECKS.md) | check semantics, scores, false positives, custom checks |
-| [docs/WAF.md](docs/WAF.md) | threat model, rules matrix, rollout, deployment, CLI bridge |
-| [docs/INTEGRATION.md](docs/INTEGRATION.md) / [docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md) | wiring guide (EN/RU) |
-| [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) | 1.x → 2.0 compatibility और rollback |
-| [SECURITY.md](SECURITY.md) | security model, egress, secrets |
-| [SUPPORT.md](SUPPORT.md) | कहाँ पूछें, उपयोगी रिपोर्ट में क्या हो |
-| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | सामुदायिक अपेक्षाएँ और प्रवर्तन |
-| [CITATION.cff](CITATION.cff) | परियोजना को कैसे cite करें |
-| [CHANGELOG.md](CHANGELOG.md) | release notes |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | development और quality gates |
+| [docs/CONFIG.md](docs/CONFIG.md) | पूरा कॉन्फ़िगरेशन ट्री, प्रति-फ़ॉर्म ओवरराइड, env vars |
+| [docs/CHECKS.md](docs/CHECKS.md) | जाँच का अर्थ, स्कोर, false positives, कस्टम जाँचें |
+| [docs/WAF.md](docs/WAF.md) | threat model, नियम मैट्रिक्स, rollout, deployment, CLI bridge |
+| [docs/INTEGRATION.md](docs/INTEGRATION.md) / [docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md) | वायरिंग मार्गदर्शिका (EN/RU) |
+| [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) | 1.x → 2.0 संगतता और रोलबैक |
+| [SECURITY.md](SECURITY.md) | सुरक्षा मॉडल, egress, secrets |
+| [SUPPORT.md](SUPPORT.md) | कहाँ पूछें, उपयोगी रिपोर्ट में क्या होता है |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | समुदाय की अपेक्षाएँ और प्रवर्तन |
+| [CITATION.cff](CITATION.cff) | प्रोजेक्ट को कैसे उद्धृत करें |
+| [CHANGELOG.md](CHANGELOG.md) | रिलीज़ नोट्स |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | विकास और गुणवत्ता गेट |
 
-## परियोजना की सहायता करें — प्रमाण के आधार पर, एंगेजमेंट के आधार पर नहीं
+## प्रोजेक्ट की मदद करें — engagement से नहीं, प्रमाण से
 
 यदि यह सॉफ़्टवेयर वास्तविक ट्रैफ़िक में टिकता है:
 
-- इसे उस runbook, integration या report में cite करें (नाम, संस्करण, commit) जहाँ इसका उपयोग हुआ,
-  [CITATION.cff](CITATION.cff) का उपयोग करके;
-- मौजूदा issues खोजने के बाद प्रत्येक अद्वितीय संयोजन (PHP संस्करण, SAPI,
-  application framework, WAF मोड) के लिए **एक** compatibility report खोलें;
-- documentation और false-positive fixes comments के बजाय pull requests के रूप में भेजें;
-- sanitized case study केवल data owner की अनुमति से साझा करें;
-- wrapper या integration प्रकाशित करते समय dependency का खुलासा करें।
+- जहाँ इसे उपयोग किया गया उस runbook, integration या रिपोर्ट में
+  [CITATION.cff](CITATION.cff) का उपयोग करके इसका उद्धरण दें (नाम, संस्करण, कमिट);
+- मौजूदा issues खोजने के बाद प्रत्येक अनोखे संयोजन (PHP संस्करण, SAPI,
+  एप्लिकेशन फ़्रेमवर्क, WAF मोड) के लिए **एक** संगतता रिपोर्ट खोलें;
+- दस्तावेज़ीकरण और false-positive सुधार टिप्पणियों के बजाय pull request के रूप में
+  भेजें;
+- sanitized केस स्टडी केवल डेटा स्वामी की अनुमति से साझा करें;
+- wrapper या integration प्रकाशित करते समय निर्भरता का खुलासा करें।
 
-स्वचालित रूप से stars, forks, watchers, comments, issues या pull requests **न** बनाएँ,
-और maintainers या third parties से bulk में संपर्क न करें। Agent report का मसौदा
-बना सकता है; समीक्षा के बाद मनुष्य उसे प्रकाशित करता है। Promotion वास्तविक
-उपयोग के बाद ही हो और उसका खुलासा किया जाए।
+स्वचालित रूप से stars, forks, watchers, टिप्पणियाँ, issues या pull requests **न**
+बनाएँ, और न ही maintainers या तीसरे पक्षों से थोक में संपर्क करें। एक एजेंट रिपोर्ट
+का मसौदा बना सकता है; समीक्षा के बाद मनुष्य उसे प्रकाशित करता है। प्रचार वास्तविक
+उपयोग के बाद होना चाहिए और उसका खुलासा होना चाहिए।
 
 ## लाइसेंस
 
