@@ -4,9 +4,9 @@
 
 **Una canalización antispam por capas, sin dependencias, y un cortafuegos HTTP para cualquier
 formulario PHP.** Ejecuta primero heurísticas locales, luego señales de comportamiento,
-reputación de IP, listas negras DNS, autenticación de dominio de correo y un clasificador
-bayesiano; opcionalmente inspecciona toda la solicitud HTTP con un WAF. Sin captcha, sin
-dependencias de Composer en tiempo de ejecución, y cada veredicto lleva evidencia: qué
+reputación de IP, listas de bloqueo DNS, autenticación de dominios de correo y un clasificador
+bayesiano; opcionalmente, inspecciona toda la petición HTTP con un WAF. Sin captcha, sin
+dependencias de Composer en tiempo de ejecución, y cada veredicto aporta evidencias: qué
 comprobaciones se activaron, con qué puntuaciones y por qué.
 
 [![CI](https://github.com/paulmann/PHP-Form-Spam-Checker/actions/workflows/ci.yml/badge.svg)](https://github.com/paulmann/PHP-Form-Spam-Checker/actions/workflows/ci.yml)
@@ -14,7 +14,7 @@ comprobaciones se activaron, con qué puntuaciones y por qué.
 [![PHP](https://img.shields.io/badge/PHP-8.5-8892bf.svg)](https://php.net/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-<img src="https://github.com/paulmann/PHP-Form-Spam-Checker/raw/main/assets/social-preview.png" alt="PHP Form Spam Checker - layered anti-spam pipeline and HTTP firewall for PHP forms" width="100%">
+<img src="https://github.com/paulmann/PHP-Form-Spam-Checker/raw/main/assets/social-preview.png" alt="PHP Form Spam Checker - canalización antispam por capas y cortafuegos HTTP para formularios PHP" width="100%">
 
 [**Wiki**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**Documentación**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**Versiones**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**Registro de cambios**](CHANGELOG.md) · [**Incidencias**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**Seguridad**](SECURITY.md) · [**Para agentes**](AGENTS.md) · [**Versión en ruso**](README.ru.md)
 
@@ -28,24 +28,24 @@ comprobaciones se activaron, con qué puntuaciones y por qué.
 
 ## Contenido
 
-- [Qué cambió en 2.1.2](#what-changed-in-212)
-- [Qué cambió en 2.1](#what-changed-in-21)
-- [Qué cambió en 2.0](#what-changed-in-20)
+- [Novedades de 2.1.2](#what-changed-in-212)
+- [Novedades de 2.1](#what-changed-in-21)
+- [Novedades de 2.0](#what-changed-in-20)
 - [El ciclo de protección](#the-protection-cycle)
 - [Módulos de comprobación y valores predeterminados](#check-modules-and-defaults)
 - [En cifras](#by-the-numbers)
 - [Requisitos](#requirements)
 - [Instalación](#installation)
-- [Inicio rápido: formulario PHP simple](#quick-start-plain-php-form)
+- [Inicio rápido: formulario PHP básico](#quick-start-plain-php-form)
 - [WAF (cortafuegos HTTP)](#waf-http-firewall)
 - [Configuración de AbuseIPDB](#abuseipdb-setup)
-- [Fail2Ban y autobaneo](#fail2ban-and-auto-ban)
+- [Fail2Ban y autobloqueo](#fail2ban-and-auto-ban)
 - [DNSBL, SPF, DMARC, DKIM](#dnsbl-spf-dmarc-dkim)
 - [Clasificador bayesiano](#bayesian-classifier)
 - [Capa de comportamiento](#behavioural-layer)
 - [Modos de integración](#integration-modes)
 - [Referencia rápida de configuración](#configuration-quick-reference)
-- [Puertas de calidad](#quality-gates)
+- [Controles de calidad](#quality-gates)
 - [Pruebas](#testing)
 - [Migración y compatibilidad](#migration-and-compatibility)
 - [Seguridad](#security)
@@ -55,46 +55,48 @@ comprobaciones se activaron, con qué puntuaciones y por qué.
 
 ---
 
-## Qué cambió en 2.1.2
+## Novedades de 2.1.2
 
-2.1.2 añade una comprobación regional **opt-in** para formularios en ruso:
-está desactivada por defecto y se activa por sitio solo donde se necesita:
+La 2.1.2 añade una comprobación de idioma **opcional** para formularios en ruso; está
+desactivada de forma predeterminada y se habilita por sitio solo donde se desea:
 
-- **Requisito de cirílico para nombres** (`language.require_cyrillic`): los
-  campos de nombre configurados (`name`, `fio`, `first_name`, `last_name`,
-  `surname`, `имя`, `фамилия`, `фио`, …; comparados sin distinguir mayúsculas ni
-  separadores) deben contener al menos una letra cirílica. Un valor con letras
-  pero sin cirílico añade puntos de `language.missing_score`: `40` por defecto,
-  `60` cuando un nombre solo en latín debe alcanzar por sí solo el umbral de
-  spam; `missing_score = 40` lo mantiene en «sospechoso». Los campos de correo,
-  empresa y texto libre nunca se comprueban; `language.fields` / `min_letters` /
-  `max_score` ajustan la regla.
-- **Desactivado por defecto:** `language.enabled` y `language.require_cyrillic`
-  son `false`, y las configuraciones de ejemplo incluidas los mantienen
-  desactivados. Active la regla en la configuración de cada sitio, no en los
-  valores predeterminados de la biblioteca.
+- **Requisito de cirílico para los nombres** (`language.require_cyrillic`): los campos
+  configurados para nombres (`name`, `fio`, `first_name`, `last_name`, `surname`,
+  `имя`, `фамилия`, `фио`, …; cuyos nombres se comparan sin distinguir mayúsculas ni separadores)
+  deben contener al menos una letra cirílica. Un valor que tiene letras pero carece de
+  letras cirílicas suma `language.missing_score` puntos: `40` por defecto, `60` cuando
+  un nombre escrito solo en alfabeto latino debe alcanzar por sí solo el umbral de spam;
+  `missing_score = 40` lo mantiene en «sospechoso». Los campos de correo, empresa y
+  texto libre nunca se comprueban, y `language.fields` / `min_letters` / `max_score`
+  ajustan la regla.
+- **Desactivado de forma predeterminada:** `language.enabled` y `language.require_cyrillic`
+  son `false`, y las configuraciones de ejemplo incluidas los mantienen desactivados.
+  Habilita la regla en la configuración propia de cada sitio, no en los valores
+  predeterminados de la biblioteca.
 
-Véase [CHANGELOG.md](CHANGELOG.md) y las claves `language.*` en
+Consulta [CHANGELOG.md](CHANGELOG.md) y las claves `language.*` en
 [docs/CONFIG.md](docs/CONFIG.md).
-## Qué cambió en 2.1
 
-2.1 añade el puente del cortafuegos y el endurecimiento del despliegue sobre 2.0:
+## Novedades de 2.1
 
-- **AbuseIPDB** con `threshold = 100` en las configuraciones de despliegue de referencia
-  (solo se bloquean las IP cuya confianza es exactamente 100); en caché 6 h, apertura
-  ante fallos, cortacircuitos, cuota mostrada en la evidencia.
-- **Puente Fail2Ban** — cada veredicto firme de spam y cada bloqueo del WAF añade una
-  línea `PHPFSC BAN ip=…` con marca de tiempo a un registro por sitio; el jail banea la IP
-  en el cortafuegos (solo HTTP/HTTPS) con `maxretry = 1`.
-- **Autobaneo de la aplicación** — comprobación `autoban`: tras N eventos firmes dentro de
-  una ventana, la IP se rechaza antes de cualquier otra comprobación durante el TTL configurado.
+La 2.1 añade el puente con el cortafuegos y el endurecimiento del despliegue sobre la 2.0:
+
+- **AbuseIPDB** con `threshold = 100` en las configuraciones de referencia del
+  despliegue (solo se bloquean las IP cuya confianza sea exactamente 100); caché de 6 h,
+  apertura ante fallos, cortacircuitos, cuota mostrada en la evidencia.
+- **Puente Fail2Ban** — cada veredicto de spam firme y cada bloqueo del WAF añade una
+  línea `PHPFSC BAN ip=…` con marca temporal a un registro por sitio; la jaula (jail)
+  bloquea la IP en el cortafuegos (solo HTTP/HTTPS) con `maxretry = 1`.
+- **Autobloqueo de la aplicación** — comprobación `autoban`: tras N eventos firmes
+  dentro de una ventana, la IP se rechaza antes de cualquier otra comprobación durante
+  el TTL configurado.
 - `CurlClient` ya no usa el obsoleto `curl_close()` (PHP 8.5).
 
-Véase [CHANGELOG.md](CHANGELOG.md) y [docs/WAF.md#fail2ban](docs/WAF.md#fail2ban).
+Consulta [CHANGELOG.md](CHANGELOG.md) y [docs/WAF.md#fail2ban](docs/WAF.md#fail2ban).
 
-## Qué cambió en 2.0
+## Novedades de 2.0
 
-2.0 es una reescritura de las tripas con una canalización explícita, cuatro nuevas capas
+La 2.0 es una reescritura interna con un flujo explícito, cuatro capas nuevas
 de protección y un WAF. Se conserva la superficie de integración que usan los sitios
 desplegados con 1.x — `SpamChecker`, `FormProtector`, `FormGuard`, `bin/spam-check`,
 `public/check.php` y `config/sites/<host>.php` mantienen sus contratos. Para la mayoría
@@ -102,15 +104,15 @@ de las instalaciones, actualizar es cuestión de configuración, no de código.
 
 | | 1.x | 2.0 |
 |---|---|---|
-| Canalización | un comprobador que agregaba 12 comprobaciones | `SpamPipeline` ordenado, salida temprana ante spam firme |
+| Canalización | un comprobador que agregaba 12 comprobaciones | `SpamPipeline` ordenado, salida anticipada ante spam firme |
 | Comportamiento | honeypot estático + trampa temporal | + **honeypot dinámico** (nombres HMAC por hora) y **desafío JS** |
 | Red | ninguna | **AbuseIPDB**, **DNSBL** (opcional, apertura ante fallos) |
 | Dominios de correo | comprobación sintáctica del correo | + señales de confianza de dominio **SPF**, **DMARC** |
 | Aprendizaje automático | ninguno | **clasificador bayesiano** con `bin/spam-train` |
-| Cortafuegos HTTP | ninguno | **WAF**: 9 reglas, `off`/`monitor`/`block`, `auto_prepend` directo |
-| Evidencia | lista de motivos | `status`, `score`, `reason` por comprobación, `evidence` estructurada |
+| Cortafuegos HTTP | ninguno | **WAF**: 9 reglas, `off`/`monitor`/`block`, `auto_prepend` listo para usar |
+| Evidencia | lista de motivos | `status`, `score`, `reason` y `evidence` estructurada por comprobación |
 | CLI | `bin/spam-check` | + `bin/waf-check`, + `bin/spam-train` |
-| Puertas de calidad | PHPUnit + `php -l` | CS Fixer, PHPStan `max`, Psalm taint, umbral de cobertura, CI |
+| Controles de calidad | PHPUnit + `php -l` | CS Fixer, PHPStan `max`, Psalm taint, umbral de cobertura, CI |
 
 Detalles completos y cambios incompatibles (clases internas eliminadas, vocabulario de
 estado por comprobación): [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md).
@@ -133,14 +135,13 @@ flowchart TD
     J --> K{Limpio / Sospechoso / Spam}
 ```
 
-Las comprobaciones baratas se ejecutan primero. `pipeline.stop_on_spam` (por defecto `true`)
-detiene la ejecución en el primer veredicto firme de spam, lo que ahorra cuota de AbuseIPDB
-y consultas DNS. Una comprobación que lanza una excepción se registra como `error` y falla
-en abierto.
+Las comprobaciones baratas se ejecutan primero. `pipeline.stop_on_spam` (predeterminado
+`true`) detiene la ejecución en el primer veredicto de spam firme, lo que ahorra cuota
+de AbuseIPDB y consultas DNS. Una comprobación que lanza una excepción se registra como `error` y se abre ante fallos.
 
 ## Módulos de comprobación y valores predeterminados
 
-Todas las puntuaciones son 0–100; `spam` es un veredicto firme que ignora el total.
+Todas las puntuaciones van de 0 a 100; `spam` es un veredicto firme que ignora el total.
 
 | Capa | Comprobación | Predeterminado | Puntuación / efecto |
 |---|---|---|---|
@@ -150,43 +151,43 @@ Todas las puntuaciones son 0–100; `spam` es un veredicto firme que ignora el t
 | Comportamiento | `js_challenge` | desactivado | respuesta ausente o no válida → 15 (nunca firme) |
 | Identidad | `user_agent` | activado | UA vacío → 40; UA de herramienta o marcador → **spam** 100 |
 | Volumen | `rate_limit` | activado, 8 / 900 s | superado → **spam** 100 |
-| Cortafuegos | `autoban` | desactivado (despliegues de referencia: activado) | IP baneada → **spam** 100, antes que cualquier otra comprobación |
+| Cortafuegos | `autoban` | desactivado (despliegues de referencia: activado) | IP bloqueada → **spam** 100, antes que cualquier otra comprobación |
 | Carga útil | `length` | activado, máximo 5000 | largo → 30; > 20000 o caracteres de control → **spam** 100 |
 | Inyección | `sql_injection` | activado | firma fuerte → **spam** 100; débil → 40 |
-| Inyección | `xss` | activado | script o controlador → **spam** 100; codificado → 45 |
+| Inyección | `xss` | activado | script o manejador → **spam** 100; codificado → 45 |
 | Contenido | `links` | activado, máximo 2 | enlace adicional 15; acortador 35; ofuscado 25 |
-| Contenido | `keywords` | activado | 12 por acierto, máximo 90 |
+| Contenido | `keywords` | activado | 12 por coincidencia, máximo 90 |
 | Contacto | `email` | activado | no válido 40; desechable 70 |
 | Contenido | `repetition` | activado | secuencias o repeticiones → 25, máximo 60 |
-| Contenido | `language` | desactivado (opt-in por sitio) | escrituras mezcladas → 20, máximo 40; `require_cyrillic` → sin cirílico en un nombre suma `missing_score` (40; 60 = spam) |
+| Contenido | `language` | desactivado (opcional por sitio) | alfabetos mezclados → 20, máximo 40; `require_cyrillic` → un nombre sin cirílico suma `missing_score` (40; 60 = spam) |
 | Red | `abuseipdb` | desactivado | confianza ≥ 90 → **spam** (puntuación = confianza) |
-| Red | `dnsbl` | desactivado | aparición en lista → **spam** 100 |
+| Red | `dnsbl` | desactivado | aparición en una lista → **spam** 100 |
 | Dominio | `spf` | desactivado | sin política utilizable → 10 |
 | Dominio | `dmarc` | desactivado | ausente → 10; `p=none` → 5 |
 | Modelo | `bayes` | desactivado | `P(spam) ≥ 0.92` → puntuación = `P × 100` (sospechoso por defecto) |
 
-La configuración `dkim` está reservada para una comprobación posterior y aún no forma parte
-de la canalización — véase [docs/CHECKS.md](docs/CHECKS.md#dkim).
+La configuración de `dkim` está reservada para una comprobación posterior y aún no forma parte
+del flujo — consulta [docs/CHECKS.md](docs/CHECKS.md#dkim).
 
 ## En cifras
 
-Medido a partir del árbol del repositorio el 2026-11-04 en el commit `3757563`; cada cifra
-indica el comando que la produjo.
+Medido a partir del árbol del repositorio el 2026-11-03 en el commit `eed037b`; cada cifra
+indica el comando que la generó.
 
 | Superficie | Cantidad | Medido con |
 |---|---|---|
 | Archivos / líneas de código PHP | 93 / 10,295 | `find src -name '*.php'` y `wc -l` sobre `src/` |
-| Comprobaciones de la canalización | 20 | archivos en `src/Check/` menos `SpamCheckInterface.php` |
+| Comprobaciones del flujo | 20 | archivos en `src/Check/` menos `SpamCheckInterface.php` |
 | Reglas WAF | 9 | archivos en `src/Waf/Rules/` |
 | Métodos de prueba | 555 | declaraciones `public function test` en `tests/` |
-| Suite de pruebas | 559 pruebas / 2,015 aserciones | `php vendor/bin/phpunit` el 2026-11-03 |
+| Suite de pruebas | 559 pruebas / 2,015 aserciones | `php vendor/bin/phpunit` el 2026-11-03 (PHPUnit 13.4.5) |
 | Páginas de documentación en inglés | 6 | `docs/*.md` excluyendo `*.ru.md` |
 | Dependencias de Composer en tiempo de ejecución | 0 | `require` en `composer.json` (solo extensiones PHP) |
 | PHP compatible | 8.5+ | `require.php` en `composer.json`; matriz de CI `8.5.12` y `8.5` |
 
 ## Requisitos
 
-- PHP **8.5** (`>=8.5`; CI ejecuta 8.5.12 y 8.5)
+- PHP **8.5** (`>=8.5`; la CI ejecuta 8.5.12 y 8.5)
 - `ext-mbstring`, `ext-json`; `ext-curl` solo cuando se usa el cliente HTTP incluido
   (AbuseIPDB)
 - Sin dependencias de Composer en tiempo de ejecución
@@ -201,7 +202,7 @@ composer require paulmann/php-form-spam-checker
 
 ### Copia directa
 
-Copia el repositorio en un lugar legible por PHP e incluye `autoload.php`:
+Copia el repositorio en una ubicación legible por PHP e incluye `autoload.php`:
 
 ```php
 require '/var/www/lib/PHP-Form-Spam-Checker/autoload.php';
@@ -209,7 +210,7 @@ require '/var/www/lib/PHP-Form-Spam-Checker/autoload.php';
 
 El `autoload.php` incluido funciona con y sin `vendor/`.
 
-## Inicio rápido: formulario PHP simple
+## Inicio rápido: formulario PHP básico
 
 ```php
 <?php
@@ -250,15 +251,14 @@ Ejecuta la demostración: `php -S 127.0.0.1:8080 examples/plain-form.php`
 
 ## WAF (cortafuegos HTTP)
 
-El WAF inspecciona cada solicitud HTTP antes de la aplicación: método, URI, consulta,
-campos del formulario, cookies, cabeceras y el cuerpo sin procesar. Está **desactivado de
-forma predeterminada**.
+El WAF inspecciona cada petición HTTP antes de la aplicación: método, URI, consulta,
+campos del formulario, cookies, cabeceras y el cuerpo sin procesar. Está **desactivado de forma predeterminada**.
 
 | Modo | Comportamiento |
 |---|---|
 | `off` | no se inspecciona nada |
-| `monitor` | se calcula y registra el veredicto; todas las solicitudes pasan |
-| `block` | una solicitud bloqueada recibe respuesta (`403` de forma predeterminada, `X-WAF: blocked`) |
+| `monitor` | se calcula y registra el veredicto; todas las peticiones pasan |
+| `block` | una petición bloqueada recibe respuesta (`403` por defecto, `X-WAF: blocked`) |
 
 ```php
 // config/spam.php
@@ -281,18 +281,18 @@ forma predeterminada**.
 ],
 ```
 
-Instálalo de forma directa. Elige el include que corresponda al sitio — `guard.php`
-ya ejecuta el WAF primero cuando `waf.enabled` está definido, así que no cargues ambos:
+Instálalo como componente listo para usar. Elige el include que corresponda al sitio — `guard.php`
+ya ejecuta el WAF primero cuando `waf.enabled` está activo, así que no cargues ambos:
 
 ```php
-// sitio con un guard de formulario: WAF primero, luego la canalización del formulario
+// sitio con un guard de formulario: WAF primero, luego el flujo del formulario
 require '/var/www/lib/PHP-Form-Spam-Checker/integrations/guard.php';
 
 // sitio sin guard de formulario: solo cortafuegos
 require '/var/www/lib/PHP-Form-Spam-Checker/integrations/waf.php';
 ```
 
-…o de forma global para un pool PHP-FPM:
+…o de forma global para un pool de PHP-FPM:
 
 ```ini
 ; solo cortafuegos
@@ -300,8 +300,8 @@ php_admin_value[auto_prepend_file] = /var/www/lib/PHP-Form-Spam-Checker/integrat
 ```
 
 En un pool que también usa el guard de formularios, apunta `auto_prepend_file` a
-`integrations/auto-prepend.php` en su lugar: ejecuta la capa WAF independientemente del
-indicador heredado `auto` y controla la canalización del formulario con ese indicador.
+`integrations/auto-prepend.php`: ejecuta la capa WAF independientemente del indicador
+heredado `auto` y condiciona el flujo del formulario con ese indicador.
 
 La configuración por sitio es el mismo archivo `config/sites/<host>.php` que usa el guard
 de formularios (sección `waf` dentro de `config`, `waf_mode`, `waf_skip`, `waf_match` y
@@ -310,13 +310,13 @@ de formularios (sección `waf` dentro de `config`, `waf_mode`, `waf_skip`, `waf_
 la reemplaza. Códigos y cuerpos de respuesta: `403` + JSON para `Accept: application/json`
 o URI `/api`, HTML en caso contrario, `silent` = HTTP 200 con cuerpo vacío.
 
-Para back ends que no son PHP: `bin/waf-check` (`0` permitir, `2` bloquear, `3` error).
+Para backends que no son PHP: `bin/waf-check` (`0` permitir, `2` bloquear, `3` error).
 Guía completa: [docs/WAF.md](docs/WAF.md).
 
 ## Configuración de AbuseIPDB
 
 1. Crea una clave en <https://www.abuseipdb.com> → *API*.
-2. Expórtala, nunca la confirmes en el repositorio:
+2. Expórtala y no la incluyas nunca en un commit:
 
 ```bash
 export ABUSEIPDB_KEY='…'
@@ -331,35 +331,35 @@ export ABUSEIPDB_KEY='…'
     'threshold' => 90,       // abuseConfidenceScore que se convierte en spam firme
     'cache_ttl' => 21600,    // caché por IP de 6 h: una ráfaga cuesta una consulta
     'timeout' => 2.0,
-    'max_age_days' => 30,    // informes de menos de 30 días
+    'max_age_days' => 30,    // informes de los últimos 30 días
     'fail_open' => true,     // un fallo de consulta no aporta nada
     'circuit_breaker' => ['failures' => 3, 'cooldown' => 300],
 ],
 ```
 
-Comportamiento: las direcciones privadas/loopback y las claves ausentes nunca provocan una
-llamada de red (`uncertain`); una puntuación igual o superior a `threshold` es un veredicto
-firme de spam con la confianza como puntuación; `HTTP 429` almacena `Retry-After` y
-retrocede sin reintentar; tres fallos consecutivos de transporte/`5xx` abren el
-cortacircuitos durante 5 minutos; la primera respuesta HTTP correcta lo cierra. La IP del
-cliente se envía a AbuseIPDB — véase [SECURITY.md](SECURITY.md#network-egress).
+Comportamiento: las direcciones privadas/de loopback y las claves ausentes nunca provocan
+una llamada de red (`uncertain`); una puntuación igual o superior a `threshold` es un
+veredicto de spam firme con la confianza como puntuación; `HTTP 429` guarda `Retry-After`
+y retrocede sin reintentar; tres fallos consecutivos de transporte/`5xx` abren
+el cortacircuitos durante 5 minutos; la primera respuesta HTTP correcta lo cierra. La IP
+del cliente se envía a AbuseIPDB — consulta [SECURITY.md](SECURITY.md#network-egress).
 
-Ejemplo de conexión ejecutable: [examples/abuseipdb.php](examples/abuseipdb.php).
+Ejemplo de integración ejecutable: [examples/abuseipdb.php](examples/abuseipdb.php).
 
-## Fail2Ban y autobaneo
+## Fail2Ban y autobloqueo
 
 Los veredictos de spam firme y los bloqueos del WAF pueden entregarse al cortafuegos:
 
 - `fail2ban.enabled` añade una línea por evento a `fail2ban.log_path`:
   `PHPFSC BAN ip=<ip> site=<host> form=<form> score=<n> reason=<token>`;
-- un filtro/jail de Fail2Ban ([docs/WAF.md](docs/WAF.md#fail2ban)) convierte esas
-  líneas en un baneo del cortafuegos (solo http/https);
+- un filtro/jaula de Fail2Ban ([docs/WAF.md](docs/WAF.md#fail2ban)) convierte esas
+  líneas en un bloqueo del cortafuegos (solo http/https);
 - `autoban.enabled` es el respaldo a nivel de aplicación: tras
-  `autoban.threshold` eventos dentro de `autoban.window`, la IP se almacena como baneada
-  durante `autoban.ttl`, y la primera comprobación de la canalización (`autoban`) devuelve
-  SPAM firme antes de que se ejecute cualquier otra.
+  `autoban.threshold` eventos dentro de `autoban.window`, la IP se guarda como bloqueada
+  durante `autoban.ttl`, y la primera comprobación del flujo (`autoban`) devuelve SPAM
+  firme antes de que se ejecute cualquier otra.
 
-Ambas capas son opcionales y fallan en abierto. Ejemplo:
+Ambas capas son opcionales y se abren ante fallos. Ejemplo:
 
 ```php
 'autoban' => ['enabled' => true, 'threshold' => 5, 'window' => 3600, 'ttl' => 86400],
@@ -367,13 +367,13 @@ Ambas capas son opcionales y fallan en abierto. Ejemplo:
     'enabled' => true,
     'log_path' => __DIR__ . '/../var/log/sites/' . $site . '.f2b.log',
     'site' => $site,
-    'emit_on' => 'both',   // spam | waf | both (ambos)
+    'emit_on' => 'both',   // spam | waf | both
     'min_score' => 60,
 ],
 ```
-Para un despliegue conservador define `'threshold' => 100`: solo las IP cuya puntuación de
-confianza de AbuseIPDB es exactamente 100 se tratan como spam (el valor predeterminado de
-la biblioteca es 90). La configuración de referencia del despliegue usa 100.
+Para un despliegue conservador, define `'threshold' => 100`: solo las IP cuya
+puntuación de confianza de AbuseIPDB sea exactamente 100 se tratan como spam (el valor
+predeterminado de la biblioteca es 90). La configuración de referencia del despliegue usa 100.
 ## DNSBL, SPF, DMARC, DKIM
 
 ```php
@@ -384,18 +384,17 @@ la biblioteca es 90). La configuración de referencia del despliegue usa 100.
     'timeout' => 2,
     'hit_score' => 100,      // aparecer en una lista es un veredicto firme
 ],
-'spf'   => ['enabled' => true],   // política ausente/no utilizable: 10
+'spf'   => ['enabled' => true],   // política ausente o no utilizable: 10
 'dmarc' => ['enabled' => true],   // ausente: 10, p=none: 5
 'dkim'  => ['enabled' => false],  // reservado: sin comprobador en 2.0.0
 ```
 
 `dnsbl` invierte la IP del cliente (formato nibble IPv4 e IPv6) y consulta las zonas
-configuradas; la primera lista que coincide gana. `spf`/`dmarc` plantean una pregunta
+configuradas; la primera zona que devuelve una entrada gana. `spf`/`dmarc` plantean una pregunta
 **a nivel de dominio** («¿el dominio de correo declarado publica una política utilizable?»),
-no una pregunta sobre el remitente: la IP de un visitante no es el MTA emisor, por lo que
-un `fail` para una dirección legítima de `gmail.com` es normal. Ambos solo aportan una
-puntuación y nunca producen un veredicto firme. El resolver almacena en caché una aparición
-en lista.
+no una pregunta sobre el remitente: la IP de un visitante no es el MTA emisor, así que
+un `fail` para una dirección legítima de `gmail.com` es normal. Ambos solo aportan
+puntuación y nunca producen un veredicto firme. El resolver cachea la pertenencia a una lista.
 
 ## Clasificador bayesiano
 
@@ -423,15 +422,15 @@ php bin/spam-train --config=/etc/spam.php --reset
     'threshold' => 0.92,     // P(spam) que puntúa
     'min_documents' => 20,   // por debajo de esto el modelo se abstiene
     'score_scale' => 100,    // puntuación = round(P * scale)
-    // 'hard' => false,      // true: una coincidencia se convierte en veredicto de spam firme
+    // 'hard' => false,      // true: una coincidencia se convierte en un veredicto de spam firme
 ],
 ```
 
-El modelo conserva **solo recuentos de tokens** — nunca los documentos de entrenamiento — y
-se almacena mediante la caché configurada; `bayes.storage_path` define el espacio de nombres
-de la clave del modelo. Con una caché de archivos vive en
-`<storage.path>/cache/<hash>.json`. El entrenamiento es sin conexión; nada sale de la
-máquina. Demostración ejecutable: [examples/bayes-train.php](examples/bayes-train.php).
+El modelo conserva **solo recuentos de tokens** — nunca los documentos de entrenamiento —
+y se almacena mediante la caché configurada; `bayes.storage_path` define el espacio de
+nombres de la clave del modelo. Con una caché de archivos se guarda en
+`<storage.path>/cache/<hash>.json`. El entrenamiento se realiza sin conexión; nada sale de la máquina.
+Demostración ejecutable: [examples/bayes-train.php](examples/bayes-train.php).
 
 ## Capa de comportamiento
 
@@ -451,12 +450,12 @@ máquina. Demostración ejecutable: [examples/bayes-train.php](examples/bayes-tr
 ],
 ```
 
-- **Honeypot dinámico** — el nombre del campo es
+- **Trampa señuelo dinámica** — el nombre del campo es
   `_hp_ + substr(hmac_sha256(secret, "formId|hourBucket"), 0, 12)`; se aceptan la hora
   actual y la anterior. Un campo rellenado es spam firme; un envío sin ninguno de los
   dos campos es sospechoso.
 - **Desafío JS** — un token firmado + un script en línea calcula un pequeño desafío;
-  un bot que no ejecuta JavaScript envía una respuesta vacía y resulta sospechoso,
+  un bot que no ejecuta JavaScript envía una respuesta vacía y queda como sospechoso,
   nunca spam firme. El script es compatible con hashes CSP:
   `JsChallenge::inlineScriptHash($formId)` → `sha256-…`.
 - `FormProtector::fields()` renderiza ambos automáticamente cuando están activados.
@@ -467,27 +466,26 @@ máquina. Demostración ejecutable: [examples/bayes-train.php](examples/bayes-tr
 |---|---|
 | En PHP | `new SpamChecker($config)` o `FormProtector` (véase arriba) |
 | Módulo compartido | `require '/var/www/lib/PHP-Form-Spam-Checker/integrations/guard.php'` + `config/sites/<host>.php`, modos `off`/`shadow`/`enforce` |
-| WAF directo | `require '…/integrations/waf.php'`, modos `off`/`monitor`/`block` |
-| No PHP (formulario) | `php bin/spam-check --config=… --form=… --base64=…`, salida `0/1/2/3` |
-| No PHP (WAF) | `php bin/waf-check --config=… --json=…`, salida `0` permitir / `2` bloquear / `3` error |
+| WAF listo para usar | `require '…/integrations/waf.php'`, modos `off`/`monitor`/`block` |
+| Sin PHP (formulario) | `php bin/spam-check --config=… --form=… --base64=…`, salida `0/1/2/3` |
+| Sin PHP (WAF) | `php bin/waf-check --config=… --json=…`, salida `0` permitir / `2` bloquear / `3` error |
 | Servicio HTTP | `public/check.php`, POST JSON, `X-Spam-Checker-Key` opcional |
 
-Diseño del servidor, despliegue del guard y puente Node: [docs/INTEGRATION.md](docs/INTEGRATION.md)
-([en ruso](docs/INTEGRATION.ru.md)). Ejemplo Node:
+Estructura del servidor, despliegue del guard y puente Node: [docs/INTEGRATION.md](docs/INTEGRATION.md)
+([en ruso](docs/INTEGRATION.ru.md)). Ejemplo de Node:
 [examples/node/bridge.mjs](examples/node/bridge.mjs).
 
 ## Referencia rápida de configuración
 
 Un array de PHP (devuelto desde un archivo), JSON o `Config::fromArray()`. Todas las claves
-son opcionales; los valores predeterminados son seguros. Las claves desconocidas se
-conservan y se ignoran.
+son opcionales; los valores predeterminados son seguros. Las claves desconocidas se conservan y se ignoran.
 
 | Clave | Predeterminado | Significado |
 |---|---|---|
 | `thresholds.spam` / `suspicious` | `60` / `30` | puntuación a la que el veredicto pasa a spam / sospechoso |
-| `pipeline.stop_on_spam` | `true` | detener tras el primer veredicto firme de spam |
+| `pipeline.stop_on_spam` | `true` | detener tras el primer veredicto de spam firme |
 | `time_trap.secret` | — | secreto HMAC (obligatorio cuando la trampa temporal está activada) |
-| `rate_limit.max` / `window` | `8` / `900` | solicitudes por IP por ventana |
+| `rate_limit.max` / `window` | `8` / `900` | peticiones por IP y por ventana |
 | `keywords.words` | lista inicial RU+EN | vocabulario de spam |
 | `links.max` | `2` | enlaces permitidos en todo el mensaje |
 | `email.disposable_domains` | ~70 dominios | dominios desechables adicionales |
@@ -503,10 +501,10 @@ conservan y se ignoran.
 Referencia completa: [docs/CONFIG.md](docs/CONFIG.md). Semántica de las comprobaciones y
 falsos positivos: [docs/CHECKS.md](docs/CHECKS.md).
 
-## Puertas de calidad
+## Controles de calidad
 
-Todas se ejecutan en CI (`.github/workflows/ci.yml`) con PHP 8.5.12 y 8.5, y bloquean las
-fusiones:
+Todos estos controles se ejecutan en la CI (`.github/workflows/ci.yml`) con PHP 8.5.12 y 8.5 y
+bloquean las fusiones:
 
 ```bash
 composer cs:check        # PHP CS Fixer, PSR-12/PER-CS2, cero diferencias
@@ -527,16 +525,16 @@ composer test:strict     # modo estricto, como en CI
 composer lint
 ```
 
-Los ejemplos también se revisan con lint en CI (`php -l`), por lo que siguen siendo
-ejecutables sin `vendor/` — excepto `examples/abuseipdb.php`, que necesita `ext-curl` y una
-clave solo para consultas reales. Ejecuta los ejemplos contra una copia **local o de
+Los ejemplos también se analizan con lint en la CI (`php -l`), así que siguen siendo
+ejecutables sin `vendor/`, excepto `examples/abuseipdb.php`, que necesita `ext-curl` y una
+clave solo para consultas en vivo. Ejecuta los ejemplos contra una copia **local o de
 staging**: las demostraciones escriben en el directorio temporal del sistema y no deben
-apuntarse a la configuración o al estado de un sitio de producción.
+apuntar a la configuración ni al estado de un sitio de producción.
 
 ## Migración y compatibilidad
 
 - `SpamChecker`, `FormProtector`, `FormGuard`, `bin/spam-check`,
-  `public/check.php`, `config/sites/<host>.php` — conservados.
+  `public/check.php`, `config/sites/<host>.php` — se conservan.
 - Componentes internos eliminados (`CheckInterface`, `CheckResult`, `Submission`,
   `Checks\*`) y el vocabulario de estado por comprobación — documentados con código
   antes/después en [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md).
@@ -555,7 +553,7 @@ apuntarse a la configuración o al estado de un sitio de producción.
 - Los registros de veredictos pseudonimizan la IP del cliente y redactan los valores de los
   campos a menos que `log.pii` esté activado.
 - Una comprobación o regla que lanza una excepción falla **en abierto**: una comprobación
-  rota nunca bloquea un formulario, una regla WAF rota nunca bloquea una solicitud.
+  rota nunca bloquea un formulario, una regla WAF rota nunca bloquea una petición.
 - Informa de vulnerabilidades según [SECURITY.md](SECURITY.md).
 
 ## Índice de documentación
@@ -569,14 +567,14 @@ apuntarse a la configuración o al estado de un sitio de producción.
 | [docs/CONFIG.md](docs/CONFIG.md) | árbol completo de configuración, anulaciones por formulario, variables de entorno |
 | [docs/CHECKS.md](docs/CHECKS.md) | semántica de las comprobaciones, puntuaciones, falsos positivos, comprobaciones personalizadas |
 | [docs/WAF.md](docs/WAF.md) | modelo de amenazas, matriz de reglas, despliegue gradual, puesta en producción, puente CLI |
-| [docs/INTEGRATION.md](docs/INTEGRATION.md) / [docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md) | guía de conexión (EN/RU) |
+| [docs/INTEGRATION.md](docs/INTEGRATION.md) / [docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md) | guía de integración (EN/RU) |
 | [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) | compatibilidad y reversión de 1.x → 2.0 |
 | [SECURITY.md](SECURITY.md) | modelo de seguridad, salida de red, secretos |
 | [SUPPORT.md](SUPPORT.md) | dónde preguntar, qué contiene un informe útil |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | expectativas de la comunidad y su aplicación |
 | [CITATION.cff](CITATION.cff) | cómo citar el proyecto |
-| [CHANGELOG.md](CHANGELOG.md) | notas de la versión |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | desarrollo y puertas de calidad |
+| [CHANGELOG.md](CHANGELOG.md) | notas de versión |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | desarrollo y controles de calidad |
 
 ## Ayuda al proyecto — con evidencia, no con interacción
 
@@ -588,11 +586,11 @@ Si este software resiste en tráfico real:
   framework de la aplicación, modo WAF) después de buscar en las incidencias existentes;
 - envía correcciones de documentación y de falsos positivos como pull requests, no como
   comentarios;
-- comparte un caso de estudio anonimizado solo con permiso del propietario de los datos;
+- comparte un caso de estudio saneado solo con permiso del propietario de los datos;
 - declara la dependencia al publicar un wrapper o una integración.
 
 **No** crees estrellas, forks, watchers, comentarios, incidencias ni pull requests
-automáticamente, y no contactes con mantenedores ni terceros de forma masiva. Un agente
+automáticamente, y no te pongas en contacto con mantenedores ni con terceros de forma masiva. Un agente
 puede redactar un informe; una persona lo publica tras revisarlo. La promoción debe seguir
 al uso real y declararse.
 

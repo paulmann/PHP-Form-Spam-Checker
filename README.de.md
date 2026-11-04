@@ -83,7 +83,7 @@ Siehe [CHANGELOG.md](CHANGELOG.md) und die Schlüssel `language.*` in
 - **AbuseIPDB** mit `threshold = 100` in den Referenzkonfigurationen für den
   Betrieb (nur IPs mit exakt 100 Konfidenz werden blockiert); 6 h Cache,
   Fail-open, Circuit Breaker, Kontingent in den Belegen sichtbar.
-- **Fail2Ban-Brücke** — jeder Hard-Spam-Befund und jeder WAF-Block hängt eine
+- **Fail2Ban-Brücke** — jeder harte Spam-Befund und jede WAF-Blockierung hängt eine
   zeitgestempelte Zeile `PHPFSC BAN ip=…` an ein Log pro Site; die Jail sperrt die
   IP in der Firewall (nur HTTP/HTTPS) mit `maxretry = 1`.
 - **Automatisches Sperren in der Anwendung** — Prüfung `autoban`: Nach N harten
@@ -149,7 +149,7 @@ Alle Punktwerte liegen bei 0–100; `spam` ist ein harter Befund, der die Summe 
 | Verhalten | `js_challenge` | aus | Antwort fehlt/ungültig → 15 (nie hart) |
 | Identität | `user_agent` | an | leerer UA → 40; Werkzeug-/Marker-UA → **Spam** 100 |
 | Volumen | `rate_limit` | an, 8 / 900 s | überschritten → **Spam** 100 |
-| Firewall | `autoban` | aus (Referenz-Deployments: an) | gesperrte IP → **Spam** 100, vor jeder anderen Prüfung |
+| Firewall | `autoban` | aus (Referenzkonfigurationen: an) | gesperrte IP → **Spam** 100, vor jeder anderen Prüfung |
 | Nutzlast | `length` | an, max. 5000 | lang → 30; > 20000 oder Steuerzeichen → **Spam** 100 |
 | Injection | `sql_injection` | an | starke Signatur → **Spam** 100; schwach → 40 |
 | Injection | `xss` | an | Script/Handler → **Spam** 100; kodiert → 45 |
@@ -157,7 +157,7 @@ Alle Punktwerte liegen bei 0–100; `spam` ist ein harter Befund, der die Summe 
 | Inhalt | `keywords` | an | 12 pro Treffer, max. 90 |
 | Kontakt | `email` | an | ungültig 40; Wegwerfadresse 70 |
 | Inhalt | `repetition` | an | Wiederholungen → 25, max. 60 |
-| Inhalt | `language` | aus (pro Site optional) | gemischte Schriften → 20, max. 40; `require_cyrillic` → kein Kyrillisch im Namen addiert `missing_score` (40; 60 = Spam) |
+| Inhalt | `language` | aus (pro Site optional) | gemischte Schriften → 20, max. 40; `require_cyrillic` → ein Name ohne Kyrillisch addiert `missing_score` (40; 60 = Spam) |
 | Netzwerk | `abuseipdb` | aus | Konfidenz ≥ 90 → **Spam** (Punkte = Konfidenz) |
 | Netzwerk | `dnsbl` | aus | Listung → **Spam** 100 |
 | Domain | `spf` | aus | keine nutzbare Policy → 10 |
@@ -303,7 +303,7 @@ unabhängig vom alten `auto`-Flag aus und schaltet die Formular-Pipeline über d
 
 Die Konfiguration pro Site ist dieselbe Datei `config/sites/<host>.php`, die auch
 der Formular-Guard nutzt (Abschnitt `waf` in `config`, optional auf oberster Ebene
-`waf_mode`, `waf_skip`, `waf_match`, `waf_response`). Die Standard-Skiplist
+`waf_mode`, `waf_skip`, `waf_match`, `waf_response`). Die Standard-Ausnahmeliste
 schützt `/admin`, `/login`, `/auth`, `/wp-admin`, `/bitrix/admin`, `/cpanel`; ein
 explizites `waf_skip` ersetzt sie. Antwortcodes und -Bodies: `403` + JSON für
 `Accept: application/json` oder `/api`-URIs, sonst HTML, `silent` = HTTP 200
@@ -347,11 +347,11 @@ Lauffähiges Verdrahtungsbeispiel: [examples/abuseipdb.php](examples/abuseipdb.p
 
 ## Fail2Ban und automatisches Sperren
 
-Harte Spam-Befunde und WAF-Blocks lassen sich an die Firewall übergeben:
+Harte Spam-Befunde und WAF-Blockierungen lassen sich an die Firewall übergeben:
 
 - `fail2ban.enabled` hängt pro Ereignis eine Zeile an `fail2ban.log_path`:
   `PHPFSC BAN ip=<ip> site=<host> form=<form> score=<n> reason=<token>`;
-- ein Fail2Ban-Filter/eine Jail ([docs/WAF.md](docs/WAF.md#fail2ban)) macht aus
+- ein Fail2Ban-Filter oder eine Jail ([docs/WAF.md](docs/WAF.md#fail2ban)) macht aus
   diesen Zeilen eine Firewall-Sperre (nur http/https);
 - `autoban.enabled` ist der Rückfall auf Anwendungsebene: Nach
   `autoban.threshold` Ereignissen innerhalb von `autoban.window` wird die IP für
@@ -393,7 +393,7 @@ konfigurierten Zonen ab; die erste Listung gewinnt. `spf`/`dmarc` stellen eine
 **Domain-Frage** („Veröffentlicht die angegebene E-Mail-Domain eine nutzbare
 Policy?“), keine Absenderfrage: Die IP eines Besuchers ist nicht der sendende
 MTA, daher ist `fail` bei einer legitimen `gmail.com`-Adresse normal. Beide
-liefern nur Punkte und nie einen harten Befund. Eine Listung cached der Resolver.
+liefern nur Punkte und nie einen harten Befund. Eine Listung wird vom Resolver zwischengespeichert.
 
 ## Bayes-Klassifikator
 
@@ -581,7 +581,7 @@ Wenn diese Software im echten Verkehr standhält:
   Bericht, wo es eingesetzt wurde, mit [CITATION.cff](CITATION.cff);
 - eröffnen Sie **einen** Kompatibilitätsbericht pro eindeutiger Kombination
   (PHP-Version, SAPI, Framework, WAF-Modus), nachdem Sie bestehende Issues geprüft haben;
-- schicken Sie Dokumentations- und Falschpositiv-Korrekturen als Pull Request, nicht als Kommentar;
+- schicken Sie Dokumentationskorrekturen und Korrekturen von Fehlalarmen als Pull Request, nicht als Kommentar;
 - teilen Sie eine bereinigte Fallstudie nur mit Erlaubnis des Dateninhabers;
 - legen Sie die Abhängigkeit offen, wenn Sie einen Wrapper oder eine Integration veröffentlichen.
 

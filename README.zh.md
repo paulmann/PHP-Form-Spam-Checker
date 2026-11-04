@@ -2,11 +2,11 @@
 
 > **阅读语言：** [English](README.md) · [Русский](README.ru.md) · [Español](README.es.md) · [Deutsch](README.de.md) · 中文 · [हिन्दी](README.hi.md)
 
-**面向任意 PHP 表单的分层、零依赖反垃圾流水线与 HTTP 防火墙。**
-它先运行本地启发式规则，再叠加行为信号、IP 信誉、DNS 黑名单、邮件域认证
-和贝叶斯分类器，并可选地通过 WAF 检查整个 HTTP 请求。无需验证码，运行时
-也不依赖 Composer，而且每个判定都附带证据：哪些检查被触发、各自得分多少，
-以及为什么。
+**面向任意 PHP 表单的分层、零依赖反垃圾流水线与 HTTP 防火墙。** 它先运行
+本地启发式规则，然后叠加行为信号、IP 信誉、DNS 黑名单、邮件域认证和
+贝叶斯分类器——并可选地通过 WAF 检查整个 HTTP 请求。无需验证码，运行时
+也没有 Composer 运行时依赖，而且每个判定都附带证据：哪些检查被触发、
+各自得分多少，以及为什么。
 
 [![CI](https://github.com/paulmann/PHP-Form-Spam-Checker/actions/workflows/ci.yml/badge.svg)](https://github.com/paulmann/PHP-Form-Spam-Checker/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/paulmann/PHP-Form-Spam-Checker?label=release&sort=semver)](https://github.com/paulmann/PHP-Form-Spam-Checker/releases)
@@ -18,7 +18,7 @@
 [**Wiki**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**文档**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**发布**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**更新日志**](CHANGELOG.md) · [**问题**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**安全**](SECURITY.md) · [**面向 Agent**](AGENTS.md) · [**俄语版**](README.ru.md)
 
 > **文档状态。** 本 README 中的统计数字取自 2026-11-03 的仓库树
-> （版本 2.1.2）；每项数字旁边都注明了生成它的命令。长篇指南位于
+> （版本 2.1.2）；每个数字旁边都注明了生成它的命令。长篇指南位于
 > [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) 和 `docs/`；
 > 面向 Agent 的非交互式契约见 [`AGENTS.md`](AGENTS.md)。
 
@@ -55,19 +55,24 @@
 
 ## 2.1.2 有哪些变化
 
-2.1.2 为俄语表单新增了**可选**的区域检查；它默认关闭，仅在需要的站点上启用：
+2.1.2 为俄语表单新增了一项**可选启用**的语言区域检查；它默认关闭，
+只在需要的站点上启用：
 
-- **姓名西里尔字母要求**（`language.require_cyrillic`）：配置的姓名类字段
-  （`name`、`fio`、`first_name`、`last_name`、`surname`、`имя`、`фамилия`、`фио`、…；
-  比较时忽略大小写和分隔符）必须至少包含一个西里尔字母。含有字母但没有西里尔字母的
-  值会加上 `language.missing_score` 分——默认 `40`，当纯拉丁字母姓名本身应达到垃圾
-  阈值时为 `60`；`missing_score = 40` 则保持为“可疑”。电子邮件、公司和自由文本字段
-  从不检查；`language.fields` / `min_letters` / `max_score` 可调整规则。
-- **默认关闭：** `language.enabled` 和 `language.require_cyrillic` 均为 `false`，
-  随附的示例配置也保持关闭。请在站点自己的配置中启用该规则，而不是库默认值。
+- **姓名的西里尔字母要求**（`language.require_cyrillic`）：所配置的
+  类姓名字段（`name`、`fio`、`first_name`、`last_name`、`surname`、
+  `имя`、`фамилия`、`фио` 等；匹配时不区分大小写与分隔符）必须至少
+  含有一个西里尔字母。若某个值含有字母却没有任何西里尔字母，就会加上
+  `language.missing_score` 分——默认为 `40`；当仅含拉丁字母的姓名
+  本身就应达到垃圾阈值时则为 `60`；`missing_score = 40` 使其停留在
+  “可疑”。电子邮件、公司和自由文本字段永远不会被检查，而
+  `language.fields` / `min_letters` / `max_score` 可调整该规则。
+- **默认关闭：** `language.enabled` 与 `language.require_cyrillic`
+  均为 `false`，随附的示例配置也保持关闭。请在站点自己的配置中启用
+  该规则，而不要改库的默认值。
 
-参见 [CHANGELOG.md](CHANGELOG.md) 以及 [docs/CONFIG.md](docs/CONFIG.md) 中的
-`language.*` 键。
+见 [CHANGELOG.md](CHANGELOG.md) 以及
+[docs/CONFIG.md](docs/CONFIG.md) 中的 `language.*` 键。
+
 ## 2.1 有哪些变化
 
 2.1 在 2.0 基础上增加了防火墙桥接和部署加固：
@@ -75,8 +80,8 @@
 - **AbuseIPDB**：参考部署配置中 `threshold = 100`
   （只有置信度恰好为 100 的 IP 才会被拦截）；缓存 6 小时、失败放行、
   带熔断器，配额情况会体现在证据里。
-- **Fail2Ban 桥接**——每次硬性垃圾判定和每次 WAF 拦截都会向按站点日志追加
-  一行带时间戳的 `PHPFSC BAN ip=…`；jail 会以 `maxretry = 1`
+- **Fail2Ban 桥接**——每次硬性垃圾判定和每次 WAF 拦截都会向按站点日志
+  追加一行带时间戳的 `PHPFSC BAN ip=…`；jail 会以 `maxretry = 1`
   在防火墙上封禁该 IP（仅 HTTP/HTTPS）。
 - **应用层自动封禁**——`autoban` 检查：在窗口期内发生 N 次硬性事件后，
   该 IP 会在配置的 TTL 内先于其他所有检查被拒绝。
@@ -148,7 +153,7 @@ flowchart TD
 | 内容 | `keywords` | 开启 | 每命中一次 12，上限 90 |
 | 联系方式 | `email` | 开启 | 无效 40；一次性邮箱 70 |
 | 内容 | `repetition` | 开启 | 连续重复字符/词语 → 25，上限 60 |
-| 内容 | `language` | 关闭（按站点 opt-in） | 混合文字系统 → 20，上限 40；`require_cyrillic` → 姓名中没有西里尔字母会加 `missing_score`（40；60 = spam） |
+| 内容 | `language` | 关闭（按站点可选启用） | 混合文字系统 → 20，上限 40；`require_cyrillic` → 姓名中无西里尔字母则加上 `missing_score`（40；60 即为 spam） |
 | 网络 | `abuseipdb` | 关闭 | 置信度 ≥ 90 → **spam**（分数 = 置信度） |
 | 网络 | `dnsbl` | 关闭 | 被列入黑名单 → **spam** 100 |
 | 域名 | `spf` | 关闭 | 没有可用策略 → 10 |
@@ -159,7 +164,7 @@ flowchart TD
 
 ## 数字一览
 
-统计于 2026-11-04，提交 `3757563`，来自仓库树；每项数字都注明了生成它的命令。
+数字取自 2026-11-03、提交 `eed037b` 的仓库树；每项数字都注明了生成它的命令。
 
 | 维度 | 数量 | 统计来源 |
 |---|---|---|
@@ -167,7 +172,7 @@ flowchart TD
 | 流水线检查 | 20 | `src/Check/` 下的文件数减去 `SpamCheckInterface.php` |
 | WAF 规则 | 9 | `src/Waf/Rules/` 下的文件数 |
 | 测试方法 | 555 | `tests/` 下 `public function test` 声明数 |
-| 测试套件 | 559 个测试 / 2,015 条断言 | 2026-11-03 运行 `php vendor/bin/phpunit` |
+| 测试套件 | 559 个测试 / 2,015 条断言 | 2026-11-03 运行 `php vendor/bin/phpunit`（PHPUnit 13.4.5） |
 | 英文文档页 | 6 | `docs/*.md`，不含 `*.ru.md` |
 | 运行时 Composer 依赖 | 0 | `composer.json` 中的 `require`（仅 PHP 扩展） |
 | 支持的 PHP | 8.5+ | `composer.json` 的 `require.php`；CI 矩阵 `8.5.12` 和 `8.5` |
@@ -250,7 +255,7 @@ WAF 在应用之前检查每个 HTTP 请求：方法、URI、查询串、表单�
 // config/spam.php
 'waf' => [
     'enabled' => true,
-    'mode' => 'monitor',         // 从这里开始，审查后再切换到 block
+    'mode' => 'monitor',         // 先从这里开始，审查后再切换到 block
     'block_status' => 403,
     'max_body_bytes' => 1048576,
     'rules' => [
@@ -324,10 +329,10 @@ export ABUSEIPDB_KEY='…'
 ```
 
 行为：私有/回环地址和缺失密钥永远不会触发网络调用（`uncertain`）；
-分数达到或超过 `threshold` 即为硬性垃圾判定，分数取置信度；`HTTP 429`
-会保存 `Retry-After` 并退避，不再重试；连续三次传输/`5xx` 失败会打开熔断器
-5 分钟；首个成功的 HTTP 响应会关闭它。客户端 IP 会发送给 AbuseIPDB——
-见 [SECURITY.md](SECURITY.md#network-egress)。
+分数达到或超过 `threshold` 即为硬性垃圾判定，分数取置信度；
+`HTTP 429` 会保存 `Retry-After` 并退避，不再重试；连续三次传输/`5xx` 失败
+会打开熔断器 5 分钟；首个成功的 HTTP 响应会关闭它。客户端 IP 会发送给
+AbuseIPDB——见 [SECURITY.md](SECURITY.md#network-egress)。
 
 可运行的接线示例：[examples/abuseipdb.php](examples/abuseipdb.php)。
 
@@ -365,7 +370,7 @@ export ABUSEIPDB_KEY='…'
     'zones' => ['zen.spamhaus.org', 'bl.spamcop.net'],
     'cache_ttl' => 3600,
     'timeout' => 2,
-    'hit_score' => 100,      // 命中即为硬性判定
+    'hit_score' => 100,      // 命中黑名单即为硬性判定
 ],
 'spf'   => ['enabled' => true],   // 策略缺失/不可用：10
 'dmarc' => ['enabled' => true],   // 缺失：10，p=none：5
@@ -380,7 +385,7 @@ export ABUSEIPDB_KEY='…'
 
 ## 贝叶斯分类器
 
-默认关闭；在模型拥有 `min_documents`（20）篇文档前会弃权。
+默认关闭；在模型拥有 `min_documents`（20）篇文档之前会弃权。
 
 ```bash
 # 从文件训练：每行一篇文档，跳过空行和 "#" 注释
@@ -456,7 +461,7 @@ php bin/spam-train --config=/etc/spam.php --reset
 
 ## 配置速查
 
-配置可以是 PHP 数组（从文件返回）、JSON，或通过 `Config::fromArray()` 提供。
+配置可以是 PHP 数组（由文件返回）、JSON，或通过 `Config::fromArray()` 提供。
 所有键都是可选的；默认值是安全的。未知键会被保留并忽略。
 
 | 键 | 默认值 | 含义 |
