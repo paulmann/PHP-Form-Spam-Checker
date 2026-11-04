@@ -18,8 +18,8 @@ check or rule fails open.
 ## Download
 
 ```bash
-composer require paulmann/php-form-spam-checker:2.1.0
-git clone --depth 1 --branch v2.1.0 https://github.com/paulmann/PHP-Form-Spam-Checker.git
+composer require paulmann/php-form-spam-checker:2.1.2
+git clone --depth 1 --branch v2.1.2 https://github.com/paulmann/PHP-Form-Spam-Checker.git
 ```
 
 The first form is the fixed version; the clone adds tests, examples and docs.

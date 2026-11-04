@@ -13,7 +13,7 @@ body:
     attributes:
       label: Version
       description: The tag or the output of `composer show paulmann/php-form-spam-checker`
-      placeholder: 2.1.0
+      placeholder: 2.1.2
     validations:
       required: true
   - type: input

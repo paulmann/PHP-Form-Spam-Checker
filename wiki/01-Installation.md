@@ -23,7 +23,7 @@ composer require paulmann/php-form-spam-checker
 To pin the release in an automated deployment:
 
 ```bash
-composer require paulmann/php-form-spam-checker:2.1.0
+composer require paulmann/php-form-spam-checker:2.1.2
 ```
 
 Both commands are quoted from `AGENTS.md`, section Download; the package name is

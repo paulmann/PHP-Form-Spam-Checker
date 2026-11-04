@@ -1,8 +1,8 @@
 cff-version: 1.2.0
 message: "If you use this software in a report, runbook or publication, cite it as below."
 title: "PHP Form Spam Checker"
-version: 2.1.0
-date-released: 2026-11-03
+version: 2.1.2
+date-released: 2026-11-04
 type: software
 license: MIT
 repository-code: "https://github.com/paulmann/PHP-Form-Spam-Checker"

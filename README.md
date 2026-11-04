@@ -1,4 +1,4 @@
-# PHP Form Spam Checker 2.1
+# PHP Form Spam Checker 2.1.2
 
 **A layered, dependency-free anti-spam pipeline and HTTP firewall for any PHP
 form.** It runs local heuristics first, then behavioural signals, IP reputation,
@@ -17,7 +17,7 @@ with which scores, and why.
 [**Wiki**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**Docs**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**Releases**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**Changelog**](CHANGELOG.md) · [**Issues**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**Security**](SECURITY.md) · [**For agents**](AGENTS.md) · [**Русская версия**](README.ru.md)
 
 > **Documentation status.** The counts in this README were measured from the
-> repository tree on 2026-11-03 (version 2.1.0); the command that produced each
+> repository tree on 2026-11-03 (version 2.1.2); the command that produced each
 > figure is named beside it. Long-form guides live in the
 > [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) and in `docs/`;
 > the non-interactive contract for agents is [`AGENTS.md`](AGENTS.md).
