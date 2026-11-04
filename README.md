@@ -1,5 +1,7 @@
 # PHP Form Spam Checker 2.1.2
 
+> **Read in:** English · [Русский](README.ru.md) · [Español](README.es.md) · [Deutsch](README.de.md) · [中文](README.zh.md) · [हिन्दी](README.hi.md)
+
 **A layered, dependency-free anti-spam pipeline and HTTP firewall for any PHP
 form.** It runs local heuristics first, then behavioural signals, IP reputation,
 DNS blocklists, mail-domain authentication and a Bayesian classifier — and
