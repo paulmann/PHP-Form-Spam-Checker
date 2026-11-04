@@ -12,9 +12,9 @@ The current release is **2.1.2** (2026-11-04, `CHANGELOG.md`, section `[2.1.2]`)
 Cyrillic name requirement on top of the 2.1 line. Version 2.1 (2026-11-03, section `[2.1.0]`)
 keeps the 2.0 architecture and adds the firewall bridge and deployment hardening:
 
-- **Cyrillic requirement for names** (`language.require_cyrillic`, 2.1.2) — configured name fields
-  must contain a Cyrillic letter; a Latin-only name scores 60 in the reference deployments, while
-  e-mail, company and free-text fields are never checked.
+- **Cyrillic requirement for names** (`language.require_cyrillic`, 2.1.2) — an opt-in rule, disabled by
+  default: configured name fields must contain a Cyrillic letter, a Latin-only name scores `missing_score`
+  (60 where it should block), and e-mail, company and free-text fields are never checked.
 - **Fail2Ban bridge** — every hard-spam verdict and every WAF block appends one timestamped
   `PHPFSC BAN ip=…` line to a per-site log, ready for a Fail2Ban filter and jail.
 - **Application auto-ban** — the `autoban` check rejects an IP before any other check after N hard

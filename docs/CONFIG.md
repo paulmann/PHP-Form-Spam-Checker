@@ -417,10 +417,11 @@ Banned IPs live in the same storage as rate-limit counters (`storage.*`), so
 `ban:<ip>` entries expire with `autoban.ttl`. `AutoBan::unban()` removes an
 entry; a failed storage call never blocks a form.
 
-`language.*` (2.1.2): `enabled`, `mixed_script_score` (20), `max_score` (40),
+`language.*` (2.1.2): `enabled` (false), `mixed_script_score` (20), `max_score` (40),
 `require_cyrillic` (false), `missing_score` (40), `min_letters` (2) and
 `fields` (name-like fields: `name`, `fio`, `first_name`, `last_name`, `surname`,
-`имя`, `фамилия`, `фио`, …; compared ignoring case and `_`/`-`). With
-`require_cyrillic` a field that contains letters but no Cyrillic adds
-`missing_score` points; the reference deployment configs use 60 so a Latin-only
-name alone reaches the spam threshold.
+`имя`, `фамилия`, `фио`, …; compared ignoring case and `_`/`-`). The whole
+section is **off by default** and is opt-in per site: set `enabled` and
+`require_cyrillic` to `true` in the site's own configuration, then a field with
+letters but no Cyrillic adds `missing_score` points. Use `60` where a Latin-only
+name alone should reach the spam threshold; `40` keeps it at "suspicious".

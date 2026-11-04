@@ -55,19 +55,21 @@ with which scores, and why.
 
 ## What changed in 2.1.2
 
-2.1.2 adds a locale check for Russian-language forms and turns it on in the
-reference deployment configs:
+2.1.2 adds an **opt-in** locale check for Russian-language forms; it is
+disabled by default and enabled per site only where it is wanted:
 
 - **Cyrillic requirement for names** (`language.require_cyrillic`): the
   configured name-like fields (`name`, `fio`, `first_name`, `last_name`,
   `surname`, `имя`, `фамилия`, `фио`, …; matched case- and
   separator-insensitively) must contain at least one Cyrillic letter. A value
   that has letters but no Cyrillic adds `language.missing_score` points —
-  `40` by default, `60` in the reference deployment configs, where a Latin-only
-  name alone reaches the spam threshold; `missing_score = 40` downgrades it to
-  "suspicious". E-mail, company and free-text fields are never checked, and
-  `language.fields` / `min_letters` / `max_score` tune the rule.
-- The shared-server configs in `config/sites/` enable the rule on every site.
+  `40` by default, `60` where a Latin-only name alone should reach the spam
+  threshold; `missing_score = 40` keeps it at "suspicious". E-mail, company and
+  free-text fields are never checked, and `language.fields` / `min_letters` /
+  `max_score` tune the rule.
+- **Disabled by default:** `language.enabled` and `language.require_cyrillic`
+  are `false`, and the shipped example configs keep them off. Enable the rule in
+  a site's own configuration, not in the library defaults.
 
 See [CHANGELOG.md](CHANGELOG.md) and the `language.*` keys in
 [docs/CONFIG.md](docs/CONFIG.md).
@@ -153,7 +155,7 @@ All scores are 0–100; `spam` is a hard verdict that ignores the total.
 | Content | `keywords` | on | 12 per hit, max 90 |
 | Contact | `email` | on | invalid 40; disposable 70 |
 | Content | `repetition` | on | runs/repeats → 25, max 60 |
-| Content | `language` | off (reference deployments: on) | mixed scripts → 20, max 40; `require_cyrillic` → Latin-only name 60 (spam) |
+| Content | `language` | off (opt-in per site) | mixed scripts → 20, max 40; `require_cyrillic` → no Cyrillic in a name adds `missing_score` (40; 60 = spam) |
 | Network | `abuseipdb` | off | confidence ≥ 90 → **spam** (score = confidence) |
 | Network | `dnsbl` | off | listing → **spam** 100 |
 | Domain | `spf` | off | no usable policy → 10 |

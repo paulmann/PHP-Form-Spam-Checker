@@ -43,6 +43,20 @@ final class LanguageCyrillicTest extends TestCase
         ]]);
     }
 
+    public function testCyrillicRequirementIsDisabledByDefault(): void
+    {
+        $config = new Config();
+
+        self::assertFalse($config->bool('language.enabled', true), 'language.enabled must default to false');
+        self::assertFalse($config->bool('language.require_cyrillic', true), 'require_cyrillic must default to false');
+
+        $outcome = (new LanguageCheck($config))->check($this->request(['name' => 'John Smith']));
+
+        self::assertSame(CheckStatus::HAM, $outcome->status);
+        self::assertSame(0, $outcome->score);
+        self::assertSame('disabled', $outcome->reason);
+    }
+
     public function testLatinOnlyNameIsSuspicious(): void
     {
         $outcome = (new LanguageCheck($this->config()))->check($this->request(['name' => 'John Smith']));

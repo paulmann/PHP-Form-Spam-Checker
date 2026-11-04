@@ -96,7 +96,7 @@ there is no DKIM check in `defaultChecks()` (`README.md`, Check modules and defa
 | `keywords` | multibyte substring scoring plus optional PCRE | a B2B message mentioning "credit" or "seo" |
 | `email` | syntax, disposable-domain suffix match | a legitimate privacy-mail user |
 | `repetition` | character runs and repeated words | emphasis in ordinary prose |
-| `language` | Cyrillic and Latin letters inside one word; with `require_cyrillic` a Latin-only name field scores `missing_score` (40; reference deployments 60 = hard spam) | brand names and transliterations |
+| `language` | Cyrillic and Latin letters inside one word; with `require_cyrillic` (opt-in, off by default) a Latin-only name field scores `missing_score` (40; 60 makes it hard spam) | brand names and transliterations |
 
 Semantics and tuning for each row are in `docs/CHECKS.md`, section Local checks; the scores above
 come from `docs/CONFIG.md`, Full default tree.

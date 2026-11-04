@@ -54,6 +54,17 @@ return [
         'disposable_domains' => [],
     ],
 
+    // Language heuristics: mixed-script scoring and the optional Cyrillic
+    // requirement. Both are disabled by default and are opt-in per site.
+    'language' => [
+        'enabled' => false,
+        'require_cyrillic' => false,
+        // Russian-language form: require a Cyrillic letter in name-like fields.
+        // 60 makes a Latin-only name alone reach the spam threshold; 40 keeps it
+        // at "suspicious". Leave the section disabled unless the site needs it.
+        // 'missing_score' => 60,
+    ],
+
     // File storage: the default works on shared hosting without Redis.
     'storage' => [
         'driver' => 'file',

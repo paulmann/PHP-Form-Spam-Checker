@@ -10,14 +10,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- **Cyrillic requirement for names** (`language.require_cyrillic`): configured
-  name-like fields (`name`, `fio`, `first_name`, `last_name`, `surname`, …,
-  case/separator-insensitive) must contain at least one Cyrillic letter. Fields
-  with letters but no Cyrillic add `language.missing_score` points (reference
-  deployments: 60 → hard spam); e-mail, company and free-text fields are never
-  checked. `language.fields`, `min_letters` and `max_score` tune the rule.
-- Reference deployment configs enable the rule on all sites; set
-  `missing_score = 40` to downgrade it to "suspicious" instead of blocking.
+- **Cyrillic requirement for names** (`language.require_cyrillic`): an **opt-in**
+  rule for Russian-language forms. The configured name-like fields (`name`,
+  `fio`, `first_name`, `last_name`, `surname`, …, case/separator-insensitive)
+  must contain at least one Cyrillic letter; a value with letters but no
+  Cyrillic adds `language.missing_score` points. E-mail, company and free-text
+  fields are never checked, and `language.fields`, `min_letters` and `max_score`
+  tune the rule.
+- The rule is **disabled by default** (`language.enabled` and
+  `require_cyrillic` are `false`) and is enabled per site only where it is
+  wanted: `'missing_score' => 60` makes a Latin-only name alone reach the spam
+  threshold, `40` keeps the verdict at "suspicious".
 
 ## [2.1.0] - 2026-11-03
 

@@ -426,7 +426,8 @@ final class Config
                 'enabled' => false,
                 'mixed_script_score' => 20,
                 'max_score' => 40,
-                // Require Cyrillic in name-like fields (Russian-language sites).
+                // Opt-in, disabled by default: require Cyrillic in name-like
+                // fields for Russian-language sites.
                 'require_cyrillic' => false,
                 'missing_score' => 40,
                 'min_letters' => 2,
