@@ -39,6 +39,14 @@ final class FormGuard
     private static array $cache = [];
 
     /**
+     * Whether this request already produced a rejected-submission record.
+     *
+     * run() captures before calling reject(); the flag keeps an explicit
+     * reject() call from a front controller from writing a second record.
+     */
+    private bool $captured = false;
+
+    /**
      * @param list<string> $match regexes; empty means "any POST request"
      * @param list<string> $skip  regexes that always pass through
      */
@@ -248,10 +256,22 @@ final class FormGuard
         }
 
         if ($this->mode === self::MODE_SHADOW || !$verdict->isSpam()) {
+            // Suspicious never blocks. Persist it only on explicit request:
+            // the borderline population is useful for tuning, but a default
+            // registry should only grow on real rejections.
+            if ($this->config->bool('rejected.capture_suspicious', false) && $verdict->isSuspicious()) {
+                $this->captureRejected($verdict, $server, $fields, false);
+            }
+
             return false;
         }
 
-        $this->reject($verdict, $server);
+        // The submission is about to be answered and lost: persist it first.
+        // captureRejected() is fail-open, so a broken registry still blocks the
+        // spam exactly as before.
+        $this->captureRejected($verdict, $server, $fields);
+
+        $this->reject($verdict, $server, $fields);
     }
 
     /**
@@ -312,12 +332,86 @@ final class FormGuard
     }
 
     /**
+     * Persist the rejected submission in the registry of unsent forms.
+     *
+     * Public so that a front controller which builds its own blocking response
+     * can capture without terminating. Fail-open: returns null and logs when the
+     * registry is disabled or unavailable, and never changes the verdict.
+     *
+     * @param  array<string, mixed>      $server
+     * @param  array<string, mixed>|null $fields raw $_POST (null = superglobal)
+     * @param  array<string, mixed>|null $files  raw $_FILES (null = superglobal)
+     * @return array<string, mixed>|null the stored record, if any
+     */
+    public function captureRejected(
+        Verdict $verdict,
+        array $server = [],
+        ?array $fields = null,
+        bool $wouldReject = true,
+        ?array $files = null,
+    ): ?array {
+        if (!$this->config->bool('rejected.enabled', true)) {
+            return null;
+        }
+
+        if (!$verdict->isSpam() && !$verdict->isSuspicious()) {
+            return null;
+        }
+
+        if ($verdict->isSuspicious() && !$this->config->bool('rejected.capture_suspicious', false)) {
+            return null;
+        }
+
+        try {
+            if ($fields === null) {
+                /** @var array<string, mixed> $fields */
+                $fields = $_POST;
+            }
+
+            if ($files === null) {
+                /** @var array<string, mixed> $files */
+                $files = $_FILES;
+            }
+
+            $request = RequestData::fromGlobals($server, $fields, $this->formId);
+            $record = RejectedStore::capture(
+                $request,
+                $this->config,
+                $verdict,
+                $this->site,
+                $this->formId,
+                $verdict->isSpam() ? RejectedStore::REASON_SPAM : RejectedStore::REASON_SUSPICIOUS,
+                $server,
+                $files,
+                $wouldReject,
+            );
+
+            if ($record !== null) {
+                $this->captured = true;
+            }
+
+            return $record;
+        } catch (Throwable $exception) {
+            error_log('[spam-guard] rejected-submission capture failed (fail open): ' . $exception->getMessage());
+
+            return null;
+        }
+    }
+
+    /**
      * Answer a spam submission and terminate.
      *
-     * @param array<string, mixed> $server
+     * @param array<string, mixed>      $server
+     * @param array<string, mixed>|null $fields raw $_POST of the blocked request
      */
-    public function reject(Verdict $verdict, array $server = []): never
+    public function reject(Verdict $verdict, array $server = [], ?array $fields = null): never
     {
+        // A front controller may call reject() directly; capture here too, but
+        // never twice for the same request.
+        if (!$this->captured) {
+            $this->captureRejected($verdict, $server, $fields);
+        }
+
         $requestUri = $server['REQUEST_URI'] ?? $_SERVER['REQUEST_URI'] ?? '';
         if (!\is_string($requestUri)) {
             $requestUri = '';

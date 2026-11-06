@@ -25,6 +25,9 @@ final class WafGuardTest extends TempDirTestCase
         $base = [
             'storage' => ['driver' => 'file', 'path' => $storage],
             'log' => ['enabled' => false],
+            // The registry is covered by RejectedStoreTest; keep this suite free
+            // of rejected-record files.
+            'rejected' => ['enabled' => false],
         ];
 
         $website = [

@@ -59,5 +59,19 @@ return [
             'enabled' => true,
             'allow_empty' => false,
         ],
+        // Registry of rejected (unsent) forms: a blocked submission is written
+        // here with its full payload so a false positive can be reviewed and
+        // replayed with `bin/rejected-forms`. Enabled by default; the derived
+        // directory is var/rejected/<site>. It stores personal data on purpose —
+        // keep the tree outside the document root.
+        'rejected' => [
+            'enabled' => true,
+            'store_payload' => true,
+            'retention_days' => 30,
+            'max_records_per_site' => 2000,
+            'max_bytes_per_record' => 262144,
+            // 'store_files' => false,        // copy uploads for a multipart replay
+            // 'capture_suspicious' => false, // also keep "suspicious" (never blocked)
+        ],
     ],
 ];

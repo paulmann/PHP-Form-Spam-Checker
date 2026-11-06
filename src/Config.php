@@ -448,6 +448,26 @@ final class Config
                 'driver' => 'file',
                 'path' => '',
             ],
+            // Registry of rejected (unsent) submissions. Deliberately separate
+            // from `log` (which is pseudonymised): a rejected lead is stored
+            // with its payload so it can be replayed, and the registry is
+            // protected by filesystem permissions, not by redaction.
+            'rejected' => [
+                'enabled' => true,
+                'store_payload' => true,
+                'path' => '',
+                'retention_days' => 30,
+                'max_records_per_site' => 2000,
+                'max_bytes_per_record' => 262144,
+                'store_files' => false,
+                // Persist "suspicious" verdicts too (they never block): the
+                // borderline population is useful for tuning, but off by
+                // default so the registry only grows on real rejections.
+                'capture_suspicious' => false,
+                // Cookie/Authorization are personal secrets: dropped unless
+                // an operator explicitly opts in. They are never replayed.
+                'store_headers_secrets' => false,
+            ],
             'endpoint' => [
                 'key' => '',
                 'max_body_bytes' => 262144,

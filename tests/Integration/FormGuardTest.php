@@ -24,6 +24,7 @@ final class FormGuardTest extends TempDirTestCase
             'config' => [
                 'storage' => ['driver' => 'memory'],
                 'log' => ['enabled' => false],
+                'rejected' => ['enabled' => false],
             ],
             PHP;
 

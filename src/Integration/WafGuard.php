@@ -74,6 +74,14 @@ final class WafGuard
     private static array $cache = [];
 
     /**
+     * Whether this request already produced a rejected-submission record.
+     *
+     * run() captures before calling reject(); the flag keeps an explicit
+     * reject() call from a front controller from writing a second record.
+     */
+    private bool $captured = false;
+
+    /**
      * @param list<string> $match
      * @param list<string> $skip
      */
@@ -316,9 +324,17 @@ final class WafGuard
         $this->logVerdict($request, $verdict);
         $this->reportSecurityTools($request, $verdict);
 
+        if ($this->config->bool('rejected.capture_suspicious', false) && $verdict->isSuspicious()) {
+            $this->captureRejected($request, $verdict, false);
+        }
+
         if ($this->mode !== self::MODE_BLOCK || !$verdict->blocked) {
             return false;
         }
+
+        // A blocked request is about to be answered and lost: persist it first.
+        // captureRejected() is fail-open and never changes the block decision.
+        $this->captureRejected($request, $verdict);
 
         $this->reject($request, $verdict);
     }
@@ -373,11 +389,69 @@ final class WafGuard
     }
 
     /**
+     * Persist a rejected request in the registry of unsent forms.
+     *
+     * A WAF block answers the request and the application never sees it; the
+     * record keeps the payload (when present) and the exact rule findings so
+     * the decision can be reviewed and a false positive replayed.
+     *
+     * Fail-open: returns null and logs when the registry is disabled or
+     * unavailable, and never changes the block decision.
+     *
+     * @return array<string, mixed>|null the stored record, if any
+     */
+    public function captureRejected(WafRequest $request, WafVerdict $verdict, bool $wouldReject = true): ?array
+    {
+        if (!$this->config->bool('rejected.enabled', true)) {
+            return null;
+        }
+
+        if (!$verdict->isBlocked() && !$verdict->isSuspicious()) {
+            return null;
+        }
+
+        if ($verdict->isSuspicious() && !$this->config->bool('rejected.capture_suspicious', false)) {
+            return null;
+        }
+
+        try {
+            $formId = $request->formId !== '' ? $request->formId : 'default';
+            $record = RejectedStore::capture(
+                $request,
+                $this->config,
+                $verdict,
+                $this->site,
+                $formId,
+                $verdict->isBlocked() ? RejectedStore::REASON_WAF : RejectedStore::REASON_SUSPICIOUS,
+                $_SERVER,
+                $_FILES,
+                $wouldReject,
+            );
+
+            if ($record !== null) {
+                $this->captured = true;
+            }
+
+            return $record;
+        } catch (Throwable $exception) {
+            error_log('[waf] rejected-submission capture failed (fail open): ' . $exception->getMessage());
+
+            return null;
+        }
+    }
+
+    /**
      * Answer a blocked request and terminate. Public so that a front
      * controller can reuse the guard's response format.
      */
     public function reject(WafRequest $request, WafVerdict $verdict): never
     {
+        // A front controller may call reject() directly; capture here too, but
+        // never twice for the same request.
+        if (!$this->captured) {
+            $this->captureRejected($request, $verdict);
+        }
+
         error_log(\sprintf(
             '[waf] blocked %s %s %s from %s: mode=block score=%d reasons=%s',
             $this->site,
