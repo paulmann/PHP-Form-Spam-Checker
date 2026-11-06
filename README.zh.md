@@ -26,6 +26,7 @@
 
 ## 目录
 
+- [2.2.0 有哪些变化](#220-有哪些变化)
 - [2.1.2 有哪些变化](#212-有哪些变化)
 - [2.1 有哪些变化](#21-有哪些变化)
 - [2.0 有哪些变化](#20-有哪些变化)
@@ -53,6 +54,23 @@
 
 ---
 
+## 2.2.0 有哪些变化
+
+2.2 新增**被拒（未发送）表单登记簿**：被拦截的提交不再丢失。
+
+- **`RejectedStore`** 在 guard 返回拦截之前保存完整提交——未 trim 的 POST
+  字段（保留数组）、上传元数据、判定与原因（form guard 的 `enforce` 模式；
+  WAF 拦截；可选的 suspicious）。
+- **`bin/rejected-forms`** 支持列表、查看（默认打码，`--reveal` 显示个人数据）、
+  重放（默认 dry run，仅限同一主机，绝不转发 cookie 或密钥）、忽略和清理；
+  提供 `--json` 机器输出。
+- 登记簿与判定日志分离：`var/rejected/<site>`、`0700`/`0600`、`.htaccess` 拒绝，
+  受 `rejected.retention_days`、`max_records_per_site`、`max_bytes_per_record`
+  限制。Fail-open：登记簿出错绝不改变判定。
+- 重放必须显式确认：需要 `--confirm`；未保存上传文件的记录会被拒绝，而不是发送
+  不完整请求；`--allow-host-change` 绝不被隐式启用。
+
+参见 [docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md) 与 [CHANGELOG.md](CHANGELOG.md)。
 ## 2.1.2 有哪些变化
 
 2.1.2 为俄语表单新增了一项**可选启用**的语言区域检查；它默认关闭，

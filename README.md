@@ -28,6 +28,7 @@ with which scores, and why.
 
 ## Contents
 
+- [What changed in 2.2.0](#what-changed-in-220)
 - [What changed in 2.1.2](#what-changed-in-212)
 - [What changed in 2.1](#what-changed-in-21)
 - [What changed in 2.0](#what-changed-in-20)
@@ -55,6 +56,26 @@ with which scores, and why.
 
 ---
 
+## What changed in 2.2.0
+
+2.2 adds the **registry of rejected (unsent) forms**: a blocked submission is no
+longer lost.
+
+- **`RejectedStore`** persists the full submission — untrimmed POST fields
+  (arrays preserved), upload metadata, verdict and reasons — **before** the guard
+  answers a block (form guard in `enforce` mode; WAF block; opt-in suspicious).
+- **`bin/rejected-forms`** lists, shows (masked, `--reveal` for personal data),
+  replays (dry run by default, same-host only, never forwards cookies or secrets),
+  ignores and purges records; `--json` for machines.
+- Storage is separate from the verdict log: `var/rejected/<site>`,
+  `0700`/`0600`, `.htaccess` deny, bounded by `rejected.retention_days`,
+  `max_records_per_site` and `max_bytes_per_record`. Fail-open: a registry error
+  never changes a verdict.
+- Replay is explicit: `--confirm` is required, a missing stored upload refuses
+  the replay instead of sending an incomplete request, and `--allow-host-change`
+  is never implied.
+
+See [docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md) and [CHANGELOG.md](CHANGELOG.md).
 ## What changed in 2.1.2
 
 2.1.2 adds an **opt-in** locale check for Russian-language forms; it is

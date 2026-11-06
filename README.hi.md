@@ -28,6 +28,7 @@
 
 ## विषय-सूची
 
+- [2.2.0 में क्या बदला](#220-में-क्या-बदला)
 - [2.1.2 में क्या बदला](#212-में-क्या-बदला)
 - [2.1 में क्या बदला](#21-में-क्या-बदला)
 - [2.0 में क्या बदला](#20-में-क्या-बदला)
@@ -55,6 +56,25 @@
 
 ---
 
+## 2.2.0 में क्या बदला
+
+2.2 **अस्वीकृत (न भेजे गए) फ़ॉर्मों का रजिस्टर** जोड़ता है: ब्लॉक की गई सबमिशन अब
+खोती नहीं है।
+
+- **`RejectedStore`** guard के ब्लॉक का उत्तर देने से **पहले** पूरी सबमिशन सहेजता
+  है — बिना trim किए POST फ़ील्ड (arrays सुरक्षित), upload मेटाडेटा, verdict और
+  कारण (form guard का `enforce` मोड; WAF ब्लॉक; वैकल्पिक suspicious)।
+- **`bin/rejected-forms`** — सूची, दिखाना (masked, व्यक्तिगत डेटा के लिए
+  `--reveal`), replay (डिफ़ॉल्ट dry run, केवल वही host, cookie/secret कभी नहीं
+  भेजता), ignore और purge; मशीनों के लिए `--json`.
+- संग्रह verdict लॉग से अलग है: `var/rejected/<site>`, `0700`/`0600`,
+  `.htaccess` deny, सीमाएँ `rejected.retention_days`, `max_records_per_site`,
+  `max_bytes_per_record`. Fail-open: रजिस्टर की त्रुटि verdict नहीं बदलती.
+- Replay स्पष्ट है: `--confirm` आवश्यक, सहेजे न गए upload वाला record अधूरा
+  अनुरोध भेजने के बजाय replay से इंकार करता है, और `--allow-host-change` कभी
+  अपने आप नहीं माना जाता।
+
+देखें [docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md) और [CHANGELOG.md](CHANGELOG.md).
 ## 2.1.2 में क्या बदला
 
 2.1.2 रूसी-भाषा वाले फ़ॉर्म के लिए एक **opt-in** locale जाँच जोड़ता है; यह

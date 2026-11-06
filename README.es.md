@@ -28,6 +28,7 @@ comprobaciones se activaron, con qué puntuaciones y por qué.
 
 ## Contenido
 
+- [Novedades de 2.2.0](#novedades-de-220)
 - [Novedades de 2.1.2](#novedades-de-212)
 - [Novedades de 2.1](#novedades-de-21)
 - [Novedades de 2.0](#novedades-de-20)
@@ -55,6 +56,27 @@ comprobaciones se activaron, con qué puntuaciones y por qué.
 
 ---
 
+## Novedades de 2.2.0
+
+2.2 añade el **registro de formularios rechazados (no enviados)**: una
+presentación bloqueada ya no se pierde.
+
+- **`RejectedStore`** guarda la presentación completa — campos POST sin trim
+  (arrays conservados), metadatos de subida, veredicto y motivos — **antes** de
+  que el guard responda con un bloqueo (form guard en modo `enforce`; bloqueo
+  WAF; «suspicious» opcional).
+- **`bin/rejected-forms`** lista, muestra (enmascarado, `--reveal` para datos
+  personales), reproduce (dry run por defecto, solo el mismo host, nunca reenvía
+  cookies ni secretos), ignora y purga registros; `--json` para máquinas.
+- El almacenamiento está separado del log de veredictos: `var/rejected/<site>`,
+  `0700`/`0600`, denegación `.htaccess`, limitado por `rejected.retention_days`,
+  `max_records_per_site` y `max_bytes_per_record`. Fail-open: un error del registro
+  nunca cambia un veredicto.
+- La reproducción es explícita: `--confirm` es obligatorio, un archivo subido no
+  guardado rechaza la reproducción en lugar de enviar una petición incompleta, y
+  `--allow-host-change` nunca se presupone.
+
+Véase [docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md) y [CHANGELOG.md](CHANGELOG.md).
 ## Novedades de 2.1.2
 
 La 2.1.2 añade una comprobación de idioma **opcional** para formularios en ruso; está

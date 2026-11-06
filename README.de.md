@@ -28,6 +28,7 @@ Belege: welche Prüfungen ausgelöst haben, mit welchen Punktwerten und warum.
 
 ## Inhalt
 
+- [Was sich in 2.2.0 geändert hat](#was-sich-in-220-geändert-hat)
 - [Was sich in 2.1.2 geändert hat](#was-sich-in-212-geändert-hat)
 - [Was sich in 2.1 geändert hat](#was-sich-in-21-geändert-hat)
 - [Was sich in 2.0 geändert hat](#was-sich-in-20-geändert-hat)
@@ -55,6 +56,27 @@ Belege: welche Prüfungen ausgelöst haben, mit welchen Punktwerten und warum.
 
 ---
 
+## Was sich in 2.2.0 geändert hat
+
+2.2 ergänzt das **Register abgelehnter (nicht gesendeter) Formulare**: Eine
+blockierte Einsendung geht nicht mehr verloren.
+
+- **`RejectedStore`** speichert die vollständige Einsendung — POST-Felder ohne
+  Trim (Arrays bleiben erhalten), Upload-Metadaten, Urteil und Gründe — **bevor**
+  der Guard mit einer Blockade antwortet (Form-Guard im Modus `enforce`;
+  WAF-Block; opt-in „suspicious“).
+- **`bin/rejected-forms`** listet, zeigt (maskiert, `--reveal` für personenbezogene
+  Daten), spielt ab (standardmäßig Dry-Run, nur gleicher Host, überträgt nie
+  Cookies oder Secrets), ignoriert und löscht Datensätze; `--json` für Maschinen.
+- Der Speicher ist getrennt vom Urteils-Log: `var/rejected/<site>`, `0700`/`0600`,
+  `.htaccess`-Deny, begrenzt durch `rejected.retention_days`,
+  `max_records_per_site` und `max_bytes_per_record`. Fail-open: Ein Registry-Fehler
+  ändert nie ein Urteil.
+- Replay ist ausdrücklich: `--confirm` ist Pflicht, ein fehlender gespeicherter
+  Upload verweigert das Replay statt eine unvollständige Anfrage zu senden, und
+  `--allow-host-change` wird nie impliziert.
+
+Siehe [docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md) und [CHANGELOG.md](CHANGELOG.md).
 ## Was sich in 2.1.2 geändert hat
 
 2.1.2 ergänzt eine **optionale** Sprachprüfung für russischsprachige Formulare; sie
