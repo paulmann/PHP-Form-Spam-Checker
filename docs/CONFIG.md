@@ -18,6 +18,7 @@ upgrades.
 - [Logging](#logging)
 - [Shared-guard site configuration](#shared-guard-site-configuration)
 - [Fail2Ban and auto-ban (2.1)](#fail2ban-and-auto-ban-21)
+- [Registry of rejected forms (2.2)](#registry-of-rejected-forms-22)
 
 ## Accessing configuration in code
 
@@ -253,6 +254,17 @@ guards therefore read the same file.
         'driver' => 'file',          // file | memory
         'path' => '',                // default: sys_get_temp_dir()/php-form-spam-checker
     ],
+    'rejected' => [
+        'enabled' => true,           // keep every blocked submission (fail-open)
+        'store_payload' => true,     // false: metadata + verdict only, no replay
+        'path' => '',                // default: <var>/rejected/<site>
+        'retention_days' => 30,      // 0 disables the TTL
+        'max_records_per_site' => 2000,  // oldest pruned first
+        'max_bytes_per_record' => 262144,
+        'store_files' => false,      // copy uploads (needed for a multipart replay)
+        'capture_suspicious' => false,   // also keep "suspicious" (never blocked)
+        'store_headers_secrets' => false,// keep Cookie/Authorization (never replayed)
+    ],
     'endpoint' => [
         'key' => '',                 // shared key for the HTTP bridge
         'max_body_bytes' => 262144,
@@ -425,3 +437,30 @@ section is **off by default** and is opt-in per site: set `enabled` and
 `require_cyrillic` to `true` in the site's own configuration, then a field with
 letters but no Cyrillic adds `missing_score` points. Use `60` where a Latin-only
 name alone should reach the spam threshold; `40` keeps it at "suspicious".
+
+## Registry of rejected forms (2.2)
+
+When the drop-in guard blocks a submission, the payload would normally be lost.
+`RejectedStore` keeps one JSON record per rejection (payload, client, verdict and
+all check outcomes) so it can be reviewed and replayed with
+`bin/rejected-forms`. See [REJECTED-FORMS.md](REJECTED-FORMS.md) for the record
+format, CLI and operational notes.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `rejected.enabled` | `true` | persist blocked submissions; a registry error is fail-open |
+| `rejected.store_payload` | `true` | store fields/body; `false` keeps metadata only and disables replay |
+| `rejected.path` | `''` | explicit per-site directory; default `dirname(dirname(storage.path))/rejected/<site>` |
+| `rejected.retention_days` | `30` | TTL in days; `0` disables automatic expiry |
+| `rejected.max_records_per_site` | `2000` | hard cap; the oldest records are pruned first |
+| `rejected.max_bytes_per_record` | `262144` | hard record size; truncation sets `truncated=true` and adds a marker |
+| `rejected.store_files` | `false` | copy uploads next to the record so a replay can be multipart |
+| `rejected.capture_suspicious` | `false` | also store `suspicious` verdicts (they never block, so `would_reject=false`) |
+| `rejected.store_headers_secrets` | `false` | keep Cookie/Authorization for inspection; they are never replayed |
+
+The registry deliberately stores personal data: it is not pseudonymised like the
+verdict log (`log.pii` stays `false`). Access control is the filesystem
+(`0700`/`0600`, `.htaccess` deny) plus the CLI's masked output (`--reveal` to
+override), and the retention window. The derived root is a top-level `var/rejected`
+tree, separate from the per-site counter/cache tree, so permissions, backup and
+retention can be managed independently.

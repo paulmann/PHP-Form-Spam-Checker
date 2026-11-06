@@ -549,6 +549,12 @@ site's config or state.
   becomes a path.
 - Verdict logs pseudonymise the client IP and redact field values unless
   `log.pii` is enabled.
+- The registry of rejected forms ([docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md))
+  is the exception: it stores the full payload **on purpose** so a blocked lead
+  can be replayed. It is protected by `0700`/`0600` permissions, is bounded by
+  `rejected.retention_days`, prints personal data masked unless `--reveal` is
+  passed, drops Cookie/Authorization unless explicitly configured, and never
+  replays secrets or a different host without an explicit flag.
 - A throwing check or rule fails **open**: a broken check never blocks a form, a
   broken WAF rule never blocks a request.
 - Report vulnerabilities per [SECURITY.md](SECURITY.md).
@@ -564,6 +570,7 @@ site's config or state.
 | [docs/CONFIG.md](docs/CONFIG.md) | full configuration tree, per-form overrides, env vars |
 | [docs/CHECKS.md](docs/CHECKS.md) | check semantics, scores, false positives, custom checks |
 | [docs/WAF.md](docs/WAF.md) | threat model, rules matrix, rollout, deployment, CLI bridge |
+| [docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md) | registry of rejected forms: record format, `bin/rejected-forms`, replay, retention |
 | [docs/INTEGRATION.md](docs/INTEGRATION.md) / [docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md) | wiring guide (EN/RU) |
 | [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) | 1.x → 2.0 compatibility and rollback |
 | [SECURITY.md](SECURITY.md) | security model, egress, secrets |

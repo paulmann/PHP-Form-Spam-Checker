@@ -97,6 +97,9 @@ A check that examined zero objects is a failure, not a pass.
   PHP extensions only.
 - Enable `log.pii` or paste raw submissions into an issue; the verdict log is
   pseudonymised on purpose.
+- Expose the `var/rejected` tree through the web server: it deliberately stores
+  personal data. Keep it outside the document root; permissions and
+  `rejected.retention_days` are its access control.
 - Point `examples/` or a CLI probe at a production site or a real mailbox.
 - Publish a release without green CI and release notes.
 
@@ -105,7 +108,7 @@ A check that examined zero objects is a failure, not a pass.
 ```text
 src/            library (Check/, Waf/, Pipeline/, Data/, Support/, adapters)
 tests/          PHPUnit suite (unit + integration, no network)
-bin/            CLI bridges: spam-check, waf-check, spam-train
+bin/            CLI bridges: spam-check, waf-check, spam-train, rejected-forms
 config/         example and per-site configuration
 integrations/   drop-in guard.php, waf.php, auto-prepend.php
 public/         HTTP JSON endpoint (check.php)

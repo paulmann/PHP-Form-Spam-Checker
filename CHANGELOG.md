@@ -6,6 +6,66 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Registry of rejected (unsent) forms** (`FormSpamChecker\Integration\RejectedStore`):
+  when the drop-in guard blocks a submission — a spam verdict in `enforce` mode
+  or a WAF block, plus an opt-in `suspicious` verdict that never blocked — the
+  full submission is persisted **before** the blocking response: request
+  method/URI/query/scheme/host/URL, form key, site, verdict with every check
+  outcome, client (IP, User-Agent, Referer, Origin, Accept-Language), raw POST
+  fields (values untrimmed, arrays preserved), upload metadata (name, size, MIME,
+  SHA-256; bytes optional) and the headers needed to replay. One JSON file per
+  record, written atomically, directories `0700` / files `0600` with a
+  `.htaccess` deny; bounded by `rejected.retention_days`,
+  `rejected.max_records_per_site` and `rejected.max_bytes_per_record`
+  (truncation marker + `truncated=true`). Fail-open: a registry error never
+  blocks or unblocks a form.
+- **`bin/rejected-forms`** — `list` (triage columns: site, form, score, status,
+  e-mail/phone present, first reason), `show <id>` (masked by default,
+  `--reveal` prints personal data), `replay <id>` (dry run by default,
+  `--confirm` sends, original rejection reason printed first, same-host guard
+  with `--allow-host-change`), `ignore <id> --reason=`,
+  `purge --older-than=DAYS [--confirm]`; `--json` for machines; exit codes
+  0/1/2/3 documented in the file header.
+- **`FormSpamChecker\Integration\ReplayRequest`** — rebuilds the replayable
+  request (method, URL, urlencoded or multipart body, replay-relevant headers)
+  and performs it through a stream context. Replayed uploads become
+  `multipart/form-data` only from stored bytes; Cookie/Authorization are never
+  replayed; a record whose uploads were not stored is refused instead of being
+  sent incomplete.
+- **Configuration** — new `rejected` block (`enabled`, `store_payload`, `path`,
+  `retention_days`, `max_records_per_site`, `max_bytes_per_record`,
+  `store_files`, `capture_suspicious`, `store_headers_secrets`), enabled by
+  default. The derived directory is `dirname(dirname(storage.path))/rejected/<site>`,
+  i.e. `var/rejected/<site>` for the shared guard — a separate top-level tree,
+  not the per-site counter/cache tree.
+
+### Security
+
+- The registry **deliberately stores personal data** (that is what makes a
+  replay possible), unlike the pseudonymised verdict log where `log.pii` stays
+  `false`. Access is controlled by filesystem permissions (`0700`/`0600`,
+  `.htaccess` deny for Apache, tree kept outside the document root) and by
+  `retention_days`; `bin/rejected-forms` masks fields, bodies, query strings and
+  user-agents until `--reveal` is passed on purpose.
+- Cookie, Authorization, Proxy-Authorization and X-Api-Key are dropped unless
+  `rejected.store_headers_secrets` is enabled for inspection, and are **never**
+  replayed. Replay refuses a different host without `--allow-host-change`.
+
+### Notes
+
+- Timestamps are stored twice on purpose: `ts` is ISO-8601 **with an explicit
+  offset** (`date('c')`, server timezone), `ts_utc` is the same instant in UTC
+  with a `Z` suffix, and `ts_epoch` is used for sorting. Do not treat one as the
+  other: mixing local time labelled `Z` with UTC (a trap seen in the company
+  portal, where `tickets.created_at` drifted three hours from
+  `ticket_events.created_at`) makes a rejection timeline unusable.
+- Existing enforce/WAF test fixtures now disable `rejected` so the suite writes
+  no registry files; the registry itself is covered by the new
+  `RejectedStoreTest` / `ReplayRequestTest` / `RejectedFormsCommandTest` with a
+  positive capture fixture and clean/suspicious decoys.
+
 ## [2.1.2] - 2026-11-04
 
 ### Added
