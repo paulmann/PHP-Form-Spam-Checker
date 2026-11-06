@@ -1,4 +1,4 @@
-# PHP Form Spam Checker 2.1.2
+# PHP Form Spam Checker 2.2.0
 
 > **阅读语言：** [English](README.md) · [Русский](README.ru.md) · [Español](README.es.md) · [Deutsch](README.de.md) · 中文 · [हिन्दी](README.hi.md)
 
@@ -17,8 +17,8 @@
 
 [**Wiki**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**文档**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**发布**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**更新日志**](CHANGELOG.md) · [**问题**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**安全**](SECURITY.md) · [**面向 Agent**](AGENTS.md) · [**俄语版**](README.ru.md)
 
-> **文档状态。** 本 README 中的统计数字取自 2026-11-03 的仓库树
-> （版本 2.1.2）；每个数字旁边都注明了生成它的命令。长篇指南位于
+> **文档状态。** 本 README 中的统计数字取自 2026-11-06 的仓库树
+> （版本 2.2.0）；每个数字旁边都注明了生成它的命令。长篇指南位于
 > [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) 和 `docs/`；
 > 面向 Agent 的非交互式契约见 [`AGENTS.md`](AGENTS.md)。
 
@@ -164,16 +164,16 @@ flowchart TD
 
 ## 数字一览
 
-数字取自 2026-11-03、提交 `eed037b` 的仓库树；每项数字都注明了生成它的命令。
+数字取自 2026-11-06、提交 `eed037b` 的仓库树；每项数字都注明了生成它的命令。
 
 | 维度 | 数量 | 统计来源 |
 |---|---|---|
-| PHP 源文件 / 行数 | 93 / 10,295 | `find src -name '*.php'` 以及 `src/` 上的 `wc -l` |
+| PHP 源文件 / 行数 | 96 / 13,011 | `find src -name '*.php'` 以及 `src/` 上的 `wc -l` |
 | 流水线检查 | 20 | `src/Check/` 下的文件数减去 `SpamCheckInterface.php` |
 | WAF 规则 | 9 | `src/Waf/Rules/` 下的文件数 |
-| 测试方法 | 555 | `tests/` 下 `public function test` 声明数 |
-| 测试套件 | 559 个测试 / 2,015 条断言 | 2026-11-03 运行 `php vendor/bin/phpunit`（PHPUnit 13.4.5） |
-| 英文文档页 | 6 | `docs/*.md`，不含 `*.ru.md` |
+| 测试方法 | 622 | `tests/` 下 `public function test` 声明数 |
+| 测试套件 | 626 个测试 / 2,435 条断言 | 2026-11-06 运行 `php vendor/bin/phpunit`（PHPUnit 13.4.5） |
+| 英文文档页 | 7 | `docs/*.md`，不含 `*.ru.md` |
 | 运行时 Composer 依赖 | 0 | `composer.json` 中的 `require`（仅 PHP 扩展） |
 | 支持的 PHP | 8.5+ | `composer.json` 的 `require.php`；CI 矩阵 `8.5.12` 和 `8.5` |
 

@@ -1,4 +1,4 @@
-# PHP Form Spam Checker 2.1.2
+# PHP Form Spam Checker 2.2.0
 
 > **Read in:** English · [Русский](README.ru.md) · [Español](README.es.md) · [Deutsch](README.de.md) · [中文](README.zh.md) · [हिन्दी](README.hi.md)
 
@@ -19,7 +19,7 @@ with which scores, and why.
 [**Wiki**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**Docs**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**Releases**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**Changelog**](CHANGELOG.md) · [**Issues**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**Security**](SECURITY.md) · [**For agents**](AGENTS.md) · [**Русская версия**](README.ru.md)
 
 > **Documentation status.** The counts in this README were measured from the
-> repository tree on 2026-11-03 (version 2.1.2); the command that produced each
+> repository tree on 2026-11-06 (version 2.2.0); the command that produced each
 > figure is named beside it. Long-form guides live in the
 > [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) and in `docs/`;
 > the non-interactive contract for agents is [`AGENTS.md`](AGENTS.md).
@@ -169,17 +169,17 @@ yet — see [docs/CHECKS.md](docs/CHECKS.md#dkim).
 
 ## By the numbers
 
-Measured from the repository tree on 2026-11-03 at commit `eed037b`; each figure
+Measured from the repository tree on 2026-11-06 at commit `eed037b`; each figure
 names the command that produced it.
 
 | Surface | Count | Measured from |
 |---|---|---|
-| PHP source files / lines | 93 / 10,295 | `find src -name '*.php'` and `wc -l` over `src/` |
+| PHP source files / lines | 96 / 13,011 | `find src -name '*.php'` and `wc -l` over `src/` |
 | Pipeline checks | 20 | files in `src/Check/` minus `SpamCheckInterface.php` |
 | WAF rules | 9 | files in `src/Waf/Rules/` |
-| Test methods | 555 | `public function test` declarations under `tests/` |
-| Test suite | 559 tests / 2,015 assertions | `php vendor/bin/phpunit` on 2026-11-03 (PHPUnit 13.4.5) |
-| English documentation pages | 6 | `docs/*.md` excluding `*.ru.md` |
+| Test methods | 622 | `public function test` declarations under `tests/` |
+| Test suite | 626 tests / 2,435 assertions | `php vendor/bin/phpunit` on 2026-11-06 (PHPUnit 13.4.5) |
+| English documentation pages | 7 | `docs/*.md` excluding `*.ru.md` |
 | Runtime Composer dependencies | 0 | `require` in `composer.json` (PHP extensions only) |
 | Supported PHP | 8.5+ | `require.php` in `composer.json`; CI matrix `8.5.12` and `8.5` |
 

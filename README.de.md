@@ -1,4 +1,4 @@
-# PHP Form Spam Checker 2.1.2
+# PHP Form Spam Checker 2.2.0
 
 > **Lesen auf:** [English](README.md) · [Русский](README.ru.md) · [Español](README.es.md) · Deutsch · [中文](README.zh.md) · [हिन्दी](README.hi.md)
 
@@ -18,8 +18,8 @@ Belege: welche Prüfungen ausgelöst haben, mit welchen Punktwerten und warum.
 
 [**Wiki**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**Dokumentation**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**Veröffentlichungen**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**Änderungsprotokoll**](CHANGELOG.md) · [**Probleme**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**Sicherheit**](SECURITY.md) · [**Für Agenten**](AGENTS.md) · [**Russische Version**](README.ru.md)
 
-> **Dokumentationsstatus.** Die Zahlen in dieser README wurden am 2026-11-03 aus
-> dem Repository-Baum gemessen (Version 2.1.2); der Befehl, der jede Zahl erzeugt
+> **Dokumentationsstatus.** Die Zahlen in dieser README wurden am 2026-11-06 aus
+> dem Repository-Baum gemessen (Version 2.2.0); der Befehl, der jede Zahl erzeugt
 > hat, steht daneben. Ausführliche Leitfäden liegen im
 > [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) und in `docs/`;
 > der nicht-interaktive Vertrag für Agenten ist [`AGENTS.md`](AGENTS.md).
@@ -169,17 +169,17 @@ der Pipeline — siehe [docs/CHECKS.md](docs/CHECKS.md#dkim).
 
 ## In Zahlen
 
-Gemessen aus dem Repository-Baum am 2026-11-03 beim Commit `eed037b`; zu jeder
+Gemessen aus dem Repository-Baum am 2026-11-06 beim Commit `eed037b`; zu jeder
 Zahl steht der Befehl, der sie erzeugt hat.
 
 | Fläche | Anzahl | Gemessen aus |
 |---|---|---|
-| PHP-Quelldateien / Zeilen | 93 / 10,295 | `find src -name '*.php'` und `wc -l` über `src/` |
+| PHP-Quelldateien / Zeilen | 96 / 13,011 | `find src -name '*.php'` und `wc -l` über `src/` |
 | Prüfungen in der Pipeline | 20 | Dateien in `src/Check/` ohne `SpamCheckInterface.php` |
 | WAF-Regeln | 9 | Dateien in `src/Waf/Rules/` |
-| Testmethoden | 555 | `public function test`-Deklarationen unter `tests/` |
-| Testsuite | 559 Tests / 2,015 Assertions | `php vendor/bin/phpunit` am 2026-11-03 (PHPUnit 13.4.5) |
-| Englische Dokumentationsseiten | 6 | `docs/*.md` ohne `*.ru.md` |
+| Testmethoden | 622 | `public function test`-Deklarationen unter `tests/` |
+| Testsuite | 626 Tests / 2,435 Assertions | `php vendor/bin/phpunit` am 2026-11-06 (PHPUnit 13.4.5) |
+| Englische Dokumentationsseiten | 7 | `docs/*.md` ohne `*.ru.md` |
 | Composer-Abhängigkeiten zur Laufzeit | 0 | `require` in `composer.json` (nur PHP-Erweiterungen) |
 | Unterstütztes PHP | 8.5+ | `require.php` in `composer.json`; CI-Matrix `8.5.12` und `8.5` |
 

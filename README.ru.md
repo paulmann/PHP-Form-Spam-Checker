@@ -1,4 +1,4 @@
-# PHP Form Spam Checker 2.1.2
+# PHP Form Spam Checker 2.2.0
 
 > **Читать:** [English](README.md) · Русский · [Español](README.es.md) · [Deutsch](README.de.md) · [中文](README.zh.md) · [हिन्दी](README.hi.md)
 
@@ -19,7 +19,7 @@ runtime, и каждый вердикт несёт доказательства:
 [**Wiki**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**Документация**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**Релизы**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**Changelog**](CHANGELOG.md) · [**Issues**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**Безопасность**](SECURITY.md) · [**Для агентов**](AGENTS.md) · [**English**](README.md)
 
 > **Состояние документации.** Цифры в этом README измерены по дереву репозитория
-> 3 ноября 2026 года (версия 2.1.2); рядом с каждой цифрой названа команда.
+> 6 ноября 2026 года (версия 2.2.0); рядом с каждой цифрой названа команда.
 > Подробные руководства — в [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki)
 > и в `docs/`; неинтерактивный контракт для агентов — [`AGENTS.md`](AGENTS.md).
 
@@ -169,17 +169,17 @@ flowchart TD
 
 ## В цифрах
 
-Измерено по дереву репозитория 3 ноября 2026 года на коммите `eed037b`; рядом с
+Измерено по дереву репозитория 6 ноября 2026 года на коммите `eed037b`; рядом с
 каждой цифрой — команда, которой она получена.
 
 | Поверхность | Количество | Чем измерено |
 |---|---|---|
-| PHP-файлы / строки в `src/` | 93 / 10 295 | `find src -name '*.php'` и `wc -l` |
+| PHP-файлы / строки в `src/` | 96 / 13 011 | `find src -name '*.php'` и `wc -l` |
 | Проверки конвейера | 20 | файлы `src/Check/` без `SpamCheckInterface.php` |
 | Правила WAF | 9 | файлы `src/Waf/Rules/` |
-| Тестовые методы | 555 | объявления `public function test` в `tests/` |
-| Тестовый набор | 559 тестов / 2 015 проверок | `php vendor/bin/phpunit` 3 ноября 2026 года (PHPUnit 13.4.5) |
-| Страницы документации (EN) | 6 | `docs/*.md` без `*.ru.md` |
+| Тестовые методы | 622 | объявления `public function test` в `tests/` |
+| Тестовый набор | 626 тестов / 2 435 проверок | `php vendor/bin/phpunit` 6 ноября 2026 года (PHPUnit 13.4.5) |
+| Страницы документации (EN) | 7 | `docs/*.md` без `*.ru.md` |
 | Runtime-зависимости Composer | 0 | `require` в `composer.json` (только расширения PHP) |
 | Поддерживаемый PHP | 8.5+ | `require.php` в `composer.json`; матрица CI `8.5.12` и `8.5` |
 

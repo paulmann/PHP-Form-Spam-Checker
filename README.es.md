@@ -1,4 +1,4 @@
-# PHP Form Spam Checker 2.1.2
+# PHP Form Spam Checker 2.2.0
 
 > **Leer en:** [English](README.md) · [Русский](README.ru.md) · Español · [Deutsch](README.de.md) · [中文](README.zh.md) · [हिन्दी](README.hi.md)
 
@@ -19,7 +19,7 @@ comprobaciones se activaron, con qué puntuaciones y por qué.
 [**Wiki**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**Documentación**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**Versiones**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**Registro de cambios**](CHANGELOG.md) · [**Incidencias**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**Seguridad**](SECURITY.md) · [**Para agentes**](AGENTS.md) · [**Versión en ruso**](README.ru.md)
 
 > **Estado de la documentación.** Las cifras de este README se midieron a partir del
-> árbol del repositorio el 2026-11-03 (versión 2.1.2); el comando que produjo cada
+> árbol del repositorio el 2026-11-06 (versión 2.2.0); el comando que produjo cada
 > cifra se indica junto a ella. Las guías extensas están en la
 > [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) y en `docs/`;
 > el contrato no interactivo para agentes es [`AGENTS.md`](AGENTS.md).
@@ -171,17 +171,17 @@ del flujo — consulta [docs/CHECKS.md](docs/CHECKS.md#dkim).
 
 ## En cifras
 
-Medido a partir del árbol del repositorio el 2026-11-03 en el commit `eed037b`; cada cifra
+Medido a partir del árbol del repositorio el 2026-11-06 en el commit `eed037b`; cada cifra
 indica el comando que la generó.
 
 | Superficie | Cantidad | Medido con |
 |---|---|---|
-| Archivos / líneas de código PHP | 93 / 10,295 | `find src -name '*.php'` y `wc -l` sobre `src/` |
+| Archivos / líneas de código PHP | 96 / 13,011 | `find src -name '*.php'` y `wc -l` sobre `src/` |
 | Comprobaciones del flujo | 20 | archivos en `src/Check/` menos `SpamCheckInterface.php` |
 | Reglas WAF | 9 | archivos en `src/Waf/Rules/` |
-| Métodos de prueba | 555 | declaraciones `public function test` en `tests/` |
-| Suite de pruebas | 559 pruebas / 2,015 aserciones | `php vendor/bin/phpunit` el 2026-11-03 (PHPUnit 13.4.5) |
-| Páginas de documentación en inglés | 6 | `docs/*.md` excluyendo `*.ru.md` |
+| Métodos de prueba | 622 | declaraciones `public function test` en `tests/` |
+| Suite de pruebas | 626 pruebas / 2,435 aserciones | `php vendor/bin/phpunit` el 2026-11-06 (PHPUnit 13.4.5) |
+| Páginas de documentación en inglés | 7 | `docs/*.md` excluyendo `*.ru.md` |
 | Dependencias de Composer en tiempo de ejecución | 0 | `require` en `composer.json` (solo extensiones PHP) |
 | PHP compatible | 8.5+ | `require.php` en `composer.json`; matriz de CI `8.5.12` y `8.5` |
 

@@ -11,7 +11,6 @@ use FormSpamChecker\Check\SpamCheckInterface;
 use FormSpamChecker\Config;
 use FormSpamChecker\Data\CheckOutcome;
 use FormSpamChecker\Data\RequestData;
-use FormSpamChecker\Data\Verdict;
 use FormSpamChecker\FormProtector;
 use FormSpamChecker\Http\CheckEndpoint;
 use FormSpamChecker\Integration\FormGuard;
@@ -89,7 +88,7 @@ final class ExtraCoverageV22Test extends TempDirTestCase
             new Config(),
         );
 
-        self::assertSame(['extra'], array_map(static fn ($o): string => $o->check, $verdict->outcomes));
+        self::assertSame(['extra'], array_map(static fn($o): string => $o->check, $verdict->outcomes));
     }
 
     public function testSpamCheckerFromConfig(): void

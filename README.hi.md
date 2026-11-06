@@ -1,4 +1,4 @@
-# PHP Form Spam Checker 2.1.2
+# PHP Form Spam Checker 2.2.0
 
 > **पढ़ें:** [English](README.md) · [Русский](README.ru.md) · [Español](README.es.md) · [Deutsch](README.de.md) · [中文](README.zh.md) · हिन्दी
 
@@ -18,7 +18,7 @@
 
 [**Wiki**](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) · [**दस्तावेज़**](https://github.com/paulmann/PHP-Form-Spam-Checker/tree/main/docs) · [**रिलीज़**](https://github.com/paulmann/PHP-Form-Spam-Checker/releases) · [**चेंजलॉग**](CHANGELOG.md) · [**Issues**](https://github.com/paulmann/PHP-Form-Spam-Checker/issues) · [**सुरक्षा**](SECURITY.md) · [**एजेंट के लिए**](AGENTS.md) · [**Русская версия**](README.ru.md)
 
-> **दस्तावेज़ीकरण की स्थिति।** इस README के आँकड़े 2026-11-03 (संस्करण 2.1.2) को
+> **दस्तावेज़ीकरण की स्थिति।** इस README के आँकड़े 2026-11-06 (संस्करण 2.2.0) को
 > रिपॉज़िटरी ट्री से मापे गए थे; हर आँकड़े के पास वह कमांड लिखी है जिसने उसे
 > निकाला। विस्तृत मार्गदर्शिकाएँ
 > [Wiki](https://github.com/paulmann/PHP-Form-Spam-Checker/wiki) और `docs/` में हैं;
@@ -168,17 +168,17 @@ spam निर्णय पर रन रोक देता है, जिस�
 
 ## आँकड़ों में
 
-2026-11-03 को कमिट `eed037b` पर रिपॉज़िटरी ट्री से मापा गया; हर आँकड़े के साथ वह
+2026-11-06 को कमिट `eed037b` पर रिपॉज़िटरी ट्री से मापा गया; हर आँकड़े के साथ वह
 कमांड लिखी है जिसने उसे निकाला।
 
 | सतह | संख्या | किससे मापा गया |
 |---|---|---|
-| PHP स्रोत फ़ाइलें / पंक्तियाँ | 93 / 10,295 | `find src -name '*.php'` और `src/` पर `wc -l` |
+| PHP स्रोत फ़ाइलें / पंक्तियाँ | 96 / 13,011 | `find src -name '*.php'` और `src/` पर `wc -l` |
 | पाइपलाइन जाँचें | 20 | `src/Check/` की फ़ाइलें घटाकर `SpamCheckInterface.php` |
 | WAF नियम | 9 | `src/Waf/Rules/` की फ़ाइलें |
-| टेस्ट मेथड | 555 | `tests/` के अंतर्गत `public function test` घोषणाएँ |
-| टेस्ट सूट | 559 टेस्ट / 2,015 assertions | 2026-11-03 को `php vendor/bin/phpunit` (PHPUnit 13.4.5) |
-| अंग्रेज़ी दस्तावेज़ पृष्ठ | 6 | `docs/*.md` घटाकर `*.ru.md` |
+| टेस्ट मेथड | 622 | `tests/` के अंतर्गत `public function test` घोषणाएँ |
+| टेस्ट सूट | 626 टेस्ट / 2,435 assertions | 2026-11-06 को `php vendor/bin/phpunit` (PHPUnit 13.4.5) |
+| अंग्रेज़ी दस्तावेज़ पृष्ठ | 7 | `docs/*.md` घटाकर `*.ru.md` |
 | रनटाइम Composer निर्भरताएँ | 0 | `composer.json` में `require` (केवल PHP एक्सटेंशन) |
 | समर्थित PHP | 8.5+ | `composer.json` में `require.php`; CI मैट्रिक्स `8.5.12` और `8.5` |
 
