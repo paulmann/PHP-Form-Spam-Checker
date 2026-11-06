@@ -552,6 +552,12 @@ apuntar a la configuración ni al estado de un sitio de producción.
   JSON — una clave nunca se convierte en una ruta.
 - Los registros de veredictos pseudonimizan la IP del cliente y redactan los valores de los
   campos a menos que `log.pii` esté activado.
+- El registro de formularios rechazados ([docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md))
+  es la excepción: guarda la carga útil completa **a propósito** para poder
+  reproducir un lead bloqueado. Está protegido por permisos `0700`/`0600`, limitado
+  por `rejected.retention_days`, muestra los datos personales enmascarados salvo que
+  se pase `--reveal`, descarta Cookie/Authorization salvo que se configure
+  explícitamente y nunca reproduce secretos ni un host distinto sin un flag explícito.
 - Una comprobación o regla que lanza una excepción falla **en abierto**: una comprobación
   rota nunca bloquea un formulario, una regla WAF rota nunca bloquea una petición.
 - Informa de vulnerabilidades según [SECURITY.md](SECURITY.md).
@@ -567,6 +573,7 @@ apuntar a la configuración ni al estado de un sitio de producción.
 | [docs/CONFIG.md](docs/CONFIG.md) | árbol completo de configuración, anulaciones por formulario, variables de entorno |
 | [docs/CHECKS.md](docs/CHECKS.md) | semántica de las comprobaciones, puntuaciones, falsos positivos, comprobaciones personalizadas |
 | [docs/WAF.md](docs/WAF.md) | modelo de amenazas, matriz de reglas, despliegue gradual, puesta en producción, puente CLI |
+| [docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md) | registro de formularios rechazados: formato del registro, `bin/rejected-forms`, reproducción, retención |
 | [docs/INTEGRATION.md](docs/INTEGRATION.md) / [docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md) | guía de integración (EN/RU) |
 | [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) | compatibilidad y reversión de 1.x → 2.0 |
 | [SECURITY.md](SECURITY.md) | modelo de seguridad, salida de red, secretos |

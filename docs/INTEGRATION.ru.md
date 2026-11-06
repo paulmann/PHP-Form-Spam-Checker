@@ -118,6 +118,8 @@ require '/var/www/lib/PHP-Form-Spam-Checker/integrations/guard.php';
 сбой трактуется как fail open. Сайту с `guard.php` не нужен дополнительный
 `integrations/waf.php` — файрвол уже внутри guard.
 
+Отклонённые отправки можно восстановить из реестра: см. [REJECTED-FORMS.md](REJECTED-FORMS.md).
+
 Конфиг сайта — `config/sites/<host>.php`:
 
 ```php

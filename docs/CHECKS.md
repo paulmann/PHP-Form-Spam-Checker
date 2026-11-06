@@ -364,6 +364,8 @@ A WAF block happens **before** the form handler, so the form checks never see
 the request. Keep the WAF in `monitor` first when you add it to a form that is
 already protected by the form checks.
 
+Blocked submissions can be captured for recovery — see [REJECTED-FORMS.md](REJECTED-FORMS.md).
+
 ## Writing a custom check
 
 ```php

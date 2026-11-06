@@ -549,6 +549,13 @@ Systemverzeichnis und dürfen nicht auf Konfiguration oder Zustand einer Produkt
   ein Schlüssel wird nie zu einem Pfad.
 - Befundlogs pseudonymisieren die Client-IP und schwärzen Feldwerte, solange
   `log.pii` nicht aktiviert ist.
+- Das Register abgelehnter Formulare ([docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md))
+  ist die Ausnahme: Es speichert die vollständige Nutzlast **absichtlich**, damit ein
+  blockierter Lead erneut abgespielt werden kann. Geschützt durch `0700`/`0600`-Rechte,
+  begrenzt durch `rejected.retention_days`, gibt es personenbezogene Daten nur maskiert
+  aus, solange nicht `--reveal` übergeben wird, verwirft Cookie/Authorization, solange
+  nichts anderes konfiguriert ist, und spielt niemals Geheimnisse oder einen anderen
+  Host ohne ausdrückliches Flag erneut ab.
 - Eine Prüfung oder Regel, die eine Ausnahme wirft, ist **Fail-open**: Eine
   defekte Prüfung blockiert nie ein Formular, eine defekte WAF-Regel nie eine Anfrage.
 - Melden Sie Schwachstellen gemäß [SECURITY.md](SECURITY.md).
@@ -564,6 +571,7 @@ Systemverzeichnis und dürfen nicht auf Konfiguration oder Zustand einer Produkt
 | [docs/CONFIG.md](docs/CONFIG.md) | vollständiger Konfigurationsbaum, Überschreibungen pro Formular, Env-Variablen |
 | [docs/CHECKS.md](docs/CHECKS.md) | Semantik der Prüfungen, Punktwerte, Fehlalarme, eigene Prüfungen |
 | [docs/WAF.md](docs/WAF.md) | Bedrohungsmodell, Regeln-Matrix, Rollout, Deployment, CLI-Brücke |
+| [docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md) | Register abgelehnter Formulare: Datensatzformat, `bin/rejected-forms`, Replay, Aufbewahrung |
 | [docs/INTEGRATION.md](docs/INTEGRATION.md) / [docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md) | Integrationsleitfaden (EN/RU) |
 | [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) | Kompatibilität 1.x → 2.0 und Rollback |
 | [SECURITY.md](SECURITY.md) | Sicherheitsmodell, Ausgangsverbindungen, Geheimnisse |

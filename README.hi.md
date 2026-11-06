@@ -548,6 +548,12 @@ composer lint
   कुंजी कभी पथ नहीं बनती।
 - जब तक `log.pii` चालू न हो, निर्णय लॉग क्लाइंट IP का छद्मीकरण करते हैं और फ़ील्ड
   मानों को छिपाते हैं।
+- अस्वीकृत फ़ॉर्म का रजिस्ट्री ([docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md))
+  अपवाद है: यह पूरा payload **जानबूझकर** संग्रहीत करता है ताकि ब्लॉक किया गया lead
+  दोबारा चलाया (replay) जा सके। यह `0700`/`0600` अनुमतियों से सुरक्षित है,
+  `rejected.retention_days` से सीमित है, जब तक `--reveal` न दिया जाए व्यक्तिगत डेटा
+  masked दिखाता है, जब तक स्पष्ट रूप से कॉन्फ़िगर न हो Cookie/Authorization छोड़
+  देता है, और बिना स्पष्ट flag के कभी secrets या दूसरा host replay नहीं करता।
 - अपवाद फेंकने वाली जाँच या नियम **fail open** करता है: टूटी जाँच कभी फ़ॉर्म नहीं
   रोकती, टूटा WAF नियम कभी अनुरोध नहीं रोकता।
 - भेद्यताएँ [SECURITY.md](SECURITY.md) के अनुसार रिपोर्ट करें।
@@ -563,6 +569,7 @@ composer lint
 | [docs/CONFIG.md](docs/CONFIG.md) | पूरा कॉन्फ़िगरेशन ट्री, प्रति-फ़ॉर्म ओवरराइड, env vars |
 | [docs/CHECKS.md](docs/CHECKS.md) | जाँच का अर्थ, स्कोर, false positives, कस्टम जाँचें |
 | [docs/WAF.md](docs/WAF.md) | threat model, नियम मैट्रिक्स, rollout, deployment, CLI bridge |
+| [docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md) | अस्वीकृत फ़ॉर्म का रजिस्ट्री: record format, `bin/rejected-forms`, replay, retention |
 | [docs/INTEGRATION.md](docs/INTEGRATION.md) / [docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md) | वायरिंग मार्गदर्शिका (EN/RU) |
 | [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) | 1.x → 2.0 संगतता और रोलबैक |
 | [SECURITY.md](SECURITY.md) | सुरक्षा मॉडल, egress, secrets |

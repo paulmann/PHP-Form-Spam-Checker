@@ -532,6 +532,11 @@ composer lint
 - HMAC-SHA-256 令牌、`hash_equals`、表单绑定；密钥至少 16 个字符。
 - 文件存储使用 `flock`、哈希文件名和 JSON 编码——键永远不会变成路径。
 - 除非启用 `log.pii`，判定日志会对客户端 IP 做假名化并脱敏字段值。
+- 被拒绝表单登记表（[docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md)）是例外：
+  它**有意**保存完整负载，以便重放被拦截的线索。它受 `0700`/`0600` 权限保护，
+  受 `rejected.retention_days` 限制；除非传入 `--reveal`，否则以脱敏形式显示
+  个人数据；除非显式配置，否则丢弃 Cookie/Authorization；且在没有显式标志时
+  绝不重放密钥或其他主机。
 - 抛异常的检查或规则按**失败放行**处理：坏掉的检查绝不会阻断表单，
   坏掉的 WAF 规则绝不会阻断请求。
 - 漏洞请按 [SECURITY.md](SECURITY.md) 报告。
@@ -547,6 +552,7 @@ composer lint
 | [docs/CONFIG.md](docs/CONFIG.md) | 完整配置树、按表单覆盖、环境变量 |
 | [docs/CHECKS.md](docs/CHECKS.md) | 检查语义、分数、误报、自定义检查 |
 | [docs/WAF.md](docs/WAF.md) | 威胁模型、规则矩阵、上线、部署、CLI 桥接 |
+| [docs/REJECTED-FORMS.md](docs/REJECTED-FORMS.md) | 被拒绝表单登记表：记录格式、`bin/rejected-forms`、重放、保留 |
 | [docs/INTEGRATION.md](docs/INTEGRATION.md) / [docs/INTEGRATION.ru.md](docs/INTEGRATION.ru.md) | 接线指南（英/俄） |
 | [docs/MIGRATION-1-to-2.md](docs/MIGRATION-1-to-2.md) | 1.x → 2.0 兼容性与回滚 |
 | [SECURITY.md](SECURITY.md) | 安全模型、外联、密钥 |

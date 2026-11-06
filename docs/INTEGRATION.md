@@ -120,6 +120,8 @@ Both layers pass through anything that does not match their config, and any
 internal error fails open. A site that uses `guard.php` does not need to include
 `integrations/waf.php` as well — the firewall is already part of the guard.
 
+Rejected submissions can be recovered from the registry: see [REJECTED-FORMS.md](REJECTED-FORMS.md).
+
 Create `config/sites/<host>.php`:
 
 ```php
