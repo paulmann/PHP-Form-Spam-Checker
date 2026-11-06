@@ -26,6 +26,7 @@ final class SyntaxTest extends TestCase
         }
 
         $files[] = $root . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'spam-check';
+        $files[] = $root . DIRECTORY_SEPARATOR . 'bin' . DIRECTORY_SEPARATOR . 'rejected-forms';
         $files[] = $root . DIRECTORY_SEPARATOR . 'autoload.php';
 
         self::assertNotEmpty($files);

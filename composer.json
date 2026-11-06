@@ -64,7 +64,8 @@
     "bin": [
         "bin/spam-check",
         "bin/waf-check",
-        "bin/spam-train"
+        "bin/spam-train",
+        "bin/rejected-forms"
     ],
     "scripts": {
         "test": "phpunit",

@@ -1,0 +1,39 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+/**
+ * CLI for the registry of rejected (unsent) form submissions.
+ *
+ * Commands:
+ *   php bin/rejected-forms list   [--site=SITE] [--form=FORM] [--status=STATUS]
+ *                                 [--since=YYYY-MM-DD|EPOCH] [--limit=N] [--json]
+ *   php bin/rejected-forms show   <id> [--reveal] [--json]
+ *   php bin/rejected-forms replay <id> [--url=URL] [--dry-run | --confirm]
+ *                                 [--allow-host-change] [--json]
+ *   php bin/rejected-forms ignore <id> --reason=TEXT [--json]
+ *   php bin/rejected-forms purge  [--older-than=DAYS] [--confirm] [--json]
+ *
+ * Every command accepts --config=PATH (or SPAM_CHECKER_CONFIG) and
+ * --path=REGISTRY_ROOT; without them the shared guard's var/rejected tree is
+ * read, which is where FormGuard/WafGuard write when the registry is enabled.
+ *
+ * Personal data is masked unless --reveal is passed on purpose. replay is a
+ * dry run unless --confirm is passed, never sends Cookie/Authorization and
+ * never goes to a different host without --allow-host-change.
+ *
+ * Exit codes: 0 success; 1 record or operation refused (unknown id, different
+ * host, ignored record); 2 usage error; 3 storage or transport error.
+ */
+
+// Errors must go to STDERR: STDOUT is reserved for the table/JSON output.
+ini_set('display_errors', 'stderr');
+ini_set('log_errors', '0');
+error_reporting(E_ALL);
+
+require dirname(__DIR__) . '/autoload.php';
+
+$command = new FormSpamChecker\Cli\RejectedFormsCommand();
+
+exit($command->run($argv));
